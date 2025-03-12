@@ -1,3 +1,3 @@
-# GeneLab AmpliconSeq Workflow
+# GeneLab Amplicon Sequencing Workflow
 
 Coming soon...
