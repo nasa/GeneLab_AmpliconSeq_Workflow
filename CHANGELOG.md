@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Group-wise and Sample-wise Taxonomic Summary Plots
+- Observed and Simpson alpha diversity metrics
+- Bray-Curtis beta diversity metrics
 - ANCOMBC1 differential abundance analysis
 - ANCOMBC2 differential abundance analysis
 - Added workflow parameters for finer-grained control of diversity and differential abundance analyses
