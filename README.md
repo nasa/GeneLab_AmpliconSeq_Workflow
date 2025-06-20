@@ -2,6 +2,8 @@
 
 > GeneLab, part of NASA's [Open Science Data Repository (OSDR)](https://www.nasa.gov/osdr/), has wrapped each step of the Illumina amplicon sequencing data processing pipeline ([AmpIllumina](https://github.com/nasa/GeneLab_Data_Processing/tree/master/Amplicon)), starting with pipeline version C, into a Nextflow workflow. This repository contains information about the workflow along with instructions for installation and usage. Exact workflow run info and AmpIllumina version used to process specific datasets hosted on the [OSDR data repository](https://osdr.nasa.gov/bio/repo/) are provided alongside their processed data in OSDR under 'Files' -> 'GeneLab Processed Diversity Amplicon Files' -> 'Processing Info'. 
 
+<br>
+
 ## General Workflow Info
 
 ### Implementation Tools
@@ -17,6 +19,8 @@ The table below details the default maximum resource allocations for individual 
 | 2                 | 5 GB           |
 
 > **Note:** These per-process resource allocations are defaults. They can be adjusted by modifying `cpus` and `memory` directives in the configuration file: [`nextflow.config`](workflow_code/nextflow.config).
+
+<br>
 
 ## Utilizing the Workflow
 
