@@ -173,51 +173,53 @@ nextflow run main.nf \
       * `mamba` - instructs Nextflow to use conda environments via the mamba package manager 
    * Other option (can be combined with the software environment option above using a comma, e.g. `-profile slurm,singularity`):
       * `slurm` - instructs Nextflow to use the [Slurm cluster management and job scheduling system](https://slurm.schedmd.com/overview.html) to schedule and run the jobs on a Slurm HPC cluster
-* `--target_region` - Specifies the amplicon target region to be analyzed, available option are: 16S, 18S, or ITS
+* `--target_region` - Specifies the amplicon target region to be analyzed (type: string, options: 16S, 18S, or ITS)
 
 
 **Additional Required Parameters For Approach 1:** 
 
-* `--accession` - The OSD or GLDS accession number specifying the [OSDR](https://osdr.nasa.gov/bio/repo/) dataset to process, e.g. OSD-487 or GLDS-487
+* `--accession` - The OSD or GLDS accession number specifying the [OSDR](https://osdr.nasa.gov/bio/repo/) dataset to process, e.g. OSD-487 or GLDS-487 (type: string)
   > *Note: Not all datasets have the same OSD and GLDS number, so make sure the correct OSD or GLDS number is specified*
 
 
 **Additional Required Parameters For Approach 2:** 
 
-* `--input_file` –  A single-end or paired-end runsheet csv file containing assay metadata for each sample, including sample_id, forward (path to forward read), [reverse (path to reverse read, for paired-end only),] paired (boolean, TRUE | FALSE), groups (specifies sample treatment group name). Please see the [runsheet documentation](./examples/runsheet) in this repository for examples on how to format this file.
+* `--input_file` –  A single-end or paired-end runsheet csv file containing assay metadata for each sample, including sample_id, forward (path to forward read), [reverse (path to reverse read, for paired-end only),] paired (boolean, TRUE | FALSE), groups (specifies sample treatment group name). Please see the [runsheet documentation](./examples/runsheet) in this repository for examples on how to format this file. (type: string)
 
-* `--F_primer` - Forward primer sequence
+* `--F_primer` - Forward primer sequence (type: string)
 
-* `--R_primer` - Reverse primer sequence
+* `--R_primer` - Reverse primer sequence (type: string)
 
 
 **Additional [Optional] Parameters For All Approaches**
 > *Note: See `nextflow run -h` and [Nextflow's CLI run command documentation](https://nextflow.io/docs/latest/cli.html#run) for more options and details on how to run Nextflow.*
 
-* `--errorStrategy` - Error handling strategy for Nextflow processes . If processes fail, use "ignore" to allow the workflow to continue running (default: "terminate")
-* `--primers_linked` - Whether forward and reverse primers are linked (default: TRUE)
-* `--anchored_primers` - Whether primers are anchored at the start of reads (default: TRUE)
-* `--min_cutadapt_len` - Minimum length of reads to keep after Cutadapt trimming (default: 130) 
-* `--discard_untrimmed` - Whether to discard untrimmed reads (default: TRUE)
-* `--left_trunc` - Truncate forward reads after this many bases. Reads shorter than this are discarded (default: 0; no truncation)
-* `--right_trunc` - Truncate reverse reads after this many bases. Reads shorter than this are discarded (default: 0; no truncation)
-* `--left_maxEE` - Maximum expected errors allowed in forward reads (default: 1)
-* `--right_maxEE` - Maximum expected errors allowed in reverse reads (default: 1)
-* `--concatenate_reads_only` - Whether to concatenate paired reads end-to-end instead of merging based on overlapping regions (default: FALSE)
-* `--diff_abund_method` - Differential abundance testing method to use: "all", "ancombc1", "ancombc2", or "deseq2" (default: "all")
-* `--group` - Column name in input CSV file containing groups to be compared (default: "groups")
-* `--samples_column` - Column name in input CSV file containing sample names (default: "sample_id")
-* `--remove_struc_zeros` - Whether to remove structural zeros when running ANCOMBC (default: false)
-* `--remove_rare` - Whether to filter out rare features and samples with low library sizes (default: false)
-* `--prevalence_cutoff` - Taxa with prevalence below this fraction will be excluded.(default: 0.15)
-* `--library_cutoff` - Samples with library sizes below this threshold will be excluded. (default: 100)
-* `--conda_cutadapt` - Path to existing Cutadapt conda environment (default: null; creates new environment)
-* `--conda_diversity` - Path to existing R diversity analysis conda environment (default: null; creates new environment)
-* `--conda_dp_tools` - Path to existing dp_tools conda environment (default: null; creates new environment)
-* `--conda_fastqc` - Path to existing FastQC conda environment (default: null; creates new environment)
-* `--conda_multiqc` - Path to existing MultiQC conda environment (default: null; creates new environment)
-* `--conda_R` - Path to existing R conda environment (default: null; creates new environment)
-* `--conda_zip` - Path to existing zip conda environment (default: null; creates new environment)
+* `--errorStrategy` - Error handling strategy for Nextflow processes. If processes fail, use "ignore" to allow the workflow to continue running (type: string, default: "terminate")
+* `--primers_linked` - Whether forward and reverse primers are linked (type: string, default: "TRUE")
+* `--anchored_primers` - Whether primers are anchored at the start of reads (type: string, default: "TRUE")
+* `--min_cutadapt_len` - Minimum length of reads to keep after Cutadapt trimming (type: integer, default: 130) 
+* `--discard_untrimmed` - Whether to discard untrimmed reads (type: string, default: "TRUE")
+* `--left_trunc` - Truncate forward reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0)
+* `--right_trunc` - Truncate reverse reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0)
+* `--left_maxEE` - Maximum expected errors allowed in forward reads (type: integer, default: 1)
+* `--right_maxEE` - Maximum expected errors allowed in reverse reads (type: integer, default: 1)
+* `--concatenate_reads_only` - Whether to concatenate paired reads end-to-end instead of merging based on overlapping regions (type: string, default: "FALSE")
+* `--diff_abund_method` - Differential abundance testing method to use (type: string, default: "all")
+* `--group` - Column name in input CSV file containing groups to be compared (type: string, default: "groups")
+* `--samples_column` - Column name in input CSV file containing sample names (type: string, default: "sample_id")
+* `--remove_struc_zeros` - Whether to remove structural zeros when running ANCOMBC (type: boolean, default: false)
+* `--remove_rare` - Whether to filter out rare features and samples with low library sizes (type: boolean, default: false)
+* `--prevalence_cutoff` - Taxa with prevalence below this fraction will be excluded (type: float, default: 0.15)
+* `--library_cutoff` - Samples with library sizes below this threshold will be excluded (type: integer, default: 100)
+* `--output_prefix` - Prefix to add to output filenames (type: string, default: "")
+* `--assay_suffix` - Suffix to add to output filenames (type: string, default: "_GLAmpSeq")
+* `--conda_cutadapt` - Path to existing Cutadapt conda environment (type: string, default: null)
+* `--conda_diversity` - Path to existing R diversity analysis conda environment (type: string, default: null)
+* `--conda_dp_tools` - Path to existing dp_tools conda environment (type: string, default: null)
+* `--conda_fastqc` - Path to existing FastQC conda environment (type: string, default: null)
+* `--conda_multiqc` - Path to existing MultiQC conda environment (type: string, default: null)
+* `--conda_R` - Path to existing R conda environment (type: string, default: null)
+* `--conda_zip` - Path to existing zip conda environment (type: string, default: null)
 
 <br>
 
