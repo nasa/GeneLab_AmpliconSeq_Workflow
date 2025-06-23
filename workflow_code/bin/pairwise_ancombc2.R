@@ -533,7 +533,7 @@ tryCatch({
               paste("- Sample sizes per group:"),
               paste("  ", paste(names(table(tse[[group]])), "=", table(tse[[group]]), collapse="\n  ")),
               "\nPossibly insufficient data for ANCOMBC2 analysis. Consider adjusting filtering parameters or group assignments."), 
-            file.path(diff_abund_out_dir, glue("{output_prefix}ancombc2_failure.txt")))
+            file.path(diff_abund_out_dir, glue("ancombc2_failure.txt")))
   quit(status = 0)
 })
 
