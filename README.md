@@ -209,7 +209,7 @@ nextflow run main.nf \
 * `--remove_rare` - Whether to filter out rare features and samples with low library sizes (type: boolean, default: false)
 * `--prevalence_cutoff` - Taxa with prevalence below this fraction will be excluded (type: float, default: 0.15)
 * `--library_cutoff` - Samples with library sizes below this threshold will be excluded (type: integer, default: 100)
-* `--output_prefix` - Prefix to add to output filenames (type: string, default: "")
+* `--output_prefix` - Prefix to add to output filenames, e.g. "Study1_" (type: string, default: "")
 * `--assay_suffix` - Suffix to add to output filenames (type: string, default: "_GLAmpSeq")
 * `--conda_cutadapt` - Path to existing Cutadapt conda environment (type: string, default: null)
 * `--conda_diversity` - Path to existing R diversity analysis conda environment (type: string, default: null)
