@@ -36,7 +36,8 @@
         "target_region": {
             "type": "string",
             "default": "16S",
-            "description": "What is the amplicon target region to be analyzed? Options are one of [16S, 18S, ITS]."
+            "description": "What is the amplicon target region to be analyzed? Options are one of [16S, 18S, ITS].",
+            "enum": ["16S", "18S", "ITS"]
         },
         "raw_R1_suffix": {
             "type": "string",
