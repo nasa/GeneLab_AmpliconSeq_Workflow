@@ -474,7 +474,7 @@ deseq_modeled <- tryCatch({
 
     writeLines(c("Error:", e2$message,
                 "\nUsing gene-wise estimates as final estimates instead of standard curve fitting."), 
-              file.path(diff_abund_out_dir, glue("deseq2_warning.txt")))
+              file.path(diff_abund_out_dir, glue("{output_prefix}deseq2_warning.txt")))
     
     # Use gene-wise estimates as final estimates
     deseq_obj <- estimateDispersionsGeneEst(deseq_obj)

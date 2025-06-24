@@ -521,7 +521,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
     # Write to log file
     writeLines(log_msg, 
               file.path(diff_abund_out_dir, 
-                       glue("ancombc1_failure.txt")))
+                       glue("{output_prefix}ancombc1_failure.txt")))
     
     # Print to console and quit
     message(log_msg)

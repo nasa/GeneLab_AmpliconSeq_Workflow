@@ -554,9 +554,9 @@ if(groups_surviving_at_depth(rarefaction_depth) < 2) {
     paste("This should preserve", groups_surviving_at_depth(adjusted_depth), "groups for analysis.")
   )
   
-  writeLines(warning_msg, "rarefaction_depth_warning.txt")
+  writeLines(warning_msg, glue("{beta_diversity_out_dir}/{output_prefix}rarefaction_depth_warning.txt"))
   message("WARNING: Rarefaction depth adjusted from ", rarefaction_depth, " to ", adjusted_depth, 
-          " to preserve at least 2 groups - see rarefaction_depth_warning.txt")
+          " to preserve at least 2 groups - see ", output_prefix, "rarefaction_depth_warning.txt")
   
   # Update the rarefaction depth
   rarefaction_depth <- adjusted_depth
