@@ -1,5 +1,4 @@
-!/usr/bin/env bash
-set  -euo pipefail
+#!/usr/bin/env bash
 
 # Script to launch a nextflow workflow on slurm cluster using singularity
 
@@ -45,7 +44,7 @@ if [ ${MODE} == "processing" ]; then
 
     RUN_NAME=MAIN_$(date +%Y%m%d%H%M%S)
 
-    RUN_COMMAND="nextflow -C ${CONFIG}
+    RUN_COMMAND="nextflow -c ${CONFIG}
                     run \
                     -name ${RUN_NAME} \
                     ${MAIN} \
@@ -73,7 +72,7 @@ elif [ ${MODE} == "post_processing" ];then
 
     RUN_NAME=POST_$(date +%Y%m%d%H%M%S)
 
-    RUN_COMMAND="nextflow -C ${CONFIG}
+    RUN_COMMAND="nextflow -c ${CONFIG}
                     run \
                     -name ${RUN_NAME} \
                     ${MAIN} \
