@@ -368,10 +368,8 @@ def main():
 
     raw_multiqc_zip = str(output_prefix) + f"raw_multiqc{assay_suffix}_report.zip"
     filtered_multiqc_zip = str(output_prefix) + f"filtered_multiqc{assay_suffix}_report.zip"
-    raw_multiqc_stats_file_path = str(output_prefix) + "raw_multiqc_report.zip".split(".")[0] + \
-                                  f"/{str(output_prefix)}raw_multiqc_data/multiqc_general_stats.txt"
-    filtered_multiqc_stats_file_path = str(output_prefix) + "filtered_multiqc_report.zip".split(".")[0] + \
-                                       f"/{str(output_prefix)}filtered_multiqc_data/multiqc_general_stats.txt"
+    raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
+    filtered_multiqc_stats_file_path = "filtered_multiqc_report/filtered_multiqc_data/multiqc_general_stats.txt"
 
     raw_suffix = str(args.raw_suffix)
     raw_R1_suffix = str(args.raw_R1_suffix)
