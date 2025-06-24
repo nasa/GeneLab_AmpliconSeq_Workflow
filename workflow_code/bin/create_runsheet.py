@@ -115,15 +115,28 @@ def download_isa_archive(accession_number):
             sys.exit(1)
 
 # Run dpt-isa-to-runsheet in a temp folder, move runsheet(s) back to cd, return list of runsheet(s)
-def convert_isa_to_runsheet(accession_number, isa_zip):
+def convert_isa_to_runsheet(accession_number, isa_zip, target_region=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         # Copy the ISA archive to the temporary directory
         temp_isa_zip_path = shutil.copy(isa_zip, temp_dir)
 
+        # Determine config-type based on target_region
+        if target_region:
+            if target_region.upper() == "16S":
+                config_type = "amplicon_16s"
+            elif target_region.upper() == "18S":
+                config_type = "amplicon_18s"
+            elif target_region.upper() == "ITS":
+                config_type = "amplicon_its"
+            else:
+                config_type = "amplicon"  # fallback to generic
+        else:
+            config_type = "amplicon"  # default to generic if no target specified
+
         try:
             # Run the dpt-isa-to-runsheet command in the temporary directory
             subprocess.run(
-                ["dpt-isa-to-runsheet", "--accession", accession_number, "--config-type", "amplicon", "--config-version", "Latest", "--isa-archive", os.path.basename(temp_isa_zip_path)],
+                ["dpt-isa-to-runsheet", "--accession", accession_number, "--config-type", config_type, "--config-version", "Latest", "--isa-archive", os.path.basename(temp_isa_zip_path)],
                 check=True,
                 cwd=temp_dir,
                 stdout=sys.stdout,
@@ -461,7 +474,7 @@ def main():
 
         isa_zip = download_isa_archive(accession_number)
         if isa_zip:
-            runsheet_files = convert_isa_to_runsheet(accession_number, isa_zip)
+            runsheet_files = convert_isa_to_runsheet(accession_number, isa_zip, target)
             if runsheet_files:
                 runsheet_file = handle_runsheet_selection(runsheet_files, target, args.specify_runsheet)
                 if runsheet_file is None:

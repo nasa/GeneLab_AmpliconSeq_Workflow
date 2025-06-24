@@ -261,7 +261,7 @@ find_bad_taxa <- function(cnd){
      split_res == "All taxa contain structural zeros") { 
     
     return(
-      list(res=data.frame(taxon=split_res, lfc=NA, se=NA,
+      list(res_pair=data.frame(taxon=split_res, lfc=NA, se=NA,
                           W=NA, p=NA, q=NA, diff=NA, pass_ss=NA))
     )
   }
@@ -462,42 +462,69 @@ output <- ancombc2(data = tse, assay_name = "counts", tax_level = NULL,
                    mdfdr_control = list(fwer_ctrl_method = "fdr", B = 100), 
                    lme_control = NULL, trend_control = NULL)
 
-
+# For 2-group comparisons, use res instead of mapping across pairwise results in res_pair
+is_two_group <- length(unique(tse[[group]])) == 2
 
 # Create new column names - the original column names given by ANCOMBC are
 # difficult to understand
 tryCatch({
-  new_colnames <- map_chr(output$res_pair  %>% colnames, 
-                          function(colname) {
-                            # Columns comparing a group to the reference group
-                            if(str_count(colname,group) == 1){
-                              str_replace_all(string=colname, 
-                                              pattern=glue("(.+)_{group}(.+)"),
-                                              replacement=glue("\\1_(\\2)v({ref_group})")) %>% 
-                              str_replace(pattern = "^lfc_", replacement = "lnFC_") %>% 
-                              str_replace(pattern = "^se_", replacement = "lnfcSE_") %>% 
-                              str_replace(pattern = "^W_", replacement = "Wstat_") %>%
-                              str_replace(pattern = "^p_", replacement = "pvalue_") %>%
-                              str_replace(pattern = "^q_", replacement = "qvalue_")
-                              
-                            # Columns with normal two groups comparison
-                            } else if(str_count(colname,group) == 2){
-                              
-                              str_replace_all(string=colname, 
-                                              pattern=glue("(.+)_{group}(.+)_{group}(.+)"),
-                                              replacement=glue("\\1_(\\2)v(\\3)")) %>% 
-                              str_replace(pattern = "^lfc_", replacement = "lnFC_") %>% 
-                              str_replace(pattern = "^se_", replacement = "lnfcSE_") %>% 
-                              str_replace(pattern = "^W_", replacement = "Wstat_") %>%
-                              str_replace(pattern = "^p_", replacement = "pvalue_") %>%
-                              str_replace(pattern = "^q_", replacement = "qvalue_")
-                              
-                              # Feature/ ASV column 
-                            } else{
-                              
-                              return(colname)
-                            }
-                          } )
+  # Check if this is a 2-group comparison (using res instead of res_pair)
+  if(is_two_group) {
+    # For 2-group comparisons, use the group-specific columns
+    group_cols <- colnames(output$res)[grepl(paste0("^[a-zA-Z_]+_", group), colnames(output$res))]
+    if(length(group_cols) > 0) {
+      # Extract group name from the first group-specific column
+      group_name <- str_replace(group_cols[1], paste0("^[a-zA-Z_]+_", group), "")
+      # Create comparison name
+      comparison_name <- glue("({ref_group})v({group_name})")
+      
+      new_colnames <- c(
+        feature,  # Keep the feature column name
+        glue("lnFC_{comparison_name}"),
+        glue("lnfcSE_{comparison_name}"),
+        glue("Wstat_{comparison_name}"),
+        glue("pvalue_{comparison_name}"),
+        glue("qvalue_{comparison_name}"),
+        glue("diff_{comparison_name}"),
+        glue("passed_ss_{comparison_name}")
+      )
+    } else {
+      stop("Could not identify group-specific column for 2-group comparison")
+    }
+  } else {
+    # Multi-group comparisons
+    new_colnames <- map_chr(output$res_pair  %>% colnames, 
+                            function(colname) {
+                              # Columns comparing a group to the reference group
+                              if(str_count(colname,group) == 1){
+                                str_replace_all(string=colname, 
+                                                pattern=glue("(.+)_{group}(.+)"),
+                                                replacement=glue("\\1_(\\2)v({ref_group})")) %>% 
+                                str_replace(pattern = "^lfc_", replacement = "lnFC_") %>% 
+                                str_replace(pattern = "^se_", replacement = "lnfcSE_") %>% 
+                                str_replace(pattern = "^W_", replacement = "Wstat_") %>%
+                                str_replace(pattern = "^p_", replacement = "pvalue_") %>%
+                                str_replace(pattern = "^q_", replacement = "qvalue_")
+                                
+                              # Columns with normal two groups comparison
+                              } else if(str_count(colname,group) == 2){
+                                
+                                str_replace_all(string=colname, 
+                                                pattern=glue("(.+)_{group}(.+)_{group}(.+)"),
+                                                replacement=glue("\\1_(\\2)v(\\3)")) %>% 
+                                str_replace(pattern = "^lfc_", replacement = "lnFC_") %>% 
+                                str_replace(pattern = "^se_", replacement = "lnfcSE_") %>% 
+                                str_replace(pattern = "^W_", replacement = "Wstat_") %>%
+                                str_replace(pattern = "^p_", replacement = "pvalue_") %>%
+                                str_replace(pattern = "^q_", replacement = "qvalue_")
+                                
+                                # Feature/ ASV column 
+                              } else{
+                                
+                                return(colname)
+                              }
+                            } )
+  }
 }, error = function(e) {
   writeLines(c("ANCOMBC2 script failed at res_pair processing:", e$message,
               "\n\nDiagnostics:",
@@ -513,9 +540,21 @@ tryCatch({
 # Change the column named taxon to the feature name e.g. ASV
 new_colnames[match("taxon", new_colnames)] <- feature
 
-
 # Rename columns
-paired_stats_df <- output$res_pair  %>%  set_names(new_colnames)
+if(is_two_group) {
+  # For 2-group comparisons, we need to select the group-specific columns and rename them
+  # The columns are named like "lfc_groupsGround Control", "se_groupsGround Control", etc.
+  
+  group_specific_cols <- colnames(output$res)[grepl(paste0("^[a-zA-Z_]+_", group), colnames(output$res))]
+  
+  # Create a new data frame with the selected columns
+  paired_stats_df <- output$res %>%
+    select(taxon, all_of(group_specific_cols)) %>%
+    set_names(new_colnames)
+} else {
+  # Multi-group comparisons
+  paired_stats_df <- output$res_pair  %>%  set_names(new_colnames)
+}
 
 # Get the unique comparison names 
 uniq_comps <- str_replace_all(new_colnames, ".+_(\\(.+\\))", "\\1") %>% unique()

@@ -484,8 +484,7 @@ def main():
     filtered_multiqc_zip = f"filtered_multiqc{assay_suffix}_report.zip"
     output_prefix = str(args.output_prefix)
     combined_prefix = file_prefix + output_prefix
-    raw_multiqc_stats_file_path = output_prefix + f"raw_multiqc_report.zip".split(".")[0] + \
-                                  f"/{str(output_prefix)}raw_multiqc_data/multiqc_general_stats.txt"
+    raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
     processing_info = combined_prefix + str(args.processing_zip_file)
 
     if args.map:
