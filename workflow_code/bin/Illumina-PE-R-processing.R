@@ -64,8 +64,43 @@ library(biomformat); packageVersion("biomformat")
 options(timeout=3600)
 
     ### general processing ###
+    # Sample name reading function
+read_sample_names <- function(sample_file) {
+    # Try to read as CSV first
+    tryCatch({
+        data <- read.csv(sample_file, stringsAsFactors = FALSE)
+        
+        # Check for various possible sample ID column names
+        sample_col <- NULL
+        possible_cols <- c("sample_id", "Sample Name")
+        
+        for (col in possible_cols) {
+            if (col %in% colnames(data)) {
+                sample_col <- col
+                break
+            }
+        }
+        
+        if (!is.null(sample_col)) {
+            # Found a sample ID column - use it in original order
+            return(data[[sample_col]])
+        } else {
+            # CSV but no recognizable sample column - try first column
+            if (ncol(data) >= 1) {
+                return(data[,1])
+            } else {
+                # Fall back to single column reading
+                return(scan(sample_file, what="character"))
+            }
+        }
+    }, error = function(e) {
+        # Not a valid CSV - treat as single column file
+        return(scan(sample_file, what="character"))
+    })
+}
+
     # reading in unique sample names into variable
-sample.names <- scan(sample_IDs_file, what="character")
+sample.names <- read_sample_names(sample_IDs_file)
 
     # setting variables holding the paths to the forward and reverse primer-trimmed reads (or "raw" if primers were trimmed prior to submission to GeneLab)
 forward_reads <- paste0(input_reads_dir, sample.names, input_file_R1_suffix)
@@ -129,28 +164,39 @@ sum(seqtab.nochim)/sum(seqtab) * 100
     # helper function
 getN <- function(x) sum(getUniques(x))
 
+    # ensure consistent sample ordering for all downstream steps by using only samples that made it through DADA2
+samples_in_seqtab <- rownames(seqtab.nochim)
+
 if ( GL_trimmed_primers ) {
     
     raw_and_trimmed_read_counts <- read.table(paste0(input_reads_dir, output_prefix, "trimmed-read-counts", assay_suffix, ".tsv"), header=T, sep="\t")
     # reading in filtered read counts
     filtered_read_counts <- read.table(paste0(filtered_reads_dir, output_prefix, "filtered-read-counts", assay_suffix, ".tsv"), header=T, sep="\t")
 
-    count_summary_tab <- data.frame(raw_and_trimmed_read_counts, dada2_filtered=filtered_read_counts[,3],
+    # merge by sample name to ensure correct alignment
+    merged_counts <- merge(raw_and_trimmed_read_counts, filtered_read_counts[,c("sample", "dada2_filtered")], by="sample")
+    # reorder to match seqtab sample order
+    merged_counts <- merged_counts[match(samples_in_seqtab, merged_counts$sample),]
+
+    count_summary_tab <- data.frame(merged_counts,
                                     dada2_denoised_F=sapply(forward_seqs, getN),
                                     dada2_denoised_R=sapply(reverse_seqs, getN),
                                     dada2_merged=rowSums(seqtab),
                                     dada2_chimera_removed=rowSums(seqtab.nochim),
-                                    final_perc_reads_retained=round(rowSums(seqtab.nochim)/raw_and_trimmed_read_counts$raw_reads * 100, 1),
+                                    final_perc_reads_retained=round(rowSums(seqtab.nochim)/merged_counts$raw_reads * 100, 1),
                                     row.names=NULL)
 
 } else {
 
-    count_summary_tab <- data.frame(filtered_count_summary_tab,
+    # reorder filtered_count_summary_tab to match seqtab sample order
+    filtered_count_summary_tab_ordered <- filtered_count_summary_tab[match(samples_in_seqtab, filtered_count_summary_tab$sample),]
+
+    count_summary_tab <- data.frame(filtered_count_summary_tab_ordered,
                                 dada2_denoised_F=sapply(forward_seqs, getN),
                                 dada2_denoised_R=sapply(reverse_seqs, getN),
                                 dada2_merged=rowSums(seqtab),
                                 dada2_chimera_removed=rowSums(seqtab.nochim),
-                                final_perc_reads_retained=round(rowSums(seqtab.nochim)/filtered_count_summary_tab$starting_reads * 100, 1),
+                                final_perc_reads_retained=round(rowSums(seqtab.nochim)/filtered_count_summary_tab_ordered$starting_reads * 100, 1),
                                 row.names=NULL)
 
 }
@@ -227,6 +273,10 @@ asv_tab <- t(seqtab.nochim)
 asv_ids <- sub(">", "", asv_headers)
 row.names(asv_tab) <- NULL
 asv_tab <- data.frame("ASV_ID"=asv_ids, asv_tab, check.names=FALSE)
+
+    # reorder sample columns to match original sample.names order
+sample_cols_present <- intersect(sample.names, colnames(asv_tab))
+asv_tab <- asv_tab[, c("ASV_ID", sample_cols_present)]
 
 write.table(asv_tab, paste0(final_outputs_dir, output_prefix, "counts", assay_suffix, ".tsv"), sep="\t", quote=F, row.names=FALSE)
 
