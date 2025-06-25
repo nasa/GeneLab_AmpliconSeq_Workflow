@@ -561,13 +561,17 @@ uniq_comps <- str_replace_all(new_colnames, ".+_(\\(.+\\))", "\\1") %>% unique()
 uniq_comps <- uniq_comps[-match(feature, uniq_comps)]
 
 # Write out contrasts table
-uniq_comps %>%
-  str_replace_all("\\((.+)\\)v\\((.+)\\)", "\\1.vs.\\2") %>% 
-  str_split(".vs.") %>% 
-  map(.f = function(comparison) data.frame(comparison)) %>% 
-  list_cbind() %>% 
-  write_csv(file = glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"),
-            col_names = FALSE)
+contrasts_df <- data.frame(row_index = c("1", "2"))
+for(i in seq_along(uniq_comps)) {
+  groups_vec <- uniq_comps[i] %>%
+    str_replace_all("\\)v\\(", ").vs.(") %>% 
+    str_remove_all("\\(|\\)") %>%
+    str_split(".vs.") %>% unlist
+  contrasts_df[[uniq_comps[i]]] <- c(groups_vec[1], groups_vec[2])
+}
+colnames(contrasts_df)[1] <- ""
+write_csv(x = contrasts_df,
+          file = glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
 
 # ------ Sort columns by group comparisons --------#
 # Create a data frame containing only the feature/ASV column
