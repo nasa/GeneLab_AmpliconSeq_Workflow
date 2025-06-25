@@ -320,7 +320,7 @@ workflow {
                                               sample_id, reads, isPaired -> reads instanceof List ? reads.each{file("${it}")}: file("${reads}")
                                               }.flatten().collect()
 
-        COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs)
+        COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs, runsheet_ch)
         TRIMMED_FASTQC(CUTADAPT.out.reads)
         trimmed_fastqc_files = TRIMMED_FASTQC.out.html.flatten().collect()
         

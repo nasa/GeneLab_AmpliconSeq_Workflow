@@ -271,6 +271,7 @@ process COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE {
     input:
         path(counts)
         path(logs)
+        path(runsheet_ch)
     output:
         path("${params.output_prefix}cutadapt${params.assay_suffix}.log"), emit: logs
         path("${params.output_prefix}trimmed-read-counts${params.assay_suffix}.tsv"), emit: counts
@@ -278,8 +279,23 @@ process COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE {
         """
         cat ${logs} > ${params.output_prefix}cutadapt${params.assay_suffix}.log
         
-        cat <( printf "sample\\traw_reads\\tcutadapt_trimmed\\n" ) \\
-            <( cat ${counts} ) > ${params.output_prefix}trimmed-read-counts${params.assay_suffix}.tsv
+        # Get the sample order from runsheet (sample_id or Sample Name)
+        if head -1 ${runsheet_ch} | grep -q "sample_id"; then
+            SAMPLE_COL="sample_id"
+        else
+            SAMPLE_COL="Sample Name"
+        fi
+        
+        # Extract sample names in runsheet order
+        tail -n +2 ${runsheet_ch} | cut -d',' -f\$(head -1 ${runsheet_ch} | tr ',' '\\n' | grep -n "^\$SAMPLE_COL\$" | cut -d: -f1) > sample_order.txt
+        
+        # Create counts file
+        printf "sample\\traw_reads\\tcutadapt_trimmed\\n" > ${params.output_prefix}trimmed-read-counts${params.assay_suffix}.tsv
+        
+        # Add counts in runsheet order
+        while read sample; do
+            grep -h "^\$sample\t" ${counts} >> ${params.output_prefix}trimmed-read-counts${params.assay_suffix}.tsv
+        done < sample_order.txt
         """
 }
 
