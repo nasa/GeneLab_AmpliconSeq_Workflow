@@ -377,10 +377,7 @@ taxonomy_table  <- process_taxonomy(taxonomy_table)
 rownames(taxonomy_table) <- feature_names
 
 print(glue("There are {sum(taxonomy_table$phylum == 'Other')} features without 
-           taxonomy assignments. Dropping them ..."))
-
-# Dropping features that couldn't be assigned taxonomy
-taxonomy_table <- taxonomy_table[-which(taxonomy_table$phylum == 'Other'),]
+           taxonomy assignments. Keeping them in analysis ..."))
 
 # Handle case where no domain was assigned but a phylum wasn't.
 if(all(is.na(taxonomy$domain))){
@@ -599,10 +596,15 @@ colnames(df) <- c(feature, "best_taxonomy")
 
 message("Querying NCBI...")
 # Pull NCBI IDS for unique taxonomy names
-df2 <- data.frame(best_taxonomy = df$best_taxonomy %>%
-                    unique()) %>%
+# Filter out unannotated entries before querying NCBI
+valid_taxonomy <- df$best_taxonomy %>% unique() %>% setdiff("_")
+df2_valid <- data.frame(best_taxonomy = valid_taxonomy) %>%
   mutate(NCBI_id=get_ncbi_ids(best_taxonomy, target_region),
          .after = best_taxonomy)
+
+# Add unannotated entries with NA NCBI_id
+df2_invalid <- data.frame(best_taxonomy = "_", NCBI_id = NA)
+df2 <- rbind(df2_valid, df2_invalid)
 
 df <- df %>%
   left_join(df2, join_by("best_taxonomy")) %>% 
