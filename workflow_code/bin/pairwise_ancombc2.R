@@ -477,13 +477,13 @@ tryCatch({
       
       new_colnames <- c(
         feature,  # Keep the feature column name
-        glue("lnFC_{comparison_name}"),
-        glue("lnfcSE_{comparison_name}"),
-        glue("Wstat_{comparison_name}"),
-        glue("pvalue_{comparison_name}"),
-        glue("qvalue_{comparison_name}"),
-        glue("diff_{comparison_name}"),
-        glue("passed_ss_{comparison_name}")
+        glue("Lnfc_{comparison_name}"),
+        glue("Lnfc.SE_{comparison_name}"),
+        glue("Stat_{comparison_name}"),
+        glue("P.value_{comparison_name}"),
+        glue("Q.value_{comparison_name}"),
+        glue("Diff_{comparison_name}"),
+        glue("Passed_ss_{comparison_name}")
       )
     } else {
       stop("Could not identify group-specific column for 2-group comparison")
@@ -497,11 +497,13 @@ tryCatch({
                                 str_replace_all(string=colname, 
                                                 pattern=glue("(.+)_{group}(.+)"),
                                                 replacement=glue("\\1_(\\2)v({ref_group})")) %>% 
-                                str_replace(pattern = "^lfc_", replacement = "lnFC_") %>% 
-                                str_replace(pattern = "^se_", replacement = "lnfcSE_") %>% 
-                                str_replace(pattern = "^W_", replacement = "Wstat_") %>%
-                                str_replace(pattern = "^p_", replacement = "pvalue_") %>%
-                                str_replace(pattern = "^q_", replacement = "qvalue_")
+                                str_replace(pattern = "^lfc_", replacement = "Lnfc_") %>% 
+                                str_replace(pattern = "^se_", replacement = "Lnfc.SE_") %>% 
+                                str_replace(pattern = "^W_", replacement = "Stat_") %>%
+                                str_replace(pattern = "^p_", replacement = "P.value_") %>%
+                                str_replace(pattern = "^q_", replacement = "Q.value_") %>%
+                                str_replace(pattern = "^diff_", replacement = "Diff_") %>%
+                                str_replace(pattern = "^passed_ss_", replacement = "Passed_ss_")
                                 
                               # Columns with normal two groups comparison
                               } else if(str_count(colname,group) == 2){
@@ -509,11 +511,13 @@ tryCatch({
                                 str_replace_all(string=colname, 
                                                 pattern=glue("(.+)_{group}(.+)_{group}(.+)"),
                                                 replacement=glue("\\1_(\\2)v(\\3)")) %>% 
-                                str_replace(pattern = "^lfc_", replacement = "lnFC_") %>% 
-                                str_replace(pattern = "^se_", replacement = "lnfcSE_") %>% 
-                                str_replace(pattern = "^W_", replacement = "Wstat_") %>%
-                                str_replace(pattern = "^p_", replacement = "pvalue_") %>%
-                                str_replace(pattern = "^q_", replacement = "qvalue_")
+                                str_replace(pattern = "^lfc_", replacement = "Lnfc_") %>% 
+                                str_replace(pattern = "^se_", replacement = "Lnfc.SE_") %>% 
+                                str_replace(pattern = "^W_", replacement = "Stat_") %>%
+                                str_replace(pattern = "^p_", replacement = "P.value_") %>%
+                                str_replace(pattern = "^q_", replacement = "Q.value_") %>%
+                                str_replace(pattern = "^diff_", replacement = "Diff_") %>%
+                                str_replace(pattern = "^passed_ss_", replacement = "Passed_ss_")
                                 
                                 # Feature/ ASV column 
                               } else{
@@ -660,9 +664,9 @@ normalized_table <- normalized_table %>%
 
 All_mean_sd <- normalized_table %>%
   rowwise() %>%
-  mutate(All.Mean=mean(c_across(where(is.numeric)), na.rm = TRUE),
-         All.Stdev=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>% 
-  select(!!feature, All.Mean, All.Stdev)
+  mutate(All.mean=mean(c_across(where(is.numeric)), na.rm = TRUE),
+         All.stdev=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>% 
+  select(!!feature, All.mean, All.stdev)
 
 
 # Append the taxonomy table to the ncbi and stats table
@@ -687,13 +691,13 @@ message("Making volcano plots...")
 volcano_plots <- map(uniq_comps, function(comparison){
   
   comp_col  <- c(
-    glue("lnFC_{comparison}"),
-    glue("lnfcSE_{comparison}"),
-    glue("Wstat_{comparison}"),
-    glue("pvalue_{comparison}"),
-    glue("qvalue_{comparison}"),
-    glue("diff_{comparison}"),
-    glue("passed_ss_{comparison}")
+    glue("Lnfc_{comparison}"),
+    glue("Lnfc.SE_{comparison}"),
+    glue("Stat_{comparison}"),
+    glue("P.value_{comparison}"),
+    glue("Q.value_{comparison}"),
+    glue("Diff_{comparison}"),
+    glue("Passed_ss_{comparison}")
   )
   
   
@@ -728,15 +732,15 @@ volcano_plots <- map(uniq_comps, function(comparison){
   
   
   
-  p <- ggplot(sub_res_df %>% mutate(diff = qvalue <= p_val),
-              aes(x=lnFC, y=-log10(qvalue), color=diff, label=!!sym(feature))) +
+  p <- ggplot(sub_res_df %>% mutate(diff = Q.value <= p_val),
+              aes(x=Lnfc, y=-log10(Q.value), color=diff, label=!!sym(feature))) +
     geom_point(alpha=0.7, size=2) +
     scale_color_manual(values=c("TRUE"="red", "FALSE"="black"),
                        labels=c(paste0("qval > ", p_val), 
                                 paste0("qval \u2264 ", p_val))) +
     geom_hline(yintercept = -log10(p_val), linetype = "dashed") +
     ggrepel::geom_text_repel(show.legend = FALSE) + 
-    expandy(-log10(sub_res_df$qvalue)) + # Expand plot y-limit
+    expandy(-log10(sub_res_df$Q.value)) + # Expand plot y-limit
     coord_cartesian(clip = 'off') +
     scale_y_continuous(oob = scales::oob_squish_infinite) +
     labs(x= x_label, y="-log10(Q-value)", 
@@ -761,7 +765,7 @@ volcano_plots <- map(uniq_comps, function(comparison){
 message("Writing out results of differential abundance using ANCOMBC2...")
 output_file <- glue("{diff_abund_out_dir}{output_prefix}ancombc2_differential_abundance{assay_suffix}.csv")
 write_csv(merged_df %>%
-            select(-starts_with("diff_")),
+            select(-starts_with("Diff_")),
           output_file)
 
 message("Run completed sucessfully.")

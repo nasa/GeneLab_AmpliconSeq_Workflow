@@ -450,7 +450,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
       select(-contains("Intercept")) %>% 
       set_names(
         c("taxon",
-          glue("lnFC_({group2})v({group1})"))
+          glue("Lnfc_({group2})v({group1})"))
       )
     
     # SE
@@ -459,7 +459,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
       select(-contains("Intercept")) %>%
       set_names(
         c("taxon",
-          glue("lnfcSE_({group2})v({group1})"))
+          glue("Lnfc.SE_({group2})v({group1})"))
       )
     
     # W    
@@ -468,7 +468,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
       select(-contains("Intercept")) %>%
       set_names(
         c("taxon",
-          glue("Wstat_({group2})v({group1})"))
+          glue("Stat_({group2})v({group1})"))
       )
     
     # p_val
@@ -477,7 +477,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
       select(-contains("Intercept")) %>%
       set_names(
         c("taxon",
-          glue("pvalue_({group2})v({group1})"))
+          glue("P.value_({group2})v({group1})"))
       )
     
     # q_val
@@ -486,7 +486,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
       select(-contains("Intercept")) %>% 
       set_names(
         c("taxon",
-          glue("qvalue_({group2})v({group1})"))
+          glue("Q.value_({group2})v({group1})"))
       )
     
     
@@ -496,7 +496,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
       select(-contains("Intercept")) %>%
       set_names(
         c("taxon",
-          glue("diff_({group2})v({group1})"))
+          glue("Diff_({group2})v({group1})"))
       )
     
     
@@ -555,8 +555,8 @@ merged_stats_df <- merged_stats_df %>%
 
 
 comp_names <- merged_stats_df %>% 
-  select(starts_with("lnFC_", ignore.case = FALSE)) %>%
-  colnames() %>% str_remove_all("lnFC_")
+  select(starts_with("Lnfc_", ignore.case = FALSE)) %>%
+  colnames() %>% str_remove_all("Lnfc_")
 names(comp_names) <- comp_names
 
 message("Making volcano plots...")
@@ -564,12 +564,12 @@ message("Making volcano plots...")
 volcano_plots <- map(comp_names, function(comparison){
   
   comp_col  <- c(
-    glue("lnFC_{comparison}"),
-    glue("lnfcSE_{comparison}"),
-    glue("Wstat_{comparison}"),
-    glue("pvalue_{comparison}"),
-    glue("qvalue_{comparison}"),
-    glue("diff_{comparison}")
+    glue("Lnfc_{comparison}"),
+    glue("Lnfc.SE_{comparison}"),
+    glue("Stat_{comparison}"),
+    glue("P.value_{comparison}"),
+    glue("Q.value_{comparison}"),
+    glue("Diff_{comparison}")
   )
   
   
@@ -602,8 +602,8 @@ volcano_plots <- map(comp_names, function(comparison){
   }
 
   
-  p <- ggplot(sub_res_df %>% mutate(diff = qvalue <= p_val), 
-              aes(x=lnFC, y=-log10(qvalue), 
+  p <- ggplot(sub_res_df %>% mutate(diff = Q.value <= p_val), 
+              aes(x=Lnfc, y=-log10(Q.value), 
                   color=diff, label=!!sym(feature))) +
     geom_point(alpha=0.7, size=2) +
     scale_color_manual(values=c("TRUE"="red", "FALSE"="black"),
@@ -611,7 +611,7 @@ volcano_plots <- map(comp_names, function(comparison){
                                 paste0("qval \u2264 ", p_val))) +
     geom_hline(yintercept = -log10(p_val), linetype = "dashed") +
     ggrepel::geom_text_repel(show.legend = FALSE) +
-    expandy(-log10(sub_res_df$qvalue)) + # Expand plot y-limit
+    expandy(-log10(sub_res_df$Q.value)) + # Expand plot y-limit
     coord_cartesian(clip = 'off') +
     scale_y_continuous(oob = scales::oob_squish_infinite) +
     labs(x= x_label, y="-log10(Q-value)", 
@@ -707,9 +707,9 @@ normalized_table <- normalized_table %>%
 
 All_mean_sd <- normalized_table %>%
   rowwise() %>%
-  mutate(All.Mean=mean(c_across(where(is.numeric)), na.rm = TRUE),
-         All.Stdev=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>%
-  select(!!feature, All.Mean, All.Stdev)
+  mutate(All.mean=mean(c_across(where(is.numeric)), na.rm = TRUE),
+         All.stdev=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>% 
+  select(!!feature, All.mean, All.stdev)
 
 
 merged_df <- df  %>%
@@ -730,7 +730,7 @@ merged_df <- merged_df %>%
 output_file <- glue("{diff_abund_out_dir}{output_prefix}ancombc1_differential_abundance{assay_suffix}.csv")
 message("Writing out results of differential abundance using ANCOMBC1...")
 write_csv(merged_df %>%
-            select(-starts_with("diff_")),
+            select(-starts_with("Diff_")),
           output_file)
 
 message("Run completed sucessfully.")
