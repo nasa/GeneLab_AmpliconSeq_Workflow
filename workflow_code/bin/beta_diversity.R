@@ -436,7 +436,6 @@ metadata <- metadata %>%
                          ) 
   )
 sample_names <- rownames(metadata)
-#deseq2_sample_names <- make.names(sample_names, unique = TRUE)
 
 short_group_labels <- sprintf("%d: %s", seq_along(group_levels), group_levels)
 names(short_group_labels) <- group_levels
@@ -468,13 +467,6 @@ taxonomy_table <-  read.table(file = taxonomy_file, header = TRUE,
                               row.names = 1, sep = "\t", 
                               check.names = FALSE)
 
-message(glue("There are {sum(is.na(taxonomy_table$domain))} features without 
-           taxonomy assignments. Dropping them..."))
-
-
-# Dropping features that couldn't be assigned taxonomy
-taxonomy_table <- taxonomy_table[-which(is.na(taxonomy_table$domain)),]
-
 # Removing Chloroplast and Mitochondria Organelle DNA contamination
 asvs2drop <- taxonomy_table %>%
   unite(col="taxonomy",domain:species) %>%
@@ -501,9 +493,6 @@ feature_table <- feature_table[, samples2keep]
 
 metadata <- metadata[samples2keep,]
 
-distance_methods <- c("euclidean", "bray") # "bray" # "euclidean"
-normalization_methods <- c("vst", "rarefy")
-#legend_title <- NULL
 
 # Check and adjust rarefaction depth to preserve at least 2 groups
 library_sizes <- colSums(feature_table)
@@ -563,6 +552,10 @@ if(groups_surviving_at_depth(rarefaction_depth) < 2) {
 }
 
 options(warn=-1) # ignore warnings
+
+distance_methods <- c("euclidean", "bray") # "bray" # "euclidean"
+normalization_methods <- c("vst", "rarefy")
+
 # Run the analysis
 walk2(.x = normalization_methods, .y = distance_methods,
       .f = function(normalization_method, distance_method){
@@ -575,7 +568,7 @@ ps <- transform_phyloseq(feature_table, metadata,
 # ---------Clustering and dendogram plotting
 
 # Extract normalized count table
-count_tab <- otu_table(ps)
+count_tab <- otu_table(ps)#[,1:10]
 
 # VSD validation check point
 if(normalization_method == "vst"){
@@ -608,8 +601,44 @@ dendogram <- make_dendogram(dist_obj, metadata, groups_colname,
                             group_colors, legend_title)
 
 # Save dendogram
+length_of_longest_label <- Reduce(max,sample_names %>% nchar())
+
+number_of_samples <- length(sample_names)
+
+estimated_height <- 0.3 * number_of_samples
+
+if( estimated_height  <= 10 ){
+  
+  dendo_height  <- 10
+  
+} else if(estimated_height <= 50){
+  
+  dendo_height  <- estimated_height
+  
+} else{
+  
+  # Cap the maximum plot width at 50 inches
+  dendo_height  <- 50
+}
+
+if(length_of_longest_label <= 14 ){
+  
+  # Default plot width
+  dendo_width <- 14
+  
+ }else if(length_of_longest_label <= 50){
+   
+   # Adjust plot width by label length
+   dendo_width <- length_of_longest_label
+   
+ } else{
+   
+   # Cap the maximum plot width at 50 inches 
+   dendo_width <- 50
+ }
+ 
 ggsave(filename = glue("{beta_diversity_out_dir}/{output_prefix}{distance_method}_dendrogram{assay_suffix}.png"),
-       plot = dendogram, width = 14, height = 10, 
+       plot = dendogram, width = dendo_width, height = dendo_height, 
        dpi = 300, units = "in", limitsize = FALSE)
 
 

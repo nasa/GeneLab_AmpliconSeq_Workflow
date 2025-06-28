@@ -420,11 +420,11 @@ taxonomy_table <-  read.table(file = taxonomy_file, header = TRUE,
 
 # Preprocess ASV and taxonomy tables
 message(glue("There are {sum(is.na(taxonomy_table$domain))} features without 
-           taxonomy assignments. Dropping them..."))
+           taxonomy assignments. Consolidating them as Unclassified..."))
 
 
-# Dropping features that couldn't be assigned taxonomy
-taxonomy_table <- taxonomy_table[-which(is.na(taxonomy_table$domain)),]
+# Label features as "Unclassified" for those that couldn't be assigned taxonomy
+taxonomy_table[which(is.na(taxonomy_table$domain)),] <- "Unclassified"
 
 # Removing Chloroplast and Mitochondria Organelle DNA contamination
 asvs2drop <- taxonomy_table %>%
@@ -593,9 +593,10 @@ y <- "relativeAbundance"
 number_of_groups <- length(group_levels)
 plot_width <- 2.5 * number_of_groups
 
-# Cap the maximum plot width to 50 regardless of the number of groups
-if(plot_width >  50 ){
-  
+# Make plot width between 7.5 and 50
+if(plot_width < 7.5) {
+  plot_width <- 7.5
+} else if(plot_width > 50) {
   plot_width <- 50
 }
 
@@ -619,5 +620,3 @@ walk2(.x = group_relAbundace_tbs, .y = taxon_levels,
                                     plot=p, width = plot_width, 
                                     height = 10, dpi = 300, limitsize = FALSE)
                            })
-
-
