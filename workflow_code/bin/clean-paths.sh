@@ -30,8 +30,5 @@ elif [ `awk 'NR==1{print}' ${FILE} | grep -c forward` -gt 0 ]; then
 
 fi
  
-sed -E 's|.*/GLDS_Datasets/(.+)|\1|g' ${FILE} \
-    | sed -E 's|.+/miniconda.+/envs/[^/]*/||g' \
-    | sed -E 's|/[^ ]*/GLDS-|GLDS-|g' \
-    | sed -E 's|/[a-z]{6}/[^ ]*|<path-removed-for-security-purposes>|g' \
+sed -E 's|/.*/([^/]+)$|\1|g' ${FILE} \
     | sed -E "s|${ROOT_DIR}||g" > t && mv t  ${FILE}

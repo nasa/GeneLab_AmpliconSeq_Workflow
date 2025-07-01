@@ -290,10 +290,12 @@ workflow {
                                          tuple( "${row.sample_id}", [file("${row.forward}", checkIfExists: true)], deleteWS(row.paired))
                 }.set{reads_ch} 
 
-    // Generating a file with sample ids on a new line
-    file_ch.map{row -> "${row.sample_id}"}
-              .collectFile(name: "${launchDir}/unique-sample-IDs.txt", newLine: true)
-              .set{sample_ids_ch}
+    // Use original runsheet to preserve sample order
+    if(params.accession){
+        runsheet_ch = GET_RUNSHEET.out.runsheet
+    }else{
+        runsheet_ch = Channel.fromPath(params.input_file, checkIfExists: true)
+    }
 
     // Read quality check and trimming
     RAW_FASTQC(reads_ch)
@@ -318,7 +320,7 @@ workflow {
                                               sample_id, reads, isPaired -> reads instanceof List ? reads.each{file("${it}")}: file("${reads}")
                                               }.flatten().collect()
 
-        COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs)
+        COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs, runsheet_ch)
         TRIMMED_FASTQC(CUTADAPT.out.reads)
         trimmed_fastqc_files = TRIMMED_FASTQC.out.html.flatten().collect()
         
@@ -329,7 +331,7 @@ workflow {
                                               sample_id, reads, isPaired -> isPaired
                                               }.first()
 
-        samples_ch = sample_ids_ch.first()
+        samples_ch = runsheet_ch.first()
                      .concat(isPaired_ch)
                      .collate(2)
         // Run dada2
@@ -359,7 +361,7 @@ workflow {
         }
 
         isPaired_ch = reads_ch.map{sample_id, reads, isPaired -> isPaired}.first()
-        samples_ch = sample_ids_ch.first()
+        samples_ch = runsheet_ch.first()
                      .concat(isPaired_ch)
                      .collate(2)
         RUN_R_NOTRIM(samples_ch, raw_reads_ch, raw_read_suffix_ch)

@@ -382,10 +382,7 @@ taxonomy_table  <- process_taxonomy(taxonomy_table)
 rownames(taxonomy_table) <- feature_names
 
 message(glue("There are {sum(taxonomy_table$phylum == 'Other')} features without 
-           taxonomy assignments. Dropping them ..."))
-
-# Dropping features that couldn't be assigned taxonomy
-taxonomy_table <- taxonomy_table[-which(taxonomy_table$phylum == 'Other'),]
+           taxonomy assignments. Keeping them in analysis ..."))
 
 # Handle case where no domain was assigned but a phylum wasn't.
 if(all(is.na(taxonomy$domain))){
@@ -501,9 +498,14 @@ comparisons <- colnames(pairwise_comp_df)
 names(comparisons) <- comparisons
 
 # Write out contrasts table
-write_csv(x = pairwise_comp_df,
-          file =  glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"),
-          col_names = FALSE)
+comparison_names <- paste0("(", pairwise_comp_df[1,], ")v(", pairwise_comp_df[2,], ")")
+contrasts_df <- data.frame(row_index = c("1", "2"))
+for(i in seq_along(comparison_names)) {
+  contrasts_df[[comparison_names[i]]] <- c(pairwise_comp_df[1,i], pairwise_comp_df[2,i])
+}
+colnames(contrasts_df)[1] <- ""
+write_csv(x = contrasts_df,
+          file =  glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
 
 # Retrieve statistics table
 merged_stats_df <-  data.frame(ASV=rownames(feature_table))
@@ -519,11 +521,11 @@ df <- results(deseq_modeled, contrast = c(group, group1, group2)) %>%
   rownames_to_column(feature) %>% 
   set_names(c(feature ,
               glue("baseMean_({group1})v({group2})"),
-              glue("log2FC_({group1})v({group2})"),
+              glue("Log2fc_({group1})v({group2})"),
               glue("lfcSE_({group1})v({group2})"), 
-              glue("stat_({group1})v({group2})"), 
-              glue("pvalue_({group1})v({group2})"),
-              glue("padj_({group1})v({group2})") 
+              glue("Stat_({group1})v({group2})"), 
+              glue("P.value_({group1})v({group2})"),
+              glue("Adj.p.value_({group1})v({group2})") 
             ))
 
             
@@ -542,10 +544,15 @@ df <- data.frame(ASV=rownames(taxonomy_table), best_taxonomy=tax_names)
 colnames(df) <- c(feature, "best_taxonomy")
 
 # Pull NCBI IDS for unique taxonomy names
-df2 <- data.frame(best_taxonomy = df$best_taxonomy %>%
-                    unique()) %>%
+# Filter out unannotated entries before querying NCBI
+valid_taxonomy <- df$best_taxonomy %>% unique() %>% setdiff("_")
+df2_valid <- data.frame(best_taxonomy = valid_taxonomy) %>%
   mutate(NCBI_id=get_ncbi_ids(best_taxonomy, target_region),
          .after = best_taxonomy)
+
+# Add unannotated entries with NA NCBI_id
+df2_invalid <- data.frame(best_taxonomy = "_", NCBI_id = NA)
+df2 <- rbind(df2_valid, df2_invalid)
 
 df <- df %>%
   left_join(df2, join_by("best_taxonomy")) %>% 
@@ -603,9 +610,9 @@ normalized_table <- normalized_table %>%
 
 All_mean_sd <- normalized_table %>%
   rowwise() %>%
-  mutate(All.Mean=mean(c_across(where(is.numeric)), na.rm = TRUE),
-         All.Stdev=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>% 
-  select(!!feature, All.Mean, All.Stdev)
+  mutate(All.mean=mean(c_across(where(is.numeric)), na.rm = TRUE),
+         All.stdev=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>% 
+  select(!!feature, All.mean, All.stdev)
 
 # Add taxonomy
 merged_df <- df  %>%

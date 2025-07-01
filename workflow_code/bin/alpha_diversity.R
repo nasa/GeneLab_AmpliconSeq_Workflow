@@ -240,7 +240,12 @@ if(!dir.exists(alpha_diversity_out_dir)) dir.create(alpha_diversity_out_dir)
 
 
 # Read in processed data
-metadata <- read_csv(file = metadata_file) %>% as.data.frame()
+metadata <- read_csv(file = metadata_file) %>% 
+                 # Replace "-" with "_" in group names
+                 mutate(!!groups_colname := str_replace_all(!!sym(groups_colname),
+                                                           "-", "_" ) ) %>%
+                 as.data.frame()
+             
 row.names(metadata) <- metadata[[sample_colname]]
 metadata[,sample_colname] <- NULL
 group_column_values <- metadata %>% pull(!!sym(groups_colname))
@@ -304,14 +309,6 @@ taxonomy_table <-  read.table(file = taxonomy_file, header = TRUE,
 
 
 # Preprocess ASV and taxonomy tables
-
-message(glue("There are {sum(is.na(taxonomy_table$domain))} features without 
-           taxonomy assignments. Dropping them..."))
-
-
-# Dropping features that couldn't be assigned taxonomy
-taxonomy_table <- taxonomy_table[-which(is.na(taxonomy_table$domain)),]
-
 # Removing Chloroplast and Mitochondria Organelle DNA contamination
 asvs2drop <- taxonomy_table %>%
                unite(col="taxonomy",domain:species) %>%
@@ -321,8 +318,6 @@ taxonomy_table <- taxonomy_table[!(rownames(taxonomy_table) %in% asvs2drop),]
 
 
 # Subset tables 
-
-
 
 # Get features common to the taxonomy and feature table 
 common_ids <- intersect(rownames(feature_table), rownames(taxonomy_table))
@@ -488,24 +483,12 @@ colnames(comp_letters) <- groups_colname
 walk(.x = diversity_metrics, function(metric = .x) {
 
   sub_comp <- diversity_stats %>% filter(Metric == metric)
-
-  sanitize <- function(x) gsub("-", "_", x)
-  g1 <- sanitize(sub_comp$group1)
-  g2 <- sanitize(sub_comp$group2)
-
-  safe_names <- paste(g1, g2, sep = "-")
-  orig_names <- paste(sub_comp$group1, sub_comp$group2, sep = "-")
-  safe_to_orig <- setNames(orig_names, safe_names)
-
-  p_values <- setNames(sub_comp$p.adj, safe_names)
-
-  letters <- multcompView::multcompLetters(p_values)$Letters
-  names(letters) <- safe_to_orig[names(letters)]
-
-  letters_df <- enframe(letters,
-                        name = groups_colname,
-                        value = glue("{metric}_letter"))
-
+  p_values <- sub_comp$p.adj # holm p adjusted values by default
+  names(p_values) <- paste(sub_comp$group1,sub_comp$group2, sep = "-")
+  
+  letters_df <-  enframe(multcompView::multcompLetters(p_values)$Letters,
+                         name = groups_colname,
+                         value = glue("{metric}_letter"))
   comp_letters <<- comp_letters %>% left_join(letters_df)
 })
 
