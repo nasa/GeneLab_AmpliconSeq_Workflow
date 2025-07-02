@@ -489,7 +489,7 @@ ggsave(filename = glue("{diff_abund_out_dir}/{output_prefix}asv_sparsity_plot.pn
        plot = sparsity_plot, width = 14, height = 10, dpi = 300, units = "in")
 
 # Get unique group comparison as a matrix
-pairwise_comp.m <- utils::combn(metadata[,group] %>% unique, 2)
+pairwise_comp.m <- utils::combn((metadata[,group] %>% unique %>% sort), 2)
 pairwise_comp_df <- pairwise_comp.m %>% as.data.frame 
 
 colnames(pairwise_comp_df) <- map_chr(pairwise_comp_df,
@@ -498,10 +498,10 @@ comparisons <- colnames(pairwise_comp_df)
 names(comparisons) <- comparisons
 
 # Write out contrasts table
-comparison_names <- paste0("(", pairwise_comp_df[1,], ")v(", pairwise_comp_df[2,], ")")
+comparison_names <- paste0("(", pairwise_comp_df[2,], ")v(", pairwise_comp_df[1,], ")")
 contrasts_df <- data.frame(row_index = c("1", "2"))
 for(i in seq_along(comparison_names)) {
-  contrasts_df[[comparison_names[i]]] <- c(pairwise_comp_df[1,i], pairwise_comp_df[2,i])
+  contrasts_df[[comparison_names[i]]] <- c(pairwise_comp_df[2,i], pairwise_comp_df[1,i])
 }
 colnames(contrasts_df)[1] <- ""
 write_csv(x = contrasts_df,
@@ -516,18 +516,17 @@ walk(pairwise_comp_df, function(col){
   group1 <- col[1]
   group2 <- col[2]
   
-df <- results(deseq_modeled, contrast = c(group, group1, group2)) %>%
+df <- results(deseq_modeled, contrast = c(group, group2, group1)) %>%
   data.frame() %>%
   rownames_to_column(feature) %>% 
   set_names(c(feature ,
-              glue("baseMean_({group1})v({group2})"),
-              glue("Log2fc_({group1})v({group2})"),
-              glue("lfcSE_({group1})v({group2})"), 
-              glue("Stat_({group1})v({group2})"), 
-              glue("P.value_({group1})v({group2})"),
-              glue("Adj.p.value_({group1})v({group2})") 
+              glue("baseMean_({group2})v({group1})"),
+              glue("Log2fc_({group2})v({group1})"),
+              glue("lfcSE_({group2})v({group1})"), 
+              glue("Stat_({group2})v({group1})"), 
+              glue("P.value_({group2})v({group1})"),
+              glue("Adj.p.value_({group2})v({group1})") 
             ))
-
             
   merged_stats_df <<- merged_stats_df %>% 
                           dplyr::left_join(df, join_by(!!feature))
@@ -649,7 +648,7 @@ walk(pairwise_comp_df, function(col){
   plot_height_inches <- 8.33
   p_val <- 0.1 #also logfc cutoff?
   
-  deseq_res <- results(deseq_modeled, contrast = c(group, group1, group2))
+  deseq_res <- results(deseq_modeled, contrast = c(group, group2, group1))
   volcano_data <- as.data.frame(deseq_res)
   
   
@@ -657,13 +656,13 @@ walk(pairwise_comp_df, function(col){
   volcano_data$significant <- volcano_data$padj <= p_val #also logfc cutoff?
   
   ######Long x-axis label adjustments##########
-  x_label <- glue("Log2 Fold Change\n\n( {group1} vs {group2} )")
+  x_label <- glue("Log2 Fold Change\n\n( {group2} vs {group1} )")
   label_length <- nchar(x_label)
   max_allowed_label_length <- plot_width_inches * 10
   
   # Construct x-axis label with new line breaks if was too long
   if (label_length > max_allowed_label_length){
-    x_label <- glue("Log2 Fold Change\n\n( {group1} \n vs \n {group2} )")
+    x_label <- glue("Log2 Fold Change\n\n( {group2} \n vs \n {group1} )")
   }
   #######################################
   
@@ -695,7 +694,7 @@ walk(pairwise_comp_df, function(col){
   # Replace space in group name with underscore 
   group1 <- str_replace_all(group1, "[:space:]+", "_")
   group2 <- str_replace_all(group2, "[:space:]+", "_")
-  ggsave(filename = glue("{output_prefix}({group1})v({group2})_volcano.png"),
+  ggsave(filename = glue("{output_prefix}({group2})v({group1})_volcano.png"),
          plot = p,
          width = plot_width_inches, 
          height = plot_height_inches, 

@@ -381,7 +381,7 @@ tse <-  mia::makeTreeSummarizedExperimentFromPhyloseq(ps)
 
 
 # Get unique group comparison as a matrix
-pairwise_comp.m <- utils::combn(metadata[,group] %>% unique, 2)
+pairwise_comp.m <- utils::combn((metadata[,group] %>% unique %>% sort), 2)
 pairwise_comp_df <- pairwise_comp.m %>% as.data.frame 
 
 colnames(pairwise_comp_df) <- map_chr(pairwise_comp_df,
