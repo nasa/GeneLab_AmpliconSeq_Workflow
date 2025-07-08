@@ -473,7 +473,7 @@ tryCatch({
       # Extract group name from the first group-specific column
       group_name <- str_replace(group_cols[1], paste0("^[a-zA-Z_]+_", group), "")
       # Create comparison name
-      comparison_name <- glue("({ref_group})v({group_name})")
+      comparison_name <- glue("({group_name})v({ref_group})")
       
       new_colnames <- c(
         feature,  # Keep the feature column name

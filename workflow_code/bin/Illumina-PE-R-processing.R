@@ -210,7 +210,10 @@ dna <- DNAStringSet(getSequences(seqtab.nochim))
     # downloading reference R taxonomy object (at some point this will be stored somewhere on GeneLab's server and we won't download it, but should leave the code here, just commented out)
 cat("\n\n  Downloading reference database...\n\n")
 if ( target_region == "16S" ) { 
-    download.file("https://figshare.com/ndownloader/files/52846199", "SILVA_SSU_r138_2_2024.RData")
+    download.file(url = "https://figshare.com/ndownloader/files/52846199", 
+                  destfile = "SILVA_SSU_r138_2_2024.RData", 
+                  method = "libcurl", 
+                  headers = c("User-Agent" = "Mozilla/5.0"))
     # loading reference taxonomy object
     load("SILVA_SSU_r138_2_2024.RData")
     # removing downloaded file
@@ -219,7 +222,10 @@ if ( target_region == "16S" ) {
 
 } else if (target_region == "ITS" ) {
 
-    download.file("https://figshare.com/ndownloader/files/52846346", "UNITE_v2024_April2024.RData")    
+    download.file(url = "https://figshare.com/ndownloader/files/52846346", 
+                  destfile = "UNITE_v2024_April2024.RData", 
+                  method = "libcurl", 
+                  headers = c("User-Agent" = "Mozilla/5.0"))    
     # loading reference taxonomy object
     load("UNITE_v2024_April2024.RData")
     # removing downloaded file
@@ -229,7 +235,10 @@ if ( target_region == "16S" ) {
 
 } else if (target_region == "18S" ) {
 
-    download.file("https://figshare.com/ndownloader/files/46241917", "PR2_v4_13_March2021.RData")   
+    download.file(url = "https://figshare.com/ndownloader/files/46241917", 
+                  destfile = "PR2_v4_13_March2021.RData", 
+                  method = "libcurl", 
+                  headers = c("User-Agent" = "Mozilla/5.0"))   
     # https://github.com/pr2database/pr2database/releases/download/v4.14.0/pr2_version_4.14.0_SSU.decipher.trained.rds 
     # loading reference taxonomy object
     load("PR2_v4_13_March2021.RData")
