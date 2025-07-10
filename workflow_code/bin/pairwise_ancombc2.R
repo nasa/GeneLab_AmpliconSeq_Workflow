@@ -87,7 +87,7 @@ option_list <- list(
   
   
   make_option(c("z", "--remove-structural-zeros"), type="logical", default=FALSE, 
-              help="Should structural zeros (a.k.a ASVs with zeros count in atleast one group) be removed?
+              help="Should structural zeros (a.k.a ASVs with zeros count in at least one group) be removed?
               default is FALSE i.e. structural zeros won't be removed",
               action= "store_true", metavar= "FALSE"),
   
@@ -172,10 +172,10 @@ library(scales)
 # ---------------------------- Functions ------------------------------------- #
 
 process_taxonomy <- function(taxonomy, prefix='\\w__') {
-  #function to process a metaphlan2 taxonopmy assigment table
+  #function to process a metaphlan2 taxonomy assignment table
   #1. ~ file_path is a string specifying the taxonomic assignment file name
   #2 prefix ~ is a regular expression specifying the characters to remove
-  # from the taxon names  '\\w__'  for greengenes and 'D_\\d__' for SILVA
+  # from the taxon names  '\\w__'  for green genes and 'D_\\d__' for SILVA
   
   #taxon_levels <- c("kingdom","phylum","class","order",
   #                  "family","genus","species", "strain")
@@ -188,7 +188,7 @@ process_taxonomy <- function(taxonomy, prefix='\\w__') {
     #delete the taxonomy prefix
     taxonomy[,rank] <- gsub(pattern = prefix, x = taxonomy[, rank],
                             replacement = '')
-    # Delete _numuber at the end of taxonomy names inserted by the new version of DECIPHER
+    # Delete _number at the end of taxonomy names inserted by the new version of DECIPHER
     taxonomy[,rank] <- gsub(pattern ="_[0-9]+$", x = taxonomy[, rank], replacement = '')
     indices <- which(is.na(taxonomy[,rank]))
     taxonomy[indices, rank] <- rep(x = "Other", times=length(indices)) 
@@ -271,7 +271,7 @@ find_bad_taxa <- function(cnd){
   return(bad_taxa)
 }
 
-# A function to run ANCOMBC2 while handlixnxg commxon 
+# A function to run ANCOMBC2 while handling common errors
 ancombc2 <- function(data, ...) {
   tryCatch(
     ANCOMBC::ancombc2(data = data, ...),
@@ -349,9 +349,9 @@ metadata <- read_csv(metadata_file)  %>% as.data.frame()
 rownames(metadata) <- metadata[[samples_column]]
 
 # Write out Sample Table
-write_csv(x = metadata %>%
-            select(!!sym(samples_column), !!sym(group)),
-          file = glue("{diff_abund_out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
+# write_csv(x = metadata %>%
+#             select(!!sym(samples_column), !!sym(group)),
+#           file = glue("{diff_abund_out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
 
 
 # -------------------------- Read Feature table  -------------------------- #
@@ -562,17 +562,17 @@ uniq_comps <- str_replace_all(new_colnames, ".+_(\\(.+\\))", "\\1") %>% unique()
 uniq_comps <- uniq_comps[-match(feature, uniq_comps)]
 
 # Write out contrasts table
-contrasts_df <- data.frame(row_index = c("1", "2"))
-for(i in seq_along(uniq_comps)) {
-  groups_vec <- uniq_comps[i] %>%
-    str_replace_all("\\)v\\(", ").vs.(") %>% 
-    str_remove_all("\\(|\\)") %>%
-    str_split(".vs.") %>% unlist
-  contrasts_df[[uniq_comps[i]]] <- c(groups_vec[1], groups_vec[2])
-}
-colnames(contrasts_df)[1] <- ""
-write_csv(x = contrasts_df,
-          file = glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
+# contrasts_df <- data.frame(row_index = c("1", "2"))
+# for(i in seq_along(uniq_comps)) {
+#   groups_vec <- uniq_comps[i] %>%
+#     str_replace_all("\\)v\\(", ").vs.(") %>% 
+#     str_remove_all("\\(|\\)") %>%
+#     str_split(".vs.") %>% unlist
+#   contrasts_df[[uniq_comps[i]]] <- c(groups_vec[1], groups_vec[2])
+# }
+# colnames(contrasts_df)[1] <- ""
+# write_csv(x = contrasts_df,
+#           file = glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
 
 # ------ Sort columns by group comparisons --------#
 # Create a data frame containing only the feature/ASV column

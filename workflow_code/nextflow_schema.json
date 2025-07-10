@@ -187,7 +187,7 @@
         "multiqc_config": {
             "type": "string",
             "default": "config/multiqc.config",
-            "description": "Path to a custome multiqc config file."
+            "description": "Path to a custom multiqc config file."
         },
         "diff_abund_method": {
             "type": "string",
@@ -206,7 +206,7 @@
         },
         "remove_struc_zeros": {
             "type": "boolean",
-            "description": "Should structural zeros (a.k.a ASVs with zeros count in atleast one group) be removed? default is false i.e. structural zeros will be retained. Options are true or false."
+            "description": "Should structural zeros (a.k.a ASVs with zeros count in at least one group) be removed? default is false i.e. structural zeros will be retained. Options are true or false."
         },
         "remove_rare": {
             "type": "boolean",
@@ -215,7 +215,7 @@
         "prevalence_cutoff": {
             "type": "integer",
             "default": 0,
-            "description": "If --remove_rare is true, a numerical fraction between 0 and 1. Taxa with prevalences(the proportion of samples in which the taxon is present) less than this will be excluded from diversity and diffrential abundance analysis. Default is 0 , i.e. do not exclude any taxa. For example, to exclude taxa that are not present in at least 15% of the samples set it to 0.15."
+            "description": "If --remove_rare is true, a numerical fraction between 0 and 1. Taxa with prevalences(the proportion of samples in which the taxon is present) less than this will be excluded from diversity and differential abundance analysis. Default is 0 , i.e. do not exclude any taxa. For example, to exclude taxa that are not present in at least 15% of the samples set it to 0.15."
         },
         "library_cutoff": {
             "type": "integer",

@@ -2,7 +2,7 @@
 
 ###############################################################################
 # AUTHOR : OLABIYI ADEREMI OBAYOMI
-# DESCRIPTION: A script to write to perform pairwise ANCOM BC1 diffrential abundance testing.
+# DESCRIPTION: A script to write to perform pairwise ANCOM BC1 differential abundance testing.
 # E-mail: obadbotanist@yahoo.com
 # Created: November 2024
 # example: Rscript pairwise_ancombc1.R \
@@ -84,7 +84,7 @@ option_list <- list(
               metavar="100"),
   
   make_option(c("z", "--remove-structural-zeros"), type="logical", default=FALSE, 
-              help="Should structural zeros (a.k.a ASVs with zeros count in atleast one group) be removed?
+              help="Should structural zeros (a.k.a ASVs with zeros count in at least one group) be removed?
               default is FALSE i.e. structural zeros won't be removed",
               action= "store_true", metavar= "FALSE"),  
   
@@ -169,10 +169,10 @@ library(scales)
 # ---------------------------- Functions ------------------------------------- #
 
 process_taxonomy <- function(taxonomy, prefix='\\w__') {
-  #function to process a metaphlan2 taxonopmy assigment table
+  #function to process a metaphlan2 taxonomy assignment table
   #1. ~ file_path is a string specifying the taxonomic assignment file name
   #2 prefix ~ is a regular expression specifying the characters to remove
-  # from the taxon names  '\\w__'  for greengenes and 'D_\\d__' for SILVA
+  # from the taxon names  '\\w__'  for green genes and 'D_\\d__' for SILVA
   
   #taxon_levels <- c("kingdom","phylum","class","order",
   #                  "family","genus","species", "strain")
@@ -185,7 +185,7 @@ process_taxonomy <- function(taxonomy, prefix='\\w__') {
     #delete the taxonomy prefix
     taxonomy[,rank] <- gsub(pattern = prefix, x = taxonomy[, rank],
                             replacement = '')
-    # Delete _numuber at the end of taxonomy names inserted by the new version of DECIPHER
+    # Delete _number at the end of taxonomy names inserted by the new version of DECIPHER
     taxonomy[,rank] <- gsub(pattern ="_[0-9]+$", x = taxonomy[, rank], replacement = '')
     indices <- which(is.na(taxonomy[,rank]))
     taxonomy[indices, rank] <- rep(x = "Other", times=length(indices)) 
@@ -287,7 +287,8 @@ assay_suffix <- opt[["assay-suffix"]]
 prevalence_cutoff <- opt[["prevalence-cutoff"]] # 0.15 (15%)
 # sample / library read count cutoff
 library_cutoff <- opt[["library-cutoff"]]  # 100
-diff_abund_out_dir <- "differential_abundance/ancombc1/"
+out_dir <- "differential_abundance/"
+diff_abund_out_dir <- glue("{out_dir}ancombc1/")
 if(!dir.exists(diff_abund_out_dir)) dir.create(diff_abund_out_dir, recursive = TRUE)
 
 
@@ -297,7 +298,7 @@ rownames(metadata) <- metadata[[samples_column]]
 
 # Write out Sample Table
 write_csv(x = metadata %>% select(!!sym(samples_column), !!sym(group)),
-          file = glue("{diff_abund_out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
+          file = glue("{out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
 
 # -------------------------- Read Feature table  -------------------------- #
 feature_table <- read_delim(file = feature_table_file) %>% as.data.frame()
@@ -397,7 +398,7 @@ for(i in seq_along(comparison_names)) {
 }
 colnames(contrasts_df)[1] <- ""
 write_csv(x = contrasts_df,
-          file =  glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
+          file =  glue("{out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
 
 
 

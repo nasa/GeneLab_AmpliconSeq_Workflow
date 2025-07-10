@@ -45,7 +45,7 @@ option_list <- list(
   
   make_option(c("-s", "--samples-column"), type="character", default="Sample Name", 
               help="Column in metadata containing the sample names in the feature table. \
-                    Deafault: 'Sample Name' ",
+                    Default: 'Sample Name' ",
               metavar="Sample Name"),
   
   make_option(c("-o", "--output-prefix"), type="character", default="", 
@@ -152,19 +152,19 @@ remove_rare_features <- function(feature_table, cut_off_percent=3/4){
   # Define a cut-off for determining what's rare
   cut_off <- cut_off_percent * ncol(feature_table)
   # Get the occurrence for each feature
-  feature_occurence <- rowSums(feature_table > 0)
+  feature_occurrence <- rowSums(feature_table > 0)
   # Get names of the abundant features
-  abund_features <- names(feature_occurence[feature_occurence >= cut_off])
+  abund_features <- names(feature_occurrence[feature_occurrence >= cut_off])
   # Remove rare features
   abun_features.m <- feature_table[abund_features,]
   return(abun_features.m)
 }
 
 process_taxonomy <- function(taxonomy, prefix='\\w__') {
-  # Function to process a taxonopmy assignment table
+  # Function to process a taxonomy assignment table
   #1. ~ taxonomy is a string specifying the taxonomic assignment file name
   #2 prefix ~ is a regular expression specifying the characters to remove
-  # from the taxon names  '\\w__'  for greengenes and 'D_\\d__' for SILVA
+  # from the taxon names  '\\w__'  for green genes and 'D_\\d__' for SILVA
   
   
   taxonomy <- apply(X = taxonomy, MARGIN = 2, FUN = as.character) 
@@ -175,7 +175,7 @@ process_taxonomy <- function(taxonomy, prefix='\\w__') {
     #delete the taxonomy prefix
     taxonomy[,rank] <- gsub(pattern = prefix, x = taxonomy[, rank],
                             replacement = '')
-    # Delete _numuber at the end of taxonomy names inserted by the new version of DECIPHER
+    # Delete _number at the end of taxonomy names inserted by the new version of DECIPHER
     taxonomy[,rank] <- gsub(pattern ="_[0-9]+$", x = taxonomy[, rank], replacement = '')
     indices <- which(is.na(taxonomy[,rank]))
     taxonomy[indices, rank] <- rep(x = "Other", times=length(indices)) 
@@ -468,7 +468,7 @@ dont_group <- c("phylum")
 # In percentage
 thresholds <- c(phylum=1,class=3, order=3, family=8, genus=8, species=9)
 # Convert from wide to long format
-relAbundace_tbs_rare_grouped <- map2(.x = taxon_levels,
+relAbundance_tbs_rare_grouped <- map2(.x = taxon_levels,
                                      .y = taxon_tables, 
                                      .f = function(taxon_level=.x,
                                                    taxon_table=.y){
@@ -515,10 +515,10 @@ if(number_of_samples >=  30 ){
     plot_width <- 14
 }
 # Make sample plots
-walk2(.x = relAbundace_tbs_rare_grouped, .y = taxon_levels, 
-                           .f = function(relAbundace_tb, taxon_level){
+walk2(.x = relAbundance_tbs_rare_grouped, .y = taxon_levels, 
+                           .f = function(relAbundance_tb, taxon_level){
                              
-                             df <- relAbundace_tb %>%
+                             df <- relAbundance_tb %>%
                                left_join(metadata %>% rownames_to_column("samples"))
                              
                           p <- ggplot(data =  df, mapping = aes(x= !!sym(x), y=!!sym(y) )) +
@@ -552,7 +552,7 @@ thresholds <- c(phylum=1,class=2, order=2, family=2, genus=2, species=2)
 group_rare <- TRUE
 maximum_number_of_taxa <- 500
 
-group_relAbundace_tbs <- map2(.x = taxon_levels, .y = taxon_tables, 
+group_relAbundance_tbs <- map2(.x = taxon_levels, .y = taxon_tables, 
                                      .f = function(taxon_level=.x, taxon_table=.y){
                                        
                                        taxon_table <- as.data.frame(taxon_table %>% t()) 
@@ -600,10 +600,10 @@ if(plot_width < 7.5) {
   plot_width <- 50
 }
 
-walk2(.x = group_relAbundace_tbs, .y = taxon_levels, 
-                           .f = function(relAbundace_tb=.x, taxon_level=.y){
+walk2(.x = group_relAbundance_tbs, .y = taxon_levels, 
+                           .f = function(relAbundance_tb=.x, taxon_level=.y){
                              
-                             p <- ggplot(data =  relAbundace_tb %>%
+                             p <- ggplot(data =  relAbundance_tb %>%
                                            mutate(X=str_wrap(!!sym(groups_colname),
                                                              width = 10) # wrap long group names
                                                   )
