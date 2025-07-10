@@ -287,7 +287,8 @@ assay_suffix <- opt[["assay-suffix"]]
 prevalence_cutoff <- opt[["prevalence-cutoff"]] # 0.15 (15%)
 # sample / library read count cutoff
 library_cutoff <- opt[["library-cutoff"]]  # 100
-diff_abund_out_dir <- "differential_abundance/ancombc1/"
+out_dir <- "differential_abundance/"
+diff_abund_out_dir <- glue("{out_dir}ancombc1/")
 if(!dir.exists(diff_abund_out_dir)) dir.create(diff_abund_out_dir, recursive = TRUE)
 
 
@@ -297,7 +298,7 @@ rownames(metadata) <- metadata[[samples_column]]
 
 # Write out Sample Table
 write_csv(x = metadata %>% select(!!sym(samples_column), !!sym(group)),
-          file = glue("{diff_abund_out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
+          file = glue("{out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
 
 # -------------------------- Read Feature table  -------------------------- #
 feature_table <- read_delim(file = feature_table_file) %>% as.data.frame()
@@ -397,7 +398,7 @@ for(i in seq_along(comparison_names)) {
 }
 colnames(contrasts_df)[1] <- ""
 write_csv(x = contrasts_df,
-          file =  glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
+          file =  glue("{out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
 
 
 

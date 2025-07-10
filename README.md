@@ -8,7 +8,7 @@
 
 ### Implementation Tools
 
-The current GeneLab Illumina amplicon sequencing data processing pipeline (AmpIllumina), [GL-DPPD-7104-C.md](../../Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md), is implemented as a [Nextflow](https://nextflow.io/) DSL2 workflow and utilizes [Singularity](https://docs.sylabs.io/guides/3.10/user-guide/introduction.html) containers, [Docker](https://docs.docker.com/get-started/) containers, or [conda](https://docs.conda.io/en/latest/) environments to install/run all tools. This workflow is run using the command line interface (CLI) of any unix-based system.  While knowledge of creating workflows in Nextflow is not required to run the workflow as is, [the Nextflow documentation](https://nextflow.io/docs/latest/index.html) is a useful resource for users who want to modify and/or extend this workflow.   
+The current GeneLab Illumina amplicon sequencing data processing pipeline (AmpIllumina), [GL-DPPD-7104-C.md](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md), is implemented as a [Nextflow](https://nextflow.io/) DSL2 workflow and utilizes [Singularity](https://docs.sylabs.io/guides/3.10/user-guide/introduction.html) containers, [Docker](https://docs.docker.com/get-started/) containers, or [conda](https://docs.conda.io/en/latest/) environments to install/run all tools. This workflow is run using the command line interface (CLI) of any unix-based system.  While knowledge of creating workflows in Nextflow is not required to run the workflow as is, [the Nextflow documentation](https://nextflow.io/docs/latest/index.html) is a useful resource for users who want to modify and/or extend this workflow.   
 
 ### Resource Requirements <!-- omit in toc -->
 
@@ -208,7 +208,7 @@ nextflow run main.nf \
 * `--group` - Column name in input CSV file containing groups to be compared (type: string, default: "groups")
 * `--samples_column` - Column name in input CSV file containing sample names (type: string, default: "sample_id")
 * `--remove_struc_zeros` - Whether to remove structural zeros when running ANCOMBC (type: boolean, default: false)
-* `--remove_rare` - Whether to filter out rare features and samples with low library sizes (type: boolean, default: false)
+* `--remove_rare` - Whether to filter out rare features and samples with low library sizes. Set this to true if using `prevalence_cutoff` or `library_cutoff` (type: boolean, default: false)
 * `--prevalence_cutoff` - Taxa with prevalence below this fraction will be excluded (type: float, default: 0)
 * `--library_cutoff` - Samples with library sizes below this threshold will be excluded (type: integer, default: 0)
 * `--output_prefix` - Prefix to add to output filenames, e.g. "Study1_" (type: string, default: "")

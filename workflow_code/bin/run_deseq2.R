@@ -345,8 +345,8 @@ rownames(metadata) <- metadata[[samples_column]]
 
 
 # Write out Sample Table
-write_csv(x = metadata %>% select(!!sym(samples_column), !!sym(group)),
-          file = glue("{diff_abund_out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
+# write_csv(x = metadata %>% select(!!sym(samples_column), !!sym(group)),
+#           file = glue("{diff_abund_out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
 
 
 # -------------------------- Read Feature table  -------------------------- #
@@ -498,14 +498,14 @@ comparisons <- colnames(pairwise_comp_df)
 names(comparisons) <- comparisons
 
 # Write out contrasts table
-comparison_names <- paste0("(", pairwise_comp_df[2,], ")v(", pairwise_comp_df[1,], ")")
-contrasts_df <- data.frame(row_index = c("1", "2"))
-for(i in seq_along(comparison_names)) {
-  contrasts_df[[comparison_names[i]]] <- c(pairwise_comp_df[2,i], pairwise_comp_df[1,i])
-}
-colnames(contrasts_df)[1] <- ""
-write_csv(x = contrasts_df,
-          file =  glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
+# comparison_names <- paste0("(", pairwise_comp_df[2,], ")v(", pairwise_comp_df[1,], ")")
+# contrasts_df <- data.frame(row_index = c("1", "2"))
+# for(i in seq_along(comparison_names)) {
+#   contrasts_df[[comparison_names[i]]] <- c(pairwise_comp_df[2,i], pairwise_comp_df[1,i])
+# }
+# colnames(contrasts_df)[1] <- ""
+# write_csv(x = contrasts_df,
+#           file =  glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
 
 # Retrieve statistics table
 merged_stats_df <-  data.frame(ASV=rownames(feature_table))
