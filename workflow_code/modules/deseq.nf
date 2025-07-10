@@ -16,6 +16,8 @@ process DESEQ  {
 
     output:
         path("differential_abundance/deseq2/"), emit: output_dir
+        path("differential_abundance/${meta.output_prefix}contrasts${meta.assay_suffix}.csv"), emit: contrasts_file, optional: true
+        path("differential_abundance/${meta.output_prefix}SampleTable${meta.assay_suffix}.csv"), emit: sample_table_file, optional: true
         path("versions.txt"), emit: version
 
     script:

@@ -341,7 +341,8 @@ assay_suffix <- opt[["assay-suffix"]]
 prevalence_cutoff <- opt[["prevalence-cutoff"]] # 0.15 (15%)
 # sample / library read count cutoff
 library_cutoff <- opt[["library-cutoff"]]  # 100
-diff_abund_out_dir <- "differential_abundance/ancombc2/"
+out_dir <- "differential_abundance/"
+diff_abund_out_dir <- glue("{out_dir}ancombc2/")
 if(!dir.exists(diff_abund_out_dir)) dir.create(diff_abund_out_dir, recursive = TRUE)
 
 # ------------------------ Read metadata ---------------------------------- #
@@ -349,9 +350,9 @@ metadata <- read_csv(metadata_file)  %>% as.data.frame()
 rownames(metadata) <- metadata[[samples_column]]
 
 # Write out Sample Table
-# write_csv(x = metadata %>%
-#             select(!!sym(samples_column), !!sym(group)),
-#           file = glue("{diff_abund_out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
+write_csv(x = metadata %>%
+            select(!!sym(samples_column), !!sym(group)),
+          file = glue("{out_dir}{output_prefix}SampleTable{assay_suffix}.csv"))
 
 
 # -------------------------- Read Feature table  -------------------------- #
@@ -562,17 +563,17 @@ uniq_comps <- str_replace_all(new_colnames, ".+_(\\(.+\\))", "\\1") %>% unique()
 uniq_comps <- uniq_comps[-match(feature, uniq_comps)]
 
 # Write out contrasts table
-# contrasts_df <- data.frame(row_index = c("1", "2"))
-# for(i in seq_along(uniq_comps)) {
-#   groups_vec <- uniq_comps[i] %>%
-#     str_replace_all("\\)v\\(", ").vs.(") %>% 
-#     str_remove_all("\\(|\\)") %>%
-#     str_split(".vs.") %>% unlist
-#   contrasts_df[[uniq_comps[i]]] <- c(groups_vec[1], groups_vec[2])
-# }
-# colnames(contrasts_df)[1] <- ""
-# write_csv(x = contrasts_df,
-#           file = glue("{diff_abund_out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
+contrasts_df <- data.frame(row_index = c("1", "2"))
+for(i in seq_along(uniq_comps)) {
+  groups_vec <- uniq_comps[i] %>%
+    str_replace_all("\\)v\\(", ").vs.(") %>% 
+    str_remove_all("\\(|\\)") %>%
+    str_split(".vs.") %>% unlist
+  contrasts_df[[uniq_comps[i]]] <- c(groups_vec[1], groups_vec[2])
+}
+colnames(contrasts_df)[1] <- ""
+write_csv(x = contrasts_df,
+          file = glue("{out_dir}{output_prefix}contrasts{assay_suffix}.csv"))
 
 # ------ Sort columns by group comparisons --------#
 # Create a data frame containing only the feature/ASV column
