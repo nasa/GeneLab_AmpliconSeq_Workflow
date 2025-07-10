@@ -46,7 +46,7 @@ option_list <- list(
   
   make_option(c("-s", "--samples-column"), type="character", default="Sample Name", 
               help="Column in metadata containing the sample names in the feature table. \
-                    Deafault: 'Sample Name' ",
+                    Default: 'Sample Name' ",
               metavar="Sample Name"),
   
   make_option(c("-o", "--output-prefix"), type="character", default="", 
@@ -105,7 +105,7 @@ opt_parser <- OptionParser(
   description = paste("Author: Olabiyi Aderemi Obayomi",
                       "\nEmail: olabiyi.a.obayomi@nasa.gov",
                       "\n A script to perform ASV beta diversity analysis.",
-                      "\nIt outputs a dendograms, pcoas and statistics tables. ",
+                      "\nIt outputs a dendrograms, pcoas and statistics tables. ",
                       sep="")
 )
 
@@ -228,8 +228,8 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
   return(ps)
 }
 
-# -----------    Hierarchical Clustering and dendogram plotting
-make_dendogram <- function(dist_obj, metadata, groups_colname,
+# -----------    Hierarchical Clustering and dendrogram plotting
+make_dendrogram <- function(dist_obj, metadata, groups_colname,
                            group_colors, legend_title){
   
   
@@ -242,7 +242,7 @@ make_dendogram <- function(dist_obj, metadata, groups_colname,
     left_join(metadata %>% 
                 rownames_to_column("label"))
   
-  dendogram <- ggplot() +
+  dendrogram <- ggplot() +
     geom_segment(data = segment_data, 
                  aes(x = x, y = y, xend = xend, yend = yend)
     ) +
@@ -262,7 +262,7 @@ make_dendogram <- function(dist_obj, metadata, groups_colname,
           legend.text = element_text(face = 'bold', size = 11))
   
   
-  return(dendogram)
+  return(dendrogram)
   
 }
 
@@ -359,9 +359,9 @@ remove_rare_features <- function(feature_table, cut_off_percent=3/4){
   # Define a cut-off for determining what's rare
   cut_off <- cut_off_percent * ncol(feature_table)
   # Get the occurrence for each feature
-  feature_occurence <- rowSums(feature_table > 0)
+  feature_occurrence <- rowSums(feature_table > 0)
   # Get names of the abundant features
-  abund_features <- names(feature_occurence[feature_occurence >= cut_off])
+  abund_features <- names(feature_occurrence[feature_occurrence >= cut_off])
   # Remove rare features
   abun_features.m <- feature_table[abund_features,]
   return(abun_features.m)
@@ -565,7 +565,7 @@ ps <- transform_phyloseq(feature_table, metadata,
                          method = normalization_method,
                          rarefaction_depth = rarefaction_depth)
 
-# ---------Clustering and dendogram plotting
+# ---------Clustering and dendrogram plotting
 
 # Extract normalized count table
 count_tab <- otu_table(ps)#[,1:10]
@@ -596,11 +596,11 @@ if(normalization_method == "vst"){
 # Calculate distance between samples
 dist_obj <- vegdist(t(count_tab), method = distance_method)
 
-# Make dendogram
-dendogram <- make_dendogram(dist_obj, metadata, groups_colname,
+# Make dendrogram
+dendrogram <- make_dendrogram(dist_obj, metadata, groups_colname,
                             group_colors, legend_title)
 
-# Save dendogram
+# Save dendrogram
 length_of_longest_label <- Reduce(max,sample_names %>% nchar())
 
 number_of_samples <- length(sample_names)
@@ -638,7 +638,7 @@ if(length_of_longest_label <= 14 ){
  }
  
 ggsave(filename = glue("{beta_diversity_out_dir}/{output_prefix}{distance_method}_dendrogram{assay_suffix}.png"),
-       plot = dendogram, width = dendo_width, height = dendo_height, 
+       plot = dendrogram, width = dendo_width, height = dendo_height, 
        dpi = 300, units = "in", limitsize = FALSE)
 
 

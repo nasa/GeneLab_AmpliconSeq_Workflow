@@ -61,7 +61,7 @@ if(params.help){
                                Example, ../GeneLab/a_GLDS-487_amplicon-sequencing_16s_illumina-1.txt. Default: null""")
   println("""  --isa_zip  [PATH] GLDS ISA ZIP file generated after running the processing pipeline with accession number as input.
                                Example, ../GeneLab/OSD-487_metadata_GLDS-487-ISA.zip. Default: null""")
-  println("    --runsheet  [PATH] A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. This is the value set to the paremater --csv_file when run the processing pipeline with a csv file as input otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input. Example '../GeneLab/GLfile.csv'.  Default: null")
+  println("    --runsheet  [PATH] A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. This is the value set to the parameter --csv_file when run the processing pipeline with a csv file as input otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input. Example '../GeneLab/GLfile.csv'.  Default: null")
   println("    --software_versions  [PATH] A file generated after running the processing pipeline listing the software versions used. Default: ../Metadata/software_versions.txt")
   println()
   println("Directories:")

@@ -46,7 +46,7 @@ option_list <- list(
   
   make_option(c("-s", "--samples-column"), type="character", default="Sample Name", 
               help="Column in metadata containing the sample names in the feature table. \
-                    Deafault: 'Sample Name' ",
+                    Default: 'Sample Name' ",
               metavar="Sample Name"),
   
   make_option(c("-o", "--output-prefix"), type="character", default="", 
@@ -190,9 +190,9 @@ remove_rare_features <- function(feature_table, cut_off_percent=3/4){
   # Define a cut-off for determining what's rare
   cut_off <- cut_off_percent * ncol(feature_table)
   # Get the occurrence for each feature
-  feature_occurence <- rowSums(feature_table > 0)
+  feature_occurrence <- rowSums(feature_table > 0)
   # Get names of the abundant features
-  abund_features <- names(feature_occurence[feature_occurence >= cut_off])
+  abund_features <- names(feature_occurrence[feature_occurrence >= cut_off])
   # Remove rare features
   abun_features.m <- feature_table[abund_features,]
   return(abun_features.m)

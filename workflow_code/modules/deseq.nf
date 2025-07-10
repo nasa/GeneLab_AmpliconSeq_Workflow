@@ -4,7 +4,7 @@ nextflow.enable.dsl = 2
 
 process DESEQ  {
 
-    tag "Runnning diffrential abundance using DESEQ2..."
+    tag "Runnning differential abundance using DESEQ2..."
     label "visualization"
 
     input:

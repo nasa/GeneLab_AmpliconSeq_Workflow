@@ -114,7 +114,7 @@ reverse_filtered_reads <- paste0(filtered_reads_dir, sample.names, filtered_file
 names(forward_filtered_reads) <- sample.names
 names(reverse_filtered_reads) <- sample.names
 
-    # running filering step
+    # running filtering step
     # reads are written to the files specified in the variables, the "filtered_out" object holds the summary results within R
 filtered_out <- filterAndTrim(fwd=forward_reads, forward_filtered_reads, reverse_reads, reverse_filtered_reads, truncLen=c(left_trunc,right_trunc), maxN=0, maxEE=c(left_maxEE,right_maxEE), truncQ=2, rm.phix=TRUE, compress=TRUE, multithread=10)
 

@@ -87,7 +87,7 @@ option_list <- list(
   
   
   make_option(c("z", "--remove-structural-zeros"), type="logical", default=FALSE, 
-              help="Should structural zeros (a.k.a ASVs with zeros count in atleast one group) be removed?
+              help="Should structural zeros (a.k.a ASVs with zeros count in at least one group) be removed?
               default is FALSE i.e. structural zeros won't be removed",
               action= "store_true", metavar= "FALSE"),
   
@@ -172,10 +172,10 @@ library(scales)
 # ---------------------------- Functions ------------------------------------- #
 
 process_taxonomy <- function(taxonomy, prefix='\\w__') {
-  #function to process a metaphlan2 taxonopmy assigment table
+  #function to process a metaphlan2 taxonomy assignment table
   #1. ~ file_path is a string specifying the taxonomic assignment file name
   #2 prefix ~ is a regular expression specifying the characters to remove
-  # from the taxon names  '\\w__'  for greengenes and 'D_\\d__' for SILVA
+  # from the taxon names  '\\w__'  for green genes and 'D_\\d__' for SILVA
   
   #taxon_levels <- c("kingdom","phylum","class","order",
   #                  "family","genus","species", "strain")
@@ -188,7 +188,7 @@ process_taxonomy <- function(taxonomy, prefix='\\w__') {
     #delete the taxonomy prefix
     taxonomy[,rank] <- gsub(pattern = prefix, x = taxonomy[, rank],
                             replacement = '')
-    # Delete _numuber at the end of taxonomy names inserted by the new version of DECIPHER
+    # Delete _number at the end of taxonomy names inserted by the new version of DECIPHER
     taxonomy[,rank] <- gsub(pattern ="_[0-9]+$", x = taxonomy[, rank], replacement = '')
     indices <- which(is.na(taxonomy[,rank]))
     taxonomy[indices, rank] <- rep(x = "Other", times=length(indices)) 
@@ -271,7 +271,7 @@ find_bad_taxa <- function(cnd){
   return(bad_taxa)
 }
 
-# A function to run ANCOMBC2 while handlixnxg commxon 
+# A function to run ANCOMBC2 while handling common errors
 ancombc2 <- function(data, ...) {
   tryCatch(
     ANCOMBC::ancombc2(data = data, ...),
