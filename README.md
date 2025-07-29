@@ -4,6 +4,12 @@
 
 <br>
 
+<p align="center">
+<a href="images/GL-amplicon-subwayplot.pdf"><img src="images/GL-amplicon-subwayplot.png"></a>
+</p>
+
+<br>
+
 ## General Workflow Info
 
 ### Implementation Tools
