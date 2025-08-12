@@ -125,7 +125,7 @@ export NXF_SINGULARITY_CACHEDIR=$(pwd)/singularity
 
 ### 4. Run the Workflow
 
-> ***Note:** All the commands in this step must be run from within the `NF_AmpIllumina_1.0.0` directory that was downloaded in [step 2](#2-download-the-workflow-files) above.*
+> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.0` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.0` directory.*
 
 For options and detailed help on how to run the workflow, run the following command:
 
@@ -166,7 +166,7 @@ nextflow run main.nf \
 
 **Required Parameters For All Approaches:**
 
-* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow 
+* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.0`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
 * `-resume` - Resumes  workflow execution using previously cached results
 * `-profile` – Specifies the configuration profile(s) to load (multiple options can be provided as a comma-separated list)
    * Software environment profile options (choose one):
