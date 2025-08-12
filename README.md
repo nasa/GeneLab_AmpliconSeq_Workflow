@@ -57,9 +57,9 @@ The table below details the default maximum resource allocations for individual 
 
 #### 1a. Install Nextflow and Conda
 
-Nextflow can be installed either through [Anaconda](https://anaconda.org/bioconda/nextflow) or as documented on the [Nextflow documentation page](https://www.nextflow.io/docs/latest/getstarted.html).
+Nextflow can be installed either through the [Anaconda bioconda channel](https://anaconda.org/bioconda/nextflow) or as documented on the [Nextflow documentation page](https://www.nextflow.io/docs/latest/getstarted.html).
 
-> Note: If you want to install Anaconda, we recommend installing a Miniconda version appropriate for your system, as instructed by [Happy Belly Bioinformatics](https://astrobiomike.github.io/unix/conda-intro#getting-and-installing-conda).  
+> Note: If you wish to install conda, we recommend installing a Miniforge version appropriate for your system, as documented on the [conda-forge website](https://conda-forge.org/download/), where you can find basic binaries for most systems. More detailed miniforge documentation is available in the [miniforge github repository](https://github.com/conda-forge/miniforge).
 > 
 > Once conda is installed on your system, you can install the latest version of Nextflow by running the following commands:
 > 
@@ -80,7 +80,7 @@ Singularity is a container platform that allows usage of containerized software.
 
 We recommend installing Singularity on a system wide level as per the associated [documentation](https://docs.sylabs.io/guides/3.10/admin-guide/admin_quickstart.html).
 
-> Note: Singularity is also available through [Anaconda](https://anaconda.org/conda-forge/singularity).
+> Note: Singularity is also available through the [Anaconda conda-forge channel](https://anaconda.org/conda-forge/singularity).
 
 > Note: Alternatively, Docker can be used in place of Singularity. To get started with Docker, see the [Docker CE installation documentation](https://docs.docker.com/engine/install/).
 
@@ -125,7 +125,7 @@ export NXF_SINGULARITY_CACHEDIR=$(pwd)/singularity
 
 ### 4. Run the Workflow
 
-> ***Note:** All the commands in this step must be run from within the `NF_AmpIllumina_1.0.0` directory that was downloaded in [step 2](#2-download-the-workflow-files) above.*
+> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.0` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.0` directory.*
 
 For options and detailed help on how to run the workflow, run the following command:
 
@@ -166,7 +166,7 @@ nextflow run main.nf \
 
 **Required Parameters For All Approaches:**
 
-* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow 
+* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.0`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
 * `-resume` - Resumes  workflow execution using previously cached results
 * `-profile` – Specifies the configuration profile(s) to load (multiple options can be provided as a comma-separated list)
    * Software environment profile options (choose one):
@@ -244,7 +244,7 @@ Once you've downloaded the workflow template, you can modify the parameters in t
 
 #### 5a. Main Outputs
 
-The outputs from this pipeline are documented in the [GL-DPPD-7104-C](../../Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md) processing protocol.
+The outputs from this pipeline are documented in the [GL-DPPD-7104-C](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md) processing protocol.
 
 #### 5b. Resource Logs
 
@@ -306,7 +306,7 @@ The software for the Amplicon Seq workflow is released under the [NASA Open Sour
 
 ### 3rd Party Software Licenses
 
-Licenses for the 3rd party open source software utilized in the Amplicon Seq workflow can be found in the [3rd_Party_Licenses sub-directory](License/3rd_Party_Licenses/Amplicon_3rd_Party_Software.md). 
+Licenses for the 3rd party open source software utilized in the Amplicon Seq workflow can be found in the [3rd_Party_Licenses sub-directory](License/3rd_Party_Licenses). 
 
 <br>
 

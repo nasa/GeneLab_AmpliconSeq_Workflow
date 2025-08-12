@@ -2,7 +2,6 @@ name: R_diversity
 channels:
     - conda-forge
     - bioconda
-    - defaults
 dependencies:
     - r-base=4.4.2 
     - r-optparse=1.7.5
