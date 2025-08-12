@@ -5,7 +5,7 @@
 <br>
 
 <p align="center">
-<a href="images/GL-amplicon-subwayplot.pdf"><img src="images/GL-amplicon-subwayplot.png"></a>
+<a href="images/GL-amplicon-subwayplot.pdf"><img src="images/GL-amplicon-subwayplot.svg"></a>
 </p>
 
 <br>
@@ -244,7 +244,7 @@ Once you've downloaded the workflow template, you can modify the parameters in t
 
 #### 5a. Main Outputs
 
-The outputs from this pipeline are documented in the [GL-DPPD-7104-C](../../Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md) processing protocol.
+The outputs from this pipeline are documented in the [GL-DPPD-7104-C](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md) processing protocol.
 
 #### 5b. Resource Logs
 
@@ -306,7 +306,7 @@ The software for the Amplicon Seq workflow is released under the [NASA Open Sour
 
 ### 3rd Party Software Licenses
 
-Licenses for the 3rd party open source software utilized in the Amplicon Seq workflow can be found in the [3rd_Party_Licenses sub-directory](License/3rd_Party_Licenses/Amplicon_3rd_Party_Software.md). 
+Licenses for the 3rd party open source software utilized in the Amplicon Seq workflow can be found in the [3rd_Party_Licenses sub-directory](License/3rd_Party_Licenses). 
 
 <br>
 

@@ -2,7 +2,6 @@ name: dada-decipher-biomformat
 channels:
     - conda-forge
     - bioconda
-    - defaults
 dependencies:
     - r-base=4.4.2
     - bioconductor-dada2=1.34.0

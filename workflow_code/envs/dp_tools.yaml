@@ -1,7 +1,6 @@
 name: dp_tools
 channels:
     - conda-forge
-    - defaults
 dependencies:
     - setuptools
     - zip=3.0
