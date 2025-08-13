@@ -1,0 +1,5 @@
+name: zip
+channels:
+    - conda-forge
+dependencies:
+    - zip==3.0
