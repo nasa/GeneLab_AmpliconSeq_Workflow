@@ -34,7 +34,7 @@ if(params.help){
   println("  --assay_suffix [STRING]  Genelab's assay suffix. Default: _GLAmpSeq.")
   println("  --output_prefix [STRING] Unique name to tag onto output files. Default: empty string.")
   println("  --V_V_guidelines_link [URL] Genelab metagenomics data validation and verification guidelines link. Default: https://genelab-tools.arc.nasa.gov/confluence/pages/viewpage.action?pageId=2428598.")
-  println("  --target_files [STRING] A comma separated list of target files and/or directories to find in processing_info.zip. Default: main.nf,nextflow.config,unique-sample-IDs.txt,envs/,bin/,config/,modules/.")
+  println("  --target_files [STRING] A comma separated list of target files to find in processing_info.zip. Default: command.txt,nextflow_processing_info_GLAmpliseq.txt.")
   println()
   println("File Suffixes:")
   println("      --raw_suffix [STRING]  Suffix used for the raw reads during processing. Only applicable when input reads are single-end. Default: _raw.fastq.gz.")  
@@ -55,7 +55,6 @@ if(params.help){
   println("Files:")
   println("    --run_command  [PATH] File containing the nextflow run command used in processing. Default: ./processing_scripts/command.txt")
   println("    --processing_commands  [PATH] File containing all the process names and scripts used during processing. Default: ./processing_scripts/nextflow_processing_info_GLAmpliseq.txt")
-  println("    --samples  [PATH] A single column file with sample ids on each line generated after running the processing pipeline. Default: ./unique-sample-IDs.txt")
   println("You only need to supply one of --assay_table or --isa_zip. If you supply both it will use only the assay_table.")
   println("""  --assay_table  [PATH] GLDS assay table generated after running the processing pipeline with accession number as input.
                                Example, ../GeneLab/a_GLDS-487_amplicon-sequencing_16s_illumina-1.txt. Default: null""")
@@ -123,7 +122,6 @@ log.info """${c_blue}
          Files:
          Nextflow Command: ${params.run_command}
          Processing Commands : ${params.processing_commands}
-         Samples: ${params.samples}
          Assay Table: ${params.assay_table}
          ISA Zip: ${params.isa_zip}
          Input Runsheet: ${params.runsheet}
@@ -156,7 +154,6 @@ workflow {
 
        // ---------------------- Input channels -------------------------------- //
        // Input files
-       sample_ids_file     =  Channel.fromPath(params.samples, checkIfExists: true)
        software_versions   =  Channel.fromPath(params.software_versions, checkIfExists: true)
 
        // Runsheet used to execute the processing workflow
@@ -209,14 +206,12 @@ workflow {
 
 
         // Files and directories to be package in processing_info.zip
-        files_and_dirs_ch = Channel.of(params.run_command, params.processing_commands, 
-                                       params.samples)
+        files_and_dirs_ch = Channel.of(params.run_command, params.processing_commands)
                                        .collect()
-                                       .map{ run_command, processing_commands, samples -> 
+                                       .map{ run_command, processing_commands -> 
                                             tuple( 
                                                    file(run_command, checkIfExists: true),
-                                                   file(processing_commands, checkIfExists: true),
-                                                   file(samples, checkIfExists: true)
+                                                   file(processing_commands, checkIfExists: true)                                                   file(samples, checkIfExists: true)
                                                  ) }
 
 
@@ -231,7 +226,7 @@ workflow {
         CLEAN_FASTQC_PATHS(FastQC_Outputs_dir)
 
        // Automatic verification and validation
-        VALIDATE_PROCESSING(GLDS_ch, sample_ids_file, 
+        VALIDATE_PROCESSING(GLDS_ch, runsheet_ch, 
                             GENERATE_README.out.readme,
                             PACKAGE_PROCESSING_INFO.out.zip, 
                             CLEAN_FASTQC_PATHS.out.clean_dir,

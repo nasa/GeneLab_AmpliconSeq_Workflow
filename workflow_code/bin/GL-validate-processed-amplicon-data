@@ -17,8 +17,9 @@ parser = argparse.ArgumentParser(description = "This program validates a GeneLab
 required = parser.add_argument_group('required arguments')
 
 required.add_argument("-g", "--GLDS-ID", help = 'GLDS ID (e.g. "GLDS-276")', action = "store", required = True)
-required.add_argument("-s", "--sample-IDs-file", help = "Single-column file with unique file-name prefixes for each sample",
-                       action = "store", required = True)
+required.add_argument("-r", "--runsheet", help = "A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. \
+                        This is the value set to the parameter --csv_file when run the processing pipeline with a csv file as input \
+                        otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input.", action = "store", required = True)
 parser.add_argument("--output", 
                     help = 'Name of output log file (default: "<GLDS-ID>_<output_prefix>amplicon-validation.log", with appended prefix if one is provided)',
                     default = "", action = "store")
@@ -139,12 +140,16 @@ def check_expected_directories(validation_log, expected_dirs):
             report_failure(validation_log, "The directory '" + str(directory) + "' was expected but not found.")
 
 def read_samples(file_path):
-    """ Reading unique sample names into list """
+    """ Getting sample names from runsheet and reading them into list """
+
+    sample_names = []
 
     with open(file_path) as f:
-        sample_names = f.read().splitlines()
+        next(f)  # skip header line
+        for line in f:
+            sample_names.append(line.strip().split(",")[0])
 
-    return(sample_names)
+    return sample_names
 
 def check_multiqc_outputs(validation_log, sample_names, multiqc_zip, 
                           multiqc_stats_file_path, R1_suffix,
@@ -417,7 +422,7 @@ def main():
     # Check if the expected directories exist
     check_expected_directories(validation_log, expected_dirs)
     # Retrieve unique sample names from the sample IDs file
-    sample_names = read_samples(args.sample_IDs_file)
+    sample_names = read_samples(args.runsheet)
 
     # Check raw multiqc outputs
     raw_multiqc_zip = os.path.join(fastqc_dir, raw_multiqc_zip)
