@@ -185,14 +185,14 @@ process GENERATE_CURATION_TABLE {
         path(FastQC_Outputs)
 
     output:
-        path("${GLDS_accession}_${output_prefix}-associated-file-names.tsv"), emit: curation_table
+        path("${GLDS_accession}_${output_prefix}associated-file-names.tsv"), emit: curation_table
 
     script:
         def INPUT_TABLE = params.assay_table ? "--assay-table ${input_table}" :  "--isa-zip  ${input_table}"
         """
 
         GL-gen-amplicon-file-associations-table ${INPUT_TABLE} \\
-                    --output '${GLDS_accession}_${output_prefix}-associated-file-names.tsv' \\
+                    --output '${GLDS_accession}_${output_prefix}associated-file-names.tsv' \\
                     --GLDS-ID  '${GLDS_accession}' \\
                     --output-prefix '${output_prefix}' \\
                     --assay_suffix '${assay_suffix}' \\
@@ -211,7 +211,8 @@ process GENERATE_CURATION_TABLE {
                     --fastqc_dir '${FastQC_Outputs}' \\
                     --filtered_reads_dir '${filtered_reads_dir}' \\
                     --trimmed_reads_dir '${trimmed_reads_dir}' \\
-                    --final_outputs_dir '${final_outputs_dir}'  ${params.file_association_extra}
+                    --final_outputs_dir '${final_outputs_dir}' \\
+                    --use-sample-names-from-assay-table  ${params.file_association_extra}
 
         """
 }

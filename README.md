@@ -288,7 +288,7 @@ The outputs of the post-processing workflow are described below:
 **Post processing workflow output files** 
  - Post_processing/FastQC_Outputs/filtered_multiqc_GLAmpSeq_report.zip (Filtered sequence MultiQC report with paths purged) 
  - Post_processing/FastQC_Outputs/raw_multiqc_GLAmpSeq_report.zip (Raw sequence MultiQC report with paths purged)
- - Post_processing/<GLDS_accession>_-associated-file-names.tsv (File association table for OSDR curation)
+ - Post_processing/<GLDS_accession>_associated-file-names.tsv (File association table for OSDR curation)
  - Post_processing/<GLDS_accession>_amplicon-validation.log (Automated verification and validation log file)
  - Post_processing/processed_md5sum_GLAmpSeq.tsv (md5sums for the files published on OSDR)
  - Post_processing/processing_info_GLAmpSeq.zip  (Zip file containing all files used to run the workflow and required logs with paths purged) 
