@@ -125,7 +125,7 @@ process VALIDATE_PROCESSING {
                val(raw_suffix), val(raw_R1_suffix), val(raw_R2_suffix),
                val(primer_trimmed_suffix), val(primer_trimmed_R1_suffix), val(primer_trimmed_R2_suffix),
                val(filtered_suffix), val(filtered_R1_suffix), val(filtered_R2_suffix)
-        path(sample_ids_file)
+        path(runsheet)
         path(README)
         path(processing_info) 
         path(FastQC_Outputs)
@@ -142,7 +142,7 @@ process VALIDATE_PROCESSING {
              --output '${GLDS_accession}_${output_prefix}amplicon-validation.log' \\
              --GLDS-ID '${GLDS_accession}' \\
              --readme '${README}' \\
-             --sample-IDs-file '${sample_ids_file}' \\
+             --runsheet '${runsheet}' \\
              --V_V_guidelines_link '${V_V_guidelines_link}' \\
              --output-prefix '${output_prefix}' \\
              --zip_targets '${target_files}' \\
