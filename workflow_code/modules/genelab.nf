@@ -88,28 +88,20 @@ process GENERATE_README {
     tag "Generating README for ${OSD_accession}"
     input:
         tuple val(name), val(email),
-              val(OSD_accession), val(protocol_id),
-              val(FastQC_Outputs), val(Filtered_Sequence_Data),
-              val(Trimmed_Sequence_Data), val(Final_Outputs)
-        path(processing_info)
+              val(OSD_accession), val(protocol_id)
 
     output:
         path("README${params.assay_suffix}.txt"), emit: readme
 
     script:
         """    
-        GL-gen-processed-amplicon-readme \\
-             --GLDS-ID '${OSD_accession}' \\
-             --output 'README${params.assay_suffix}.txt' \\
+        GL-gen-processed-data-amplicon-readme-updated.py \\
+             --osd-id '${OSD_accession}' \\
              --name '${name}' \\
              --email '${email}' \\
-             --protocol_ID '${protocol_id}' \\
+             --protocol-ID '${protocol_id}' \\
              --assay_suffix '${params.assay_suffix}' \\
-             --processing_zip_file '${processing_info}' \\
-             --fastqc_dir '${FastQC_Outputs}' \\
-             --filtered_reads_dir '${Filtered_Sequence_Data}' \\
-             --trimmed_reads_dir '${Trimmed_Sequence_Data}' \\
-             --final_outputs_dir  '${Final_Outputs}' ${params.readme_extra}
+             ${params.readme_extra}
         """
 
 }

@@ -166,11 +166,7 @@ workflow {
 
        // Input Value channels
        OSD_ch    =  Channel.of([params.name, params.email,
-                                params.OSD_accession, params.protocol_id,
-                                params.FastQC_Outputs, 
-                                params.Filtered_Sequence_Data,
-                                params.Trimmed_Sequence_Data,
-                                params.Final_Outputs])
+                                params.OSD_accession, params.protocol_id])
 
        GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.output_prefix,
                                 params.target_files, params.assay_suffix,
@@ -219,7 +215,7 @@ workflow {
         PACKAGE_PROCESSING_INFO(files_and_dirs_ch)
 
 
-        GENERATE_README(OSD_ch, PACKAGE_PROCESSING_INFO.out.zip)
+        GENERATE_README(OSD_ch)
 
         
         FastQC_Outputs_dir  =  Channel.fromPath(params.FastQC_Outputs, type: 'dir',  checkIfExists: true)
