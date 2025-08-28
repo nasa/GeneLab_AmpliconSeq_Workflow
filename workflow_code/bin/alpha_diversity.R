@@ -417,15 +417,21 @@ ggsave(filename = glue("{alpha_diversity_out_dir}{output_prefix}rarefaction_curv
 # Statistics table
 diversity_metrics <- c("Observed", "Chao1", "Shannon", "Simpson")
 names(diversity_metrics) <- diversity_metrics
+# Store original sample names before estimate_richness to preserve exact naming
+# (estimate_richness preserves sample order, but may mangle characters)
+original_sample_names <- phyloseq::sample_names(ps.rarefied)
+
 diversity.df <- estimate_richness(ps.rarefied, 
                                   measures = diversity_metrics) %>% 
-               select(-se.chao1) %>%
-               rownames_to_column("samples")
+               select(-se.chao1)
+
+# Restore original sample names
+diversity.df$samples <- original_sample_names
                
 
 merged_table  <- metadata %>%
   rownames_to_column("samples") %>%
-  inner_join(diversity.df)
+  inner_join(diversity.df, by = "samples")
 
 diversity_stats <- map_dfr(.x = diversity_metrics, function(metric){
   
