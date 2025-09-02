@@ -36,10 +36,11 @@ process PLOT_TAXONOMY  {
                   --assay-suffix  '${meta.assay_suffix}' \\
                   --output-prefix  '${meta.output_prefix}'
                  
-        Rscript -e "VERSIONS=sprintf('tidyverse %s\\nglue %s\\ntools %s\\n',  \\
+        Rscript -e "VERSIONS=sprintf('tidyverse %s\\nglue %s\\ntools %s\\nggplot2 %s\\n',  \\
                                     packageVersion('tidyverse'), \\
                                     packageVersion('glue'), \\
-                                    packageVersion('tools')); \\
+                                    packageVersion('tools'), \\
+                                    packageVersion('ggplot2')); \\
                     write(x=VERSIONS, file='versions.txt', append=TRUE)"
         """
 

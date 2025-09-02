@@ -62,6 +62,7 @@ if(params.help){
                                Example, ./GeneLab/OSD-487_metadata_GLDS-487-ISA.zip. Default: null""")
   println("    --runsheet  [PATH] A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. This is the value set to the parameter --csv_file when run the processing pipeline with a csv file as input otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input. Example './GeneLab/GLfile.csv'.  Default: null")
   println("    --software_versions  [PATH] A file generated after running the processing pipeline listing the software versions used. Default: ./Metadata/software_versions.txt")
+  println("    --rarefaction_depth  [PATH] A file generated after running the processing pipeline storing the rarefaction depth used. Default: ./workflow_outputs/Final_Outputs/alpha_diversity/*rarefaction_depth.txt")
   println()
   println("Directories:")
   println("    --Raw_Sequence_Data [PATH] A directory containing raw sequence and raw sequence outputs. Default: ./Raw_Sequence_Data/")
@@ -126,6 +127,7 @@ log.info """${c_blue}
          ISA Zip: ${params.isa_zip}
          Input Runsheet: ${params.runsheet}
          Software Versions: ${params.software_versions}
+         Rarefaction Depth: ${params.rarefaction_depth}
 
          Directories:
          Raw Reads Directory: ${params.Raw_Sequence_Data}
@@ -155,6 +157,10 @@ workflow {
        // ---------------------- Input channels -------------------------------- //
        // Input files
        software_versions   =  Channel.fromPath(params.software_versions, checkIfExists: true)
+       rarefaction_depth_file = Channel
+                                  .fromPath(params.rarefaction_depth)
+                                  .ifEmpty { file("empty_depth.txt").tap { it.text = "" } }
+
 
        // Runsheet used to execute the processing workflow
        runsheet_ch = Channel.fromPath(params.runsheet, checkIfExists: true)
@@ -166,11 +172,7 @@ workflow {
 
        // Input Value channels
        OSD_ch    =  Channel.of([params.name, params.email,
-                                params.OSD_accession, params.protocol_id,
-                                params.FastQC_Outputs, 
-                                params.Filtered_Sequence_Data,
-                                params.Trimmed_Sequence_Data,
-                                params.Final_Outputs])
+                                params.OSD_accession, params.protocol_id])
 
        GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.output_prefix,
                                 params.target_files, params.assay_suffix,
@@ -219,7 +221,7 @@ workflow {
         PACKAGE_PROCESSING_INFO(files_and_dirs_ch)
 
 
-        GENERATE_README(OSD_ch, PACKAGE_PROCESSING_INFO.out.zip)
+        GENERATE_README(OSD_ch)
 
         
         FastQC_Outputs_dir  =  Channel.fromPath(params.FastQC_Outputs, type: 'dir',  checkIfExists: true)
@@ -256,7 +258,7 @@ workflow {
                                   CLEAN_FASTQC_PATHS.out.clean_dir)
 
           // Write methods
-          GENERATE_PROTOCOL(software_versions, params.protocol_id)
+          GENERATE_PROTOCOL(software_versions, params.protocol_id, rarefaction_depth_file)
 
 
 }
