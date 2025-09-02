@@ -154,10 +154,6 @@ workflow {
                  ${c_reset}""")
         }
 
-        // Clean output_prefix: add underscore if needed
-        output_prefix = (params.output_prefix != "" && !params.output_prefix.endsWith("-")) ? 
-                        params.output_prefix + "_" : params.output_prefix
-
        // ---------------------- Input channels -------------------------------- //
        // Input files
        software_versions   =  Channel.fromPath(params.software_versions, checkIfExists: true)
@@ -178,14 +174,14 @@ workflow {
        OSD_ch    =  Channel.of([params.name, params.email,
                                 params.OSD_accession, params.protocol_id])
 
-       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, output_prefix,
+       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.output_prefix_clean(),
                                 params.target_files, params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 
                                 params.filtered_R1_suffix, params.filtered_R2_suffix])
 
-       suffix_ch =  Channel.of([params.GLDS_accession, output_prefix, params.assay_suffix,
+       suffix_ch =  Channel.of([params.GLDS_accession, params.output_prefix_clean(), params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 
@@ -229,7 +225,7 @@ workflow {
 
         
         FastQC_Outputs_dir  =  Channel.fromPath(params.FastQC_Outputs, type: 'dir',  checkIfExists: true)
-        CLEAN_FASTQC_PATHS(FastQC_Outputs_dir, output_prefix)
+        CLEAN_FASTQC_PATHS(FastQC_Outputs_dir)
 
        // Automatic verification and validation
         VALIDATE_PROCESSING(GLDS_ch, runsheet_ch, 

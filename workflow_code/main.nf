@@ -251,10 +251,6 @@ workflow {
          }
      }
 
-         // Clean output_prefix: add underscore if needed
-     output_prefix = (params.output_prefix != "" && !params.output_prefix.endsWith("-")) ? 
-                     params.output_prefix + "_" : params.output_prefix
-
     
    // Capture software versions
    software_versions_ch = Channel.empty()
@@ -306,7 +302,7 @@ workflow {
     raw_fastqc_files = RAW_FASTQC.out.html.flatten().collect()
     
     RAW_MULTIQC("raw", params.multiqc_config,raw_fastqc_files)
-    ZIP_MULTIQC_RAW("raw", RAW_MULTIQC.out.report_dir, output_prefix)
+    ZIP_MULTIQC_RAW("raw", RAW_MULTIQC.out.report_dir)
 
     RAW_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
     RAW_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
@@ -324,12 +320,12 @@ workflow {
                                               sample_id, reads, isPaired -> reads instanceof List ? reads.each{file("${it}")}: file("${reads}")
                                               }.flatten().collect()
 
-        COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs, runsheet_ch, output_prefix)
+        COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs, runsheet_ch)
         TRIMMED_FASTQC(CUTADAPT.out.reads)
         trimmed_fastqc_files = TRIMMED_FASTQC.out.html.flatten().collect()
         
         TRIMMED_MULTIQC("filtered", params.multiqc_config, trimmed_fastqc_files)
-        ZIP_MULTIQC_TRIMMED("filtered", TRIMMED_MULTIQC.out.report_dir, output_prefix)
+        ZIP_MULTIQC_TRIMMED("filtered", TRIMMED_MULTIQC.out.report_dir)
 
         isPaired_ch = CUTADAPT.out.reads.map{ 
                                               sample_id, reads, isPaired -> isPaired
@@ -339,7 +335,7 @@ workflow {
                      .concat(isPaired_ch)
                      .collate(2)
         // Run dada2
-        RUN_R_TRIM(samples_ch, trimmed_reads, COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE.out.counts, output_prefix)
+        RUN_R_TRIM(samples_ch, trimmed_reads, COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE.out.counts)
 
         dada_counts = RUN_R_TRIM.out.counts
         dada_taxonomy = RUN_R_TRIM.out.taxonomy
@@ -368,7 +364,7 @@ workflow {
         samples_ch = runsheet_ch.first()
                      .concat(isPaired_ch)
                      .collate(2)
-        RUN_R_NOTRIM(samples_ch, raw_reads_ch, raw_read_suffix_ch, output_prefix)
+        RUN_R_NOTRIM(samples_ch, raw_reads_ch, raw_read_suffix_ch)
 
         dada_counts = RUN_R_NOTRIM.out.counts
         dada_taxonomy = RUN_R_NOTRIM.out.taxonomy
@@ -381,7 +377,7 @@ workflow {
 
 
     // Zip biom file
-    ZIP_BIOM(dada_biom, output_prefix)
+    ZIP_BIOM(dada_biom)
 
     ZIP_BIOM.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
@@ -393,7 +389,7 @@ workflow {
               "group" : "groups",
               "depth" : params.rarefaction_depth,
               "assay_suffix" : params.assay_suffix,
-              "output_prefix" : output_prefix,
+              "output_prefix" : params.output_prefix_clean(),
               "target_region" : params.target_region,
               "library_cutoff" : params.library_cutoff,
               "prevalence_cutoff" : params.prevalence_cutoff,
@@ -411,7 +407,7 @@ workflow {
               "group" : params.group,
               "depth" : params.rarefaction_depth,
               "assay_suffix" : params.assay_suffix,
-              "output_prefix" : output_prefix,
+              "output_prefix" : params.output_prefix_clean(),
               "target_region" : params.target_region,
               "library_cutoff" : params.library_cutoff,
               "prevalence_cutoff" : params.prevalence_cutoff,
