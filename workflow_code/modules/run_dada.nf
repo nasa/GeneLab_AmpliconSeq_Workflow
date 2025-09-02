@@ -14,15 +14,16 @@ process RUN_R_TRIM {
         tuple path(sample_IDs_file), val(isPaired)
         path(trimmed_reads)
         path(trimmed_read_counts)
+        val(output_prefix)
     output:
         path("Filtered_Sequence_Data/*${params.filtered_R1_suffix[-5..-1]}"), emit: reads
-        path("Filtered_Sequence_Data/${params.output_prefix}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
-        path("final_outputs/${params.output_prefix}taxonomy${params.assay_suffix}.tsv"), emit: taxonomy
-        path("final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.biom"), emit: biom
-        path("final_outputs/${params.output_prefix}ASVs${params.assay_suffix}.fasta"), emit: fasta
-        path("final_outputs/${params.output_prefix}read-count-tracking${params.assay_suffix}.tsv"), emit: read_count
-        path("final_outputs/${params.output_prefix}counts${params.assay_suffix}.tsv"), emit: counts
-        path("final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv"), emit: taxonomy_count
+        path("Filtered_Sequence_Data/${output_prefix}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
+        path("final_outputs/${output_prefix}taxonomy${params.assay_suffix}.tsv"), emit: taxonomy
+        path("final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.biom"), emit: biom
+        path("final_outputs/${output_prefix}ASVs${params.assay_suffix}.fasta"), emit: fasta
+        path("final_outputs/${output_prefix}read-count-tracking${params.assay_suffix}.tsv"), emit: read_count
+        path("final_outputs/${output_prefix}counts${params.assay_suffix}.tsv"), emit: counts
+        path("final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv"), emit: taxonomy_count
         path("versions.txt"), emit: version
     script:
         
@@ -52,7 +53,7 @@ process RUN_R_TRIM {
                            "${params.filtered_R1_suffix}" \
                            "${params.filtered_R2_suffix}" \
                            "final_outputs/" \
-                           "${params.output_prefix}" \
+                           "${output_prefix}" \
                            "${params.target_region}" \
                            "${params.concatenate_reads_only}" \
                            "${params.assay_suffix}"
@@ -75,15 +76,15 @@ process RUN_R_TRIM {
                           "${params.primer_trimmed_R1_suffix}" \
                           "${params.filtered_R1_suffix}" \
                           "final_outputs/" \
-                          "${params.output_prefix}" \
+                          "${output_prefix}" \
                           "${params.target_region}" \
                           "${params.assay_suffix}"
                           
         fi
         # Sort the taxonomy count by ASV id               
-        (head -n 1 final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv; \\
-            awk 'NR>1{print}' final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv | sort -V -k1) \\
-            > temp_tax_cont.tsv && mv temp_tax_cont.tsv final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv
+        (head -n 1 final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv; \\
+            awk 'NR>1{print}' final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv | sort -V -k1) \\
+            > temp_tax_cont.tsv && mv temp_tax_cont.tsv final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv
 
         R --vanilla --version  |grep "R version" > versions.txt
         get_R_package_version.R
@@ -102,15 +103,16 @@ process RUN_R_NOTRIM {
         tuple path(sample_IDs_file), val(isPaired)
         path(raw_reads)
         val(raw_read_suffix) //[R1,R2] or [R1]
+        val(output_prefix)
     output:
         path("Filtered_Sequence_Data/*${params.filtered_R1_suffix[-5..-1]}"), emit: reads
-        path("Filtered_Sequence_Data/${params.output_prefix}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
-        path("final_outputs/${params.output_prefix}taxonomy${params.assay_suffix}.tsv"), emit: taxonomy
-        path("final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.biom"), emit: biom
-        path("final_outputs/${params.output_prefix}ASVs${params.assay_suffix}.fasta"), emit: fasta
-        path("final_outputs/${params.output_prefix}read-count-tracking${params.assay_suffix}.tsv"), emit: read_count
-        path("final_outputs/${params.output_prefix}counts${params.assay_suffix}.tsv"), emit: counts
-        path("final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv"), emit: taxonomy_count
+        path("Filtered_Sequence_Data/${output_prefix}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
+        path("final_outputs/${output_prefix}taxonomy${params.assay_suffix}.tsv"), emit: taxonomy
+        path("final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.biom"), emit: biom
+        path("final_outputs/${output_prefix}ASVs${params.assay_suffix}.fasta"), emit: fasta
+        path("final_outputs/${output_prefix}read-count-tracking${params.assay_suffix}.tsv"), emit: read_count
+        path("final_outputs/${output_prefix}counts${params.assay_suffix}.tsv"), emit: counts
+        path("final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv"), emit: taxonomy_count
         path("versions.txt"), emit: version  
     script:
         """
@@ -136,7 +138,7 @@ process RUN_R_NOTRIM {
                             "${params.filtered_R1_suffix}" \
                             "${params.filtered_R2_suffix}" \
                             "final_outputs/" \
-                            "${params.output_prefix}" \
+                            "${output_prefix}" \
                             "${params.target_region}" \
                             "${params.concatenate_reads_only}" \
                             "${params.assay_suffix}"
@@ -157,15 +159,15 @@ process RUN_R_NOTRIM {
                            "${raw_read_suffix[0]}" \
                            "${params.filtered_R1_suffix}" \
                            "final_outputs/" \
-                           "${params.output_prefix}" \
+                           "${output_prefix}" \
                            "${params.target_region}" \
                            "${params.assay_suffix}"
 
         fi
         # Sort the taxonomy count by ASV id               
-        (head -n 1 final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv; \\
-            awk 'NR>1{print}' final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv | sort -V -k1) \\
-            > temp_tax_cont.tsv && mv temp_tax_cont.tsv final_outputs/${params.output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv
+        (head -n 1 final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv; \\
+            awk 'NR>1{print}' final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv | sort -V -k1) \\
+            > temp_tax_cont.tsv && mv temp_tax_cont.tsv final_outputs/${output_prefix}taxonomy-and-counts${params.assay_suffix}.tsv
         
          R --vanilla --version  |grep "R version" > versions.txt
          get_R_package_version.R

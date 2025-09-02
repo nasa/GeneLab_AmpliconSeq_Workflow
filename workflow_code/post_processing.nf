@@ -32,7 +32,7 @@ if(params.help){
   println("  --name [STRING] The analyst's full name. E.g. 'FirstName A. LastName'.  Default: FirstName A. LastName")
   println("  --email [STRING] The analyst's email address. E.g. 'mail@nasa.gov'.  Default: mail@nasa.gov")
   println("  --assay_suffix [STRING]  Genelab's assay suffix. Default: _GLAmpSeq.")
-  println("  --output_prefix [STRING] Unique name to tag onto output files. Default: empty string.")
+  println("  --output_prefix [STRING] Unique name to tag onto output files. Adds a "_" separator to the string if it is not empty and does not end with '_' or '-'. Default: empty string.")
   println("  --V_V_guidelines_link [URL] Genelab metagenomics data validation and verification guidelines link. Default: https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/main/README.md.")
   println("  --target_files [STRING] A comma separated list of target files to find in processing_info.zip. Default: command.txt,nextflow_processing_info_GLAmpSeq.txt.")
   println()
@@ -154,6 +154,10 @@ workflow {
                  ${c_reset}""")
         }
 
+        // Clean output_prefix: add underscore if needed
+        output_prefix = (params.output_prefix != "" && !params.output_prefix.endsWith("-")) ? 
+                        params.output_prefix + "_" : params.output_prefix
+
        // ---------------------- Input channels -------------------------------- //
        // Input files
        software_versions   =  Channel.fromPath(params.software_versions, checkIfExists: true)
@@ -174,14 +178,14 @@ workflow {
        OSD_ch    =  Channel.of([params.name, params.email,
                                 params.OSD_accession, params.protocol_id])
 
-       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.output_prefix,
+       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, output_prefix,
                                 params.target_files, params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 
                                 params.filtered_R1_suffix, params.filtered_R2_suffix])
 
-       suffix_ch =  Channel.of([params.GLDS_accession, params.output_prefix, params.assay_suffix,
+       suffix_ch =  Channel.of([params.GLDS_accession, output_prefix, params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 
@@ -225,7 +229,7 @@ workflow {
 
         
         FastQC_Outputs_dir  =  Channel.fromPath(params.FastQC_Outputs, type: 'dir',  checkIfExists: true)
-        CLEAN_FASTQC_PATHS(FastQC_Outputs_dir)
+        CLEAN_FASTQC_PATHS(FastQC_Outputs_dir, output_prefix)
 
        // Automatic verification and validation
         VALIDATE_PROCESSING(GLDS_ch, runsheet_ch, 

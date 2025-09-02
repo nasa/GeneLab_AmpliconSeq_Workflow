@@ -105,7 +105,7 @@ workflow{
                          "group" : params.group,
                          "depth" : params.rarefaction_depth,
                          "assay_suffix" : params.assay_suffix,
-                         "output_prefix" : params.output_prefix,
+                         "output_prefix" : meta.output_prefix,
                          "target_region" : params.target_region,
                          "library_cutoff" : params.library_cutoff,
                          "prevalence_cutoff" : params.prevalence_cutoff,

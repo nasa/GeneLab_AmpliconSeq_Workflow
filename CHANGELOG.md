@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- An underscore ("_") is now appended to the output prefix if params.output_prefix is not empty and does not end with "_" or "-" 
 - Workflow converted from Snakemake to Nextflow
 - Updated software versions:
   - MultiQC 1.27.1

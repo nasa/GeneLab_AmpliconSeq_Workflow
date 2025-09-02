@@ -64,15 +64,16 @@ process ZIP_MULTIQC {
     input:
         val(prefix)
         path(multiqc_dir)
+        val(output_prefix)
 
     output:
-        path("${params.output_prefix}${prefix}_multiqc${params.assay_suffix}_report.zip"), emit: report
+        path("${output_prefix}${prefix}_multiqc${params.assay_suffix}_report.zip"), emit: report
         path("versions.txt"), emit: version
 
     script:
         """
         # Zipping
-        zip -q -r ${params.output_prefix}${prefix}_multiqc${params.assay_suffix}_report.zip ${multiqc_dir}
+        zip -q -r ${output_prefix}${prefix}_multiqc${params.assay_suffix}_report.zip ${multiqc_dir}
         zip -h | grep "Zip" | sed -E 's/(Zip.+\\)).+/\\1/' > versions.txt
         """
 }

@@ -64,7 +64,7 @@ workflow {
     meta  = Channel.of(["samples": params.samples_column,
                         "group" : params.group,
                         "assay_suffix" : params.assay_suffix,
-                        "output_prefix" : params.output_prefix,
+                        "output_prefix" : meta.output_prefix,
                         "target_region" : params.target_region,
                         "library_cutoff" : params.library_cutoff,
                         "prevalence_cutoff" : params.prevalence_cutoff,

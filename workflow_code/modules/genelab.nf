@@ -5,6 +5,7 @@ process CLEAN_FASTQC_PATHS {
     tag "Purging genelab paths from MultiQC zip files in ${params.FastQC_Outputs}"
     input:
         path(FastQC_Outputs_dir)
+        val(output_prefix)
     output:
         path("${OUT_DIR}"), emit: clean_dir
     script:
@@ -24,7 +25,7 @@ process CLEAN_FASTQC_PATHS {
         echo "Purging paths from multiqc outputs"
         cd \${WORKDIR}/${OUT_DIR}/
         echo "Cleaning raw multiqc files with path info"
-        unzip ${params.output_prefix}raw_multiqc${params.assay_suffix}_report.zip && rm ${params.output_prefix}raw_multiqc${params.assay_suffix}_report.zip
+        unzip ${output_prefix}raw_multiqc${params.assay_suffix}_report.zip && rm ${output_prefix}raw_multiqc${params.assay_suffix}_report.zip
         cd raw_multiqc_report/raw_multiqc_data/
 
         # No reason not to just run it on all
@@ -33,10 +34,10 @@ process CLEAN_FASTQC_PATHS {
         cd \${WORKDIR}/${OUT_DIR}/
 
         echo "Re-zipping up raw multiqc"
-        zip -r ${params.output_prefix}raw_multiqc${params.assay_suffix}_report.zip raw_multiqc_report/ && rm -rf raw_multiqc_report/
+        zip -r ${output_prefix}raw_multiqc${params.assay_suffix}_report.zip raw_multiqc_report/ && rm -rf raw_multiqc_report/
 
         echo "Cleaning filtered multiqc files with path info..."
-        unzip ${params.output_prefix}filtered_multiqc${params.assay_suffix}_report.zip && rm ${params.output_prefix}filtered_multiqc${params.assay_suffix}_report.zip
+        unzip ${output_prefix}filtered_multiqc${params.assay_suffix}_report.zip && rm ${output_prefix}filtered_multiqc${params.assay_suffix}_report.zip
         cd filtered_multiqc_report/filtered_multiqc_data/
 
 
@@ -47,7 +48,7 @@ process CLEAN_FASTQC_PATHS {
 
 
         echo "Re-zipping up filtered multiqc..."
-        zip -r ${params.output_prefix}filtered_multiqc${params.assay_suffix}_report.zip filtered_multiqc_report/ && rm -rf filtered_multiqc_report/
+        zip -r ${output_prefix}filtered_multiqc${params.assay_suffix}_report.zip filtered_multiqc_report/ && rm -rf filtered_multiqc_report/
         cd \${WORKDIR}
 
         echo "Purging paths from multiqc outputs completed successfully..."
