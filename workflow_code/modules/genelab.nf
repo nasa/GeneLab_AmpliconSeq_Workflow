@@ -244,10 +244,11 @@ process GENERATE_PROTOCOL {
     input:
         path(software_versions)
         val(protocol_id)
+        path(rarefaction_depth)
     output:
         path("protocol.txt")
     script:
         """
-        generate_protocol.sh ${software_versions} ${protocol_id} > protocol.txt
+        generate_protocol_updated.sh ${software_versions} ${protocol_id} ${rarefaction_depth} > protocol.txt
         """
 }

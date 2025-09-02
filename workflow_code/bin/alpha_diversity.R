@@ -350,9 +350,13 @@ depth <- min(seq_per_sample)
 # insufficient for diversity analysis
 if(max(seq_per_sample) < 100){
  
-  print(seq_per_sample)
-  stop(glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100. \
-            Therefore, alpha diversity analysis cannot be performed."))
+  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure.txt")
+  writeLines(
+    text = glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100.
+Therefore, alpha diversity analysis cannot be performed."),
+    con = warning_file
+  )
+  quit(status = 0)
 } 
 
 for (count in seq_per_sample) {
@@ -363,6 +367,26 @@ for (count in seq_per_sample) {
     }
   
 }
+
+#Warning if rarefaction depth is below 500
+if (depth < 500) {
+  warning(glue("Rarefaction depth ({depth}) is between 100 and 500.
+Alpha diversity results may be unreliable."))
+}
+
+#----- Rarefy sample counts to even depth per sample
+ps.rarefied <- rarefy_even_depth(physeq = ASV_physeq,
+                                 sample.size = depth,
+                                 rngseed = 1,
+                                 replace = FALSE,
+                                 verbose = FALSE)
+
+# Write rarefaction depth used into file to be used in protocol
+depth_file <- glue("{alpha_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
+writeLines(
+  text = as.character(depth),
+  con = depth_file
+)
 
 #----- Rarefy sample counts to even depth per sample
 ps.rarefied <- rarefy_even_depth(physeq = ASV_physeq, 
