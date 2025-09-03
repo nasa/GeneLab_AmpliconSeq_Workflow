@@ -224,6 +224,8 @@ def deleteWS(string){
 }
 
 
+params.cleaned_prefix = (params.output_prefix && !params.output_prefix.endsWith("_") && !params.output_prefix.endsWith("-")) ? params.output_prefix + "_" : (params.output_prefix ?: "")
+
 
 workflow {
 

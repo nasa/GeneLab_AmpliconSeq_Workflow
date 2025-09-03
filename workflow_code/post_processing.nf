@@ -140,8 +140,13 @@ log.info """${c_blue}
 
 }
 
+
 include { CLEAN_FASTQC_PATHS; PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
            GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
+
+
+params.cleaned_prefix = (params.output_prefix && !params.output_prefix.endsWith("_") && !params.output_prefix.endsWith("-")) ? params.output_prefix + "_" : (params.output_prefix ?: "")
+
 
 workflow {
 
