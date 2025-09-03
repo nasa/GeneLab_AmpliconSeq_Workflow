@@ -34,7 +34,7 @@ process PLOT_TAXONOMY  {
                   --group '${meta.group}' \\
                   --samples-column '${meta.samples}' \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${params.output_prefix_clean()}'
+                  --output-prefix  '${params.cleaned_prefix}'
                  
         Rscript -e "VERSIONS=sprintf('tidyverse %s\\nglue %s\\ntools %s\\nggplot2 %s\\n',  \\
                                     packageVersion('tidyverse'), \\
@@ -54,7 +54,7 @@ workflow {
                          "group" : params.group,
                          "depth" : params.rarefaction_depth,
                          "assay_suffix" : params.assay_suffix,
-                         "output_prefix" : params.output_prefix_clean(),
+                         "output_prefix" : params.cleaned_prefix,
                          "target_region" : params.target_region,
                          "library_cutoff" : params.library_cutoff,
                          "prevalence_cutoff" : params.prevalence_cutoff,

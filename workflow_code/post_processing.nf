@@ -140,7 +140,6 @@ log.info """${c_blue}
 
 }
 
-
 include { CLEAN_FASTQC_PATHS; PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
            GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
 
@@ -174,14 +173,14 @@ workflow {
        OSD_ch    =  Channel.of([params.name, params.email,
                                 params.OSD_accession, params.protocol_id])
 
-       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.output_prefix_clean(),
+       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.cleaned_prefix,
                                 params.target_files, params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 
                                 params.filtered_R1_suffix, params.filtered_R2_suffix])
 
-       suffix_ch =  Channel.of([params.GLDS_accession, params.output_prefix_clean(), params.assay_suffix,
+       suffix_ch =  Channel.of([params.GLDS_accession, params.cleaned_prefix, params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 

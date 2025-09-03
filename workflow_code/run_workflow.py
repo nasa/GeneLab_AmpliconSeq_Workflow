@@ -65,11 +65,8 @@ params {{
 
     assay_suffix    = "{assay_suffix}"
     output_prefix   = "{output_prefix}"
-    // Computed parameter - evaluated when accessed
-    output_prefix_clean = {{ -> 
-        def prefix = params.output_prefix ?: ""
-        (prefix != "" && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix 
-    }}
+    cleaned_prefix = (params.output_prefix && !params.output_prefix.endsWith("_") && !params.output_prefix.endsWith("-")) ? params.output_prefix + "_" : (params.output_prefix ?: "")
+
     publishDir_mode = "{publishDir_mode}"
 
     // Suffixes

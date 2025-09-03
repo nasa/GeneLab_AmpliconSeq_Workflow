@@ -25,8 +25,8 @@ process ANCOMBC {
 
     output:
         path("differential_abundance/${method}/"), emit: output_dir
-        path("differential_abundance/${params.output_prefix_clean()}contrasts${meta.assay_suffix}.csv"), emit: contrasts_file, optional: true
-        path("differential_abundance/${params.output_prefix_clean()}SampleTable${meta.assay_suffix}.csv"), emit: sample_table_file, optional: true
+        path("differential_abundance/${params.cleaned_prefix}contrasts${meta.assay_suffix}.csv"), emit: contrasts_file, optional: true
+        path("differential_abundance/${params.cleaned_prefix}SampleTable${meta.assay_suffix}.csv"), emit: sample_table_file, optional: true
         path("versions.txt"), emit: version
 
     script:      
@@ -44,7 +44,7 @@ process ANCOMBC {
                   --group '${meta.group}' \\
                   --samples-column '${meta.samples}' \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${params.output_prefix_clean()}' \\
+                  --output-prefix  '${params.cleaned_prefix}' \\
                   --cpus ${task.cpus} \\
                   --target-region  '${meta.target_region}' \\
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
@@ -64,7 +64,7 @@ workflow {
     meta  = Channel.of(["samples": params.samples_column,
                         "group" : params.group,
                         "assay_suffix" : params.assay_suffix,
-                        "output_prefix" : params.output_prefix_clean(),
+                        "output_prefix" : params.cleaned_prefix,
                         "target_region" : params.target_region,
                         "library_cutoff" : params.library_cutoff,
                         "prevalence_cutoff" : params.prevalence_cutoff,

@@ -24,7 +24,7 @@ process CLEAN_FASTQC_PATHS {
         echo "Purging paths from multiqc outputs"
         cd \${WORKDIR}/${OUT_DIR}/
         echo "Cleaning raw multiqc files with path info"
-        unzip ${params.output_prefix_clean()}raw_multiqc${params.assay_suffix}_report.zip && rm ${params.output_prefix_clean()}raw_multiqc${params.assay_suffix}_report.zip
+        unzip ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip && rm ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip
         cd raw_multiqc_report/raw_multiqc_data/
 
         # No reason not to just run it on all
@@ -33,10 +33,10 @@ process CLEAN_FASTQC_PATHS {
         cd \${WORKDIR}/${OUT_DIR}/
 
         echo "Re-zipping up raw multiqc"
-        zip -r ${params.output_prefix_clean()}raw_multiqc${params.assay_suffix}_report.zip raw_multiqc_report/ && rm -rf raw_multiqc_report/
+        zip -r ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip raw_multiqc_report/ && rm -rf raw_multiqc_report/
 
         echo "Cleaning filtered multiqc files with path info..."
-        unzip ${params.output_prefix_clean()}filtered_multiqc${params.assay_suffix}_report.zip && rm ${params.output_prefix_clean()}filtered_multiqc${params.assay_suffix}_report.zip
+        unzip ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip && rm ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip
         cd filtered_multiqc_report/filtered_multiqc_data/
 
 
@@ -47,7 +47,7 @@ process CLEAN_FASTQC_PATHS {
 
 
         echo "Re-zipping up filtered multiqc..."
-        zip -r ${params.output_prefix_clean()}filtered_multiqc${params.assay_suffix}_report.zip filtered_multiqc_report/ && rm -rf filtered_multiqc_report/
+        zip -r ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip filtered_multiqc_report/ && rm -rf filtered_multiqc_report/
         cd \${WORKDIR}
 
         echo "Purging paths from multiqc outputs completed successfully..."
@@ -126,17 +126,17 @@ process VALIDATE_PROCESSING {
         path(Final_Outputs)
 
     output:
-        path("${GLDS_accession}_${params.output_prefix_clean()}amplicon-validation.log"), emit: log
+        path("${GLDS_accession}_${params.cleaned_prefix}amplicon-validation.log"), emit: log
 
     script:
         """
         GL-validate-processed-amplicon-data \\
-             --output '${GLDS_accession}_${params.output_prefix_clean()}amplicon-validation.log' \\
+             --output '${GLDS_accession}_${params.cleaned_prefix}amplicon-validation.log' \\
              --GLDS-ID '${GLDS_accession}' \\
              --readme '${README}' \\
              --runsheet '${runsheet}' \\
              --V_V_guidelines_link '${V_V_guidelines_link}' \\
-             --output-prefix '${params.output_prefix_clean()}' \\
+             --output-prefix '${params.cleaned_prefix}' \\
              --zip_targets '${target_files}' \\
              --assay_suffix '${assay_suffix}' \\
              --raw_suffix '${raw_suffix}' \\
@@ -177,16 +177,16 @@ process GENERATE_CURATION_TABLE {
         path(FastQC_Outputs)
 
     output:
-        path("${GLDS_accession}_${params.output_prefix_clean()}associated-file-names.tsv"), emit: curation_table
+        path("${GLDS_accession}_${params.cleaned_prefix}associated-file-names.tsv"), emit: curation_table
 
     script:
         def INPUT_TABLE = params.assay_table ? "--assay-table ${input_table}" :  "--isa-zip  ${input_table}"
         """
 
         GL-gen-amplicon-file-associations-table ${INPUT_TABLE} \\
-                    --output '${GLDS_accession}_${params.output_prefix_clean()}associated-file-names.tsv' \\
+                    --output '${GLDS_accession}_${params.cleaned_prefix}associated-file-names.tsv' \\
                     --GLDS-ID  '${GLDS_accession}' \\
-                    --output-prefix '${params.output_prefix_clean()}' \\
+                    --output-prefix '${params.cleaned_prefix}' \\
                     --assay_suffix '${assay_suffix}' \\
                     --raw_suffix '${raw_suffix}' \\
                     --raw_R1_suffix '${raw_R1_suffix}' \\
