@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/NF_AmpIllumina_1.0.1)
+
+### Added
+
+- Rarefaction depth checks to alpha diversity with warning/error based on depth levels
+- File output for rarefaction depth values for post-processing protocol use
+
+### Changed
+
+- Updated FastQC container source to biocontainers
+- Synchronized license table format with RNAseq license table
+- Fixed relative paths of output directories and Nextflow-generated reports (timeline, report, trace)
+- Fixed relative paths of input/output directories for post-processing workflow
+- Removed "samples" parameter ("unique-sample-IDs.txt") from post-processing workflow, now uses "GLfile.csv"
+- Use sample names from assay table for curation table generation
+- An underscore ("_") is now appended to the output prefix if params.output_prefix is not empty and does not end with "_" or "-"
+- Updated README generation script and linked it to workflow
+- Updated protocol generation script with rarefaction depth checks
+
+### Fixed
+
+- Fixed issue where alpha diversity fails after rarefaction plot
+- Fixed  issue with diversity.df mangled sample name characters caused by estimate_richness()
+
+<br>
+
+---
+
 ## [1.0.0](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/NF_AmpIllumina_1.0.0) 
 
 ### Added
@@ -34,7 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- An underscore ("_") is now appended to the output prefix if params.output_prefix is not empty and does not end with "_" or "-" 
 - Workflow converted from Snakemake to Nextflow
 - Updated software versions:
   - MultiQC 1.27.1
