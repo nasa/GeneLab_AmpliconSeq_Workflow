@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed issue where alpha diversity fails after rarefaction plot
-- Fixed  issue with diversity.df mangled sample name characters caused by estimate_richness()
+- Fixed issue with diversity.df mangled sample name characters caused by estimate_richness()
 
 <br>
 
