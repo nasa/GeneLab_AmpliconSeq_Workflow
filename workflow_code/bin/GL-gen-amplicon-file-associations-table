@@ -12,7 +12,7 @@ import pandas as pd
 import zipfile
 import re
 
-parser = argparse.ArgumentParser(description = "This program generates the file-assocations table needed by Curation for \
+parser = argparse.ArgumentParser(description = "This program generates the file-associations table needed by Curation for \
                                                newly processed amplicon datasets. It is intended to be run after `GL-validate-processed-data` \
                                                has been run successfully.")
 required = parser.add_argument_group('required arguments')
