@@ -213,7 +213,7 @@ workflow {
                                        .map{ run_command, processing_commands -> 
                                             tuple( 
                                                    file(run_command, checkIfExists: true),
-                                                   file(processing_commands, checkIfExists: true)                                                   file(samples, checkIfExists: true)
+                                                   file(processing_commands, checkIfExists: true)
                                                  ) }
 
 
