@@ -1,7 +1,8 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.cleaned_prefix = (params.output_prefix && params.output_prefix != "" && !params.output_prefix.endsWith("_") && !params.output_prefix.endsWith("-")) ? params.output_prefix + "_" : (params.output_prefix ?: "")
+def prefix = params.output_prefix ?: ""
+params.cleaned_prefix = (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
 
 // Terminal text color definitions
 c_back_bright_red = "\u001b[41;1m"
