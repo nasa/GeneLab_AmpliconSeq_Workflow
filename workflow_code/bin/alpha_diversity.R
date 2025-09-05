@@ -368,8 +368,20 @@ for (count in seq_per_sample) {
   
 }
 
-#Warning if rarefaction depth is below 500
-if (depth < 500) {
+# Error if the depth that ends up being used is also less than 100
+if(depth < 100){
+ 
+  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure.txt")
+  writeLines(
+    text = glue("The rarefaction depth being used in the analysis ({depth}) is less than 100.
+Therefore, alpha diversity analysis cannot be performed."),
+    con = warning_file
+  )
+  quit(status = 0)
+} 
+
+#Warning if rarefaction depth is between 100 and 500
+if (depth > 100 && depth < 500) {
   warning(glue("Rarefaction depth ({depth}) is between 100 and 500.
 Alpha diversity results may be unreliable."))
 }
