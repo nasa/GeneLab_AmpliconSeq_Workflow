@@ -206,9 +206,9 @@ workflow {
                                       }  
 
 
-        // If an assay table is provided use it as the input table otherwise use the provided ISA zip file
-        input_table_ch = Channel.fromPath( params.assay_table ? params.assay_table : params.isa_zip,
-                                          checkIfExists: true)
+        // If an assay table is provided use it as the input table otherwise use the provided ISA zip file - no longer needed, using GLfile.csv for GENERATE_CURATION_TABLE
+        //input_table_ch = Channel.fromPath( params.assay_table ? params.assay_table : params.isa_zip,
+          //                                checkIfExists: true)
 
 
         // Files and directories to be package in processing_info.zip
@@ -258,7 +258,7 @@ workflow {
 
           // Generate file association table for curation
           GENERATE_CURATION_TABLE(suffix_ch, file_label_ch, 
-                                  dir_label_ch, input_table_ch,
+                                  dir_label_ch, runsheet_ch,
                                   CLEAN_FASTQC_PATHS.out.clean_dir)
 
           // Write methods
