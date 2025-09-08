@@ -279,7 +279,6 @@ def write_input_file(runsheet_df):
             file.write(f"sample_id,forward,reverse,paired,groups\n")
             for _, row in runsheet_df.iterrows():
                 sample_id = row['Sample Name']
-                # Always use original paths from runsheet (works for both URLs and local files)
                 read1_path = row['read1_path']
                 read2_path = row['read2_path']
                 groups = row.get('groups', 'null')  # Use 'null' if groups column doesn't exist
@@ -288,7 +287,6 @@ def write_input_file(runsheet_df):
             file.write(f"sample_id,forward,paired,groups\n")
             for _, row in runsheet_df.iterrows():
                 sample_id = row['Sample Name']
-                # Always use original file path from runsheet (works for both URLs and local files)
                 read1_path = row['read1_path']
                 groups = row.get('groups', 'null')  # Use 'null' if groups column doesn't exist
                 file.write(f"{sample_id},{read1_path},false,{groups}\n")
@@ -332,7 +330,7 @@ def validate_primer_sequences(runsheet_df):
 def main():
     # Argument parser setup with short argument names and an automatic help option
     parser = argparse.ArgumentParser(
-        description='Generate workflow-compatible input files from GeneLab/OSDR accessions or local runsheets for the AmpliconSeq pipeline.',
+        description='Create runsheet from OSD or GLDS accession.',
         add_help=True,
         usage='%(prog)s [options]'  # Custom usage message
     )
