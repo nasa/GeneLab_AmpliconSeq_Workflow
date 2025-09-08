@@ -14,7 +14,6 @@ process GET_RUNSHEET {
     output:
         path("*_runsheet.csv"), emit: runsheet
         path("*.zip"), emit: zip
-        path("GLparams_file.csv"), emit: params_file
         path("GLfile.csv"), emit: input_file
         path("versions.txt"), emit: version
 
@@ -33,9 +32,6 @@ workflow {
     values = Channel.of([params.accession, params.target_region])
     GET_RUNSHEET(values)
     file_ch = GET_RUNSHEET.out.input_file
-                     .splitCsv(header:true)
-
-     params_ch = GET_RUNSHEET.out.params_file
                      .splitCsv(header:true)
 
 }

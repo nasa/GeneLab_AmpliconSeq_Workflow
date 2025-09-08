@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rarefaction depth checks to alpha diversity with warning/error based on depth levels
 - File output for rarefaction depth values for post-processing protocol use
+- Raw reads are now staged in main.nf and renamed with COPY_READS using sample names and raw read suffix parameters
 
 ### Changed
 
@@ -28,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed issue where alpha diversity fails after rarefaction plot
 - Fixed issue with diversity.df mangled sample name characters caused by estimate_richness()
+
+### Removed
+
+- Removed `GLparams_file.csv`, primer and target region info is now read from the runsheet
 
 <br>
 
