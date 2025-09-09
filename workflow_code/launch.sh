@@ -62,9 +62,9 @@ if [ ${MODE} == "processing" ]; then
 
     # Save the nextflow log to a file
     echo "Creating Nextflow processing info file..."
-    nextflow log ${RUN_NAME} -f name,script > processing_scripts/nextflow_processing_info_GLAmpliseq.txt
-    echo nextflow log ${RUN_NAME} -f name,script >> processing_scripts/nextflow_processing_info_GLAmpliseq.txt
-    echo "Nextflow processing info written to processing_scripts/nextflow_processing_info_GLAmpliseq.txt"
+    nextflow log ${RUN_NAME} -f name,script > processing_scripts/nextflow_processing_info_GLAmpSeq.txt
+    echo nextflow log ${RUN_NAME} -f name,script >> processing_scripts/nextflow_processing_info_GLAmpSeq.txt
+    echo "Nextflow processing info written to processing_scripts/nextflow_processing_info_GLAmpSeq.txt"
 
 
 elif [ ${MODE} == "post_processing" ];then

@@ -1,5 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
+
+
 //params.assay_suffix = "_GLAmpSeq"
 //params.group  = "groups"
 //params.samples_column = "Sample Name"
@@ -35,7 +37,7 @@ process ALPHA_DIVERSITY {
                   --samples-column '${meta.samples}' \\
                   --rarefaction-depth ${meta.depth}   \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${meta.output_prefix}' \\
+                  --output-prefix  '${params.cleaned_prefix}' \\
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
 
@@ -63,6 +65,7 @@ process BETA_DIVERSITY {
         path(taxonomy_table)
         path(metadata)
 
+
     output:
         path("beta_diversity/"), emit: output_dir
         path("versions.txt"), emit: version
@@ -77,7 +80,7 @@ process BETA_DIVERSITY {
                   --samples-column '${meta.samples}' \\
                   --rarefaction-depth ${meta.depth}   \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${meta.output_prefix}' \\
+                  --output-prefix  '${params.cleaned_prefix}' \\
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
         
@@ -105,7 +108,7 @@ workflow{
                          "group" : params.group,
                          "depth" : params.rarefaction_depth,
                          "assay_suffix" : params.assay_suffix,
-                         "output_prefix" : params.output_prefix,
+                         "output_prefix" : params.cleaned_prefix,
                          "target_region" : params.target_region,
                          "library_cutoff" : params.library_cutoff,
                          "prevalence_cutoff" : params.prevalence_cutoff,

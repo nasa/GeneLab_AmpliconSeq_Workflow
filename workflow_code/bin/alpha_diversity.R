@@ -350,9 +350,13 @@ depth <- min(seq_per_sample)
 # insufficient for diversity analysis
 if(max(seq_per_sample) < 100){
  
-  print(seq_per_sample)
-  stop(glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100. \
-            Therefore, alpha diversity analysis cannot be performed."))
+  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure.txt")
+  writeLines(
+    text = glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100.
+Therefore, alpha diversity analysis cannot be performed."),
+    con = warning_file
+  )
+  quit(status = 0)
 } 
 
 for (count in seq_per_sample) {
@@ -363,6 +367,38 @@ for (count in seq_per_sample) {
     }
   
 }
+
+# Error if the depth that ends up being used is also less than 100
+if(depth < 100){
+ 
+  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure.txt")
+  writeLines(
+    text = glue("The rarefaction depth being used in the analysis ({depth}) is less than 100.
+Therefore, alpha diversity analysis cannot be performed."),
+    con = warning_file
+  )
+  quit(status = 0)
+} 
+
+#Warning if rarefaction depth is between 100 and 500
+if (depth > 100 && depth < 500) {
+  warning(glue("Rarefaction depth ({depth}) is between 100 and 500.
+Alpha diversity results may be unreliable."))
+}
+
+#----- Rarefy sample counts to even depth per sample
+ps.rarefied <- rarefy_even_depth(physeq = ASV_physeq,
+                                 sample.size = depth,
+                                 rngseed = 1,
+                                 replace = FALSE,
+                                 verbose = FALSE)
+
+# Write rarefaction depth used into file to be used in protocol
+depth_file <- glue("{alpha_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
+writeLines(
+  text = as.character(depth),
+  con = depth_file
+)
 
 #----- Rarefy sample counts to even depth per sample
 ps.rarefied <- rarefy_even_depth(physeq = ASV_physeq, 
@@ -417,15 +453,21 @@ ggsave(filename = glue("{alpha_diversity_out_dir}{output_prefix}rarefaction_curv
 # Statistics table
 diversity_metrics <- c("Observed", "Chao1", "Shannon", "Simpson")
 names(diversity_metrics) <- diversity_metrics
+# Store original sample names before estimate_richness to preserve exact naming
+# (estimate_richness preserves sample order, but may mangle characters)
+original_sample_names <- phyloseq::sample_names(ps.rarefied)
+
 diversity.df <- estimate_richness(ps.rarefied, 
                                   measures = diversity_metrics) %>% 
-               select(-se.chao1) %>%
-               rownames_to_column("samples")
+               select(-se.chao1)
+
+# Restore original sample names
+diversity.df$samples <- original_sample_names
                
 
 merged_table  <- metadata %>%
   rownames_to_column("samples") %>%
-  inner_join(diversity.df)
+  inner_join(diversity.df, by = "samples")
 
 diversity_stats <- map_dfr(.x = diversity_metrics, function(metric){
   

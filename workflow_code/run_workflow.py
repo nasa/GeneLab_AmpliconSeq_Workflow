@@ -65,6 +65,8 @@ params {{
 
     assay_suffix    = "{assay_suffix}"
     output_prefix   = "{output_prefix}"
+
+
     publishDir_mode = "{publishDir_mode}"
 
     // Suffixes
@@ -233,7 +235,7 @@ process {{
           }}
 
     withName: ZIP_BIOM {{
-                  publishDir = [path: "${{params.final_outputs_dir}}${{params.output_prefix}}", mode: params.publishDir_mode]
+                  publishDir = [path: "${{params.final_outputs_dir}}", mode: params.publishDir_mode]
             }}
 
 //********************************** Diversity and differential abundance testing ********************************************//
@@ -242,7 +244,7 @@ process {{
                   container = "{container_diversity}"
                   cpus = {diversity_cpus}
                   memory = "{diversity_memory}"
-                  publishDir = [path: "${{params.final_outputs_dir}}${{params.output_prefix}}", mode: params.publishDir_mode]
+                  publishDir = [path: "${{params.final_outputs_dir}}", mode: params.publishDir_mode]
            }}
 
 

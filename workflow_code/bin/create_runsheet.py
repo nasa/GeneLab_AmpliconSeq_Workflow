@@ -11,24 +11,17 @@ import pandas as pd
 import requests 
 
 
-####################
-## 1.  For OSD ARG #
-####################
-# 1. Process the OSD arg to proper format
-# 2. Download the ISA file
-# 3. Convert to runsheet(s)
-# 4. Select which runsheet to use
+"""
+For accession-based runs:
+1. Downloads ISA archive from OSDR/GeneLab
+2. Converts ISA to runsheet using dp_tools
+3. Validates primer sequences for consistency and format
+4. Generates GLfile.csv for workflow input
 
-########################
-## 1. For runsheet arg #
-########################
-# 1. Select which runsheet to use
-
-##########################
-## 2. Neutral flow after #
-##########################
-# 1. Validate schema of runsheet
-# 2. Check if read_paths are URLs, prompt for download
+For local runsheet runs:
+1. Validates primer sequences for consistency and format
+2. Generates GLfile.csv for workflow input
+"""
 
 
 # Process OSD arg: if numeric, append OSD-, if OSD-# or GLDS-#, leave it
@@ -245,64 +238,7 @@ def check_runsheet_read_paths(runsheet_df):
 
     return uses_url
 
-def sample_IDs_from_local(runsheet_df, output_file='unique-sample-IDs.txt'):
-    # Check if the DataFrame is paired-end
-    paired_end = runsheet_df['paired_end'].eq(True).all()
 
-    with open(output_file, 'w') as file:
-        for index, row in runsheet_df.iterrows():
-            # Extract base names minus the suffixes
-            base_read1 = os.path.basename(row['read1_path']).replace(row['raw_R1_suffix'], '')
-
-            if paired_end:
-                base_read2 = os.path.basename(row['read2_path']).replace(row['raw_R2_suffix'], '')
-                # Check if base names match for paired-end data, necessary for snakemake arg expansion
-                if base_read1 != base_read2:
-                    print(f"Mismatch in sample IDs in row {index}: {base_read1} vs {base_read2}")
-                    sys.exit(1)
-            
-            # Write the base name to the file
-            file.write(f"{base_read1}\n")
-    
-    print(f"Unique sample IDs written to {output_file}")
-
-def handle_url_downloads(runsheet_df, output_file='unique-sample-IDs.txt'):
-    print("Downloading read files...")
-    # Check if the DataFrame is paired-end
-    paired_end = runsheet_df['paired_end'].eq(True).all()
-    # Write 'Sample Name' into unique-sample-IDs.txt
-    with open(output_file, 'w') as file:
-        for sample_name in runsheet_df['Sample Name']:
-            file.write(sample_name + '\n')
-
-    # Create ./raw_reads/ directory if it does not exist
-    raw_reads_dir = os.path.abspath('./raw_reads/')
-    if not os.path.exists(raw_reads_dir):
-        os.makedirs(raw_reads_dir)
-
-    # Initialize count for skipped downloads
-    skipped_downloads_count = 0
-    # Iterate over each row and download files if they don't exist
-    for _, row in runsheet_df.iterrows():
-        sample_id = row['Sample Name']
-        read1_path = os.path.join(raw_reads_dir, sample_id + row['raw_R1_suffix'])
-        read2_path = os.path.join(raw_reads_dir, sample_id + row['raw_R2_suffix']) if paired_end else None
-
-        # Download Read 1 if it doesn't exist
-        if not os.path.exists(read1_path):
-            download_url_to_file(row['read1_path'], read1_path)
-        else:
-            skipped_downloads_count += 1
-
-        # Download Read 2 if it doesn't exist and if paired_end
-        if paired_end and read2_path and not os.path.exists(read2_path):
-            download_url_to_file(row['read2_path'], read2_path)
-        elif paired_end and read2_path:
-            skipped_downloads_count += 1
-
-    # Print the number of skipped downloads
-    if skipped_downloads_count > 0:
-        print(f"{skipped_downloads_count} read file(s) were already present and were not downloaded.")
 
 def download_url_to_file(url, file_path, max_retries=3, timeout_seconds=120):
     retries = 0
@@ -329,32 +265,6 @@ def download_url_to_file(url, file_path, max_retries=3, timeout_seconds=120):
         print("Failed to download the read files.")
 
 
-def write_params(runsheet_df, uses_urls):
-    
-    # Extract necessary variables from runsheet_df
-    data_type = "PE" if runsheet_df['paired_end'].eq(True).all() else "SE"
-    raw_R1_suffix = runsheet_df['raw_R1_suffix'].unique()[0]
-    raw_R2_suffix = runsheet_df['raw_R2_suffix'].unique()[0] if data_type == "PE" else ""
-    f_primer = runsheet_df['F_Primer'].unique()[0]
-    r_primer = runsheet_df['R_Primer'].unique()[0] if data_type == "PE" else ""
-    target_region = runsheet_df['Parameter Value[Library Selection]'].unique()[0]
-
-    # Determine raw_reads_directory
-    if uses_urls:
-        raw_reads_directory = os.path.abspath('./raw_reads/') + '/'
-    else:
-        read1_path_dir = os.path.dirname(runsheet_df['read1_path'].iloc[0])
-        raw_reads_directory = os.path.abspath(read1_path_dir) + '/' if read1_path_dir else "./"
-
-    with open("GLparams_file.csv", "w") as f:
-        f.write("raw_reads_directory,raw_R1_suffix,raw_R2_suffix,f_primer,r_primer,target_region,data_type\n")
-        if data_type == "PE":
-            f.write(f"{raw_reads_directory},{raw_R1_suffix},{raw_R2_suffix},{f_primer},{r_primer},{target_region},{data_type}\n")
-        else:
-            f.write(f"{raw_reads_directory},{raw_R1_suffix},{f_primer},{r_primer},{target_region},{data_type}\n")
-
- 
-
 def write_input_file(runsheet_df):
     """ Write input file for the workflow..."""
 
@@ -362,28 +272,24 @@ def write_input_file(runsheet_df):
     # Check if the DataFrame is paired-end
     paired_end = runsheet_df['paired_end'].eq(True).all()
 
-    # Create ./raw_reads/ directory if it does not exist
-    raw_reads_dir = os.path.abspath('./raw_reads/')
-    if not os.path.exists(raw_reads_dir):
-        os.makedirs(raw_reads_dir)
-
     # Create input file
     with open("GLfile.csv", 'w') as file:
         
         if paired_end:
-            file.write(f"sample_id,forward,reverse,paired\n")
-            # Iterate over each row and download files if they don't exist
+            file.write(f"sample_id,forward,reverse,paired,groups\n")
             for _, row in runsheet_df.iterrows():
                 sample_id = row['Sample Name']
-                read1_path = os.path.join(raw_reads_dir, sample_id + row['raw_R1_suffix'])
-                read2_path = os.path.join(raw_reads_dir, sample_id + row['raw_R2_suffix'])
-                file.write(f"{sample_id},{read1_path},{read2_path},true\n")
+                read1_path = row['read1_path']
+                read2_path = row['read2_path']
+                groups = row.get('groups', 'null')  # Use 'null' if groups column doesn't exist
+                file.write(f"{sample_id},{read1_path},{read2_path},true,{groups}\n")
         else:
-            file.write(f"sample_id,forward,paired\n")
+            file.write(f"sample_id,forward,paired,groups\n")
             for _, row in runsheet_df.iterrows():
                 sample_id = row['Sample Name']
-                read1_path = os.path.join(raw_reads_dir, sample_id + row['raw_R1_suffix'])
-                file.write(f"{sample_id},{read1_path},false\n")
+                read1_path = row['read1_path']
+                groups = row.get('groups', 'null')  # Use 'null' if groups column doesn't exist
+                file.write(f"{sample_id},{read1_path},false,{groups}\n")
 
 
 # Check for single primer set, also check for invalid characters in primers used, exit if either
@@ -424,7 +330,7 @@ def validate_primer_sequences(runsheet_df):
 def main():
     # Argument parser setup with short argument names and an automatic help option
     parser = argparse.ArgumentParser(
-        description='Create Runsheet from Genelab ID.',
+        description='Create runsheet from OSD or GLDS accession.',
         add_help=True,
         usage='%(prog)s [options]'  # Custom usage message
     )
@@ -449,6 +355,7 @@ def main():
                         help='Specifies the runsheet for an OSD dataset by name. Only used if there are multiple datasets with the same target in the study.',
                         metavar='runsheet_name',
                         type=str)
+    
     
       
     # Check if no arguments were provided
@@ -502,14 +409,6 @@ def main():
                 # Check for primer file / invalid primers
                 validate_primer_sequences(runsheet_df)
 
-                # Create the 'unique-sample-IDs.txt' file and download read files if necessary
-                if uses_urls:
-                    handle_url_downloads(runsheet_df, output_file='unique-sample-IDs.txt')
-                else:
-                    sample_IDs_from_local(runsheet_df, output_file='unique-sample-IDs.txt')
-
-                # Create the config.yaml file
-                write_params(runsheet_df=runsheet_df, uses_urls=uses_urls)
                 # Create input file required by the workflow
                 write_input_file(runsheet_df=runsheet_df)
             else:

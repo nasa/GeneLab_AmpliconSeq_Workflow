@@ -1,6 +1,9 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+def prefix = params.output_prefix ?: ""
+params.cleaned_prefix = (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
+
 // Terminal text color definitions
 c_back_bright_red = "\u001b[41;1m";
 c_bright_green    = "\u001b[32;1m";
@@ -95,7 +98,7 @@ if (params.help) {
   println("Genelab specific arguements:")
   println("      --accession [STRING]  A Genelab accession number if the --input_file parameter is not set. If this parameter is set, it will ignore the --input_file parameter.")
   println("      --assay_suffix [STRING]  Genelabs assay suffix. Default: _GLAmpSeq.")
-  println("      --output_prefix [STRING] Unique name to tag onto output files. Default: empty string.")
+  println("      --output_prefix [STRING] Unique name to tag onto output files. Automatically appends '_' if not empty and does not end with '_' or '-'. Default: empty string.")
   println()
   println("Paths to existing conda environments to use otherwise a new one will be created using the yaml file in envs/")
   println("      --conda_fastqc [PATH] Path to a conda environment containing fastqc. Default: null.")
@@ -184,6 +187,9 @@ log.info """${c_blue}
 // Create GLDS runsheet
 include { GET_RUNSHEET } from "./modules/create_runsheet.nf"
 
+// Stage raw reads
+include { COPY_READS } from './modules/copy_reads.nf'
+
 // Read quality check and filtering
 include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
 include { ZIP_MULTIQC as ZIP_MULTIQC_RAW } from './modules/quality_assessment.nf'
@@ -222,7 +228,6 @@ def deleteWS(string){
     return string.replaceAll(/\s+/, '').toLowerCase()
 
 }
-
 
 
 workflow {
@@ -264,17 +269,13 @@ workflow {
            .splitCsv(header:true)
            .set{file_ch}
 
-       GET_RUNSHEET.out.params_file
-                     .splitCsv(header:true)
-                     .set{params_ch}
-
-       target_region = params_ch.map{row -> "${row.target_region}"}.first()
-       primers_ch =  params_ch.map{
-                           row -> ["${row.f_primer}", "${row.r_primer}"] 
-                           }.first()                 
-       raw_read_suffix_ch =  params_ch.map{
-                           row -> "${row.data_type}" == "PE" ? ["${row.raw_R1_suffix}", "${row.raw_R2_suffix}"] : ["${row.raw_R1_suffix}"] 
-                           }.first() 
+       target_region = GET_RUNSHEET.out.runsheet
+                           .splitCsv(header:true)
+                           .map{row -> "${row.'Parameter Value[Library Selection]'}"}.first()
+       primers_ch = GET_RUNSHEET.out.runsheet
+                           .splitCsv(header:true)
+                           .map{row -> ["${row.F_Primer}", "${row.R_Primer}"]}
+                           .first()                 
 
       GET_RUNSHEET.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
@@ -286,8 +287,8 @@ workflow {
    }
 
     file_ch.map{
-                     row -> deleteWS(row.paired)  == 'true' ? tuple( "${row.sample_id}", [file("${row.forward}", checkIfExists: true), file("${row.reverse}", checkIfExists: true)], deleteWS(row.paired)) : 
-                                         tuple( "${row.sample_id}", [file("${row.forward}", checkIfExists: true)], deleteWS(row.paired))
+                     row -> deleteWS(row.paired)  == 'true' ? tuple( "${row.sample_id}", [file("${row.forward}"), file("${row.reverse}")], deleteWS(row.paired)) : 
+                                         tuple( "${row.sample_id}", [file("${row.forward}")], deleteWS(row.paired))
                 }.set{reads_ch} 
 
     // Use original runsheet to preserve sample order
@@ -297,8 +298,12 @@ workflow {
         runsheet_ch = Channel.fromPath(params.input_file, checkIfExists: true)
     }
 
+    // Stage raw reads with standard naming
+    COPY_READS(reads_ch)
+    staged_reads_ch = COPY_READS.out.raw_reads
+
     // Read quality check and trimming
-    RAW_FASTQC(reads_ch)
+    RAW_FASTQC(staged_reads_ch)
     raw_fastqc_files = RAW_FASTQC.out.html.flatten().collect()
     
     RAW_MULTIQC("raw", params.multiqc_config,raw_fastqc_files)
@@ -313,7 +318,7 @@ workflow {
     if(trim_primers){
 
         if(!params.accession) primers_ch = Channel.value([params.F_primer, params.R_primer])
-        CUTADAPT(reads_ch, primers_ch)
+        CUTADAPT(staged_reads_ch, primers_ch)
         logs = CUTADAPT.out.logs.map{ sample_id, log -> file("${log}")}.collect()
         counts = CUTADAPT.out.trim_counts.map{ sample_id, count -> file("${count}")}.collect()
         trimmed_reads = CUTADAPT.out.reads.map{ 
@@ -350,17 +355,16 @@ workflow {
 
     }else{
 
-        raw_reads_ch = reads_ch.map{
+        raw_reads_ch = staged_reads_ch.map{
                           sample_id, reads, isPaired -> reads instanceof List ? reads.each{file("${it}")}: file("${reads}")
                           }.flatten().collect()
 
-        if(!params.accession) {
-            raw_read_suffix_ch =  reads_ch.map{
-                                      sample_id, reads, isPaired -> isPaired  == 'true' ? [params.raw_R1_suffix, params.raw_R2_suffix] : [params.raw_R1_suffix]
-                                         }
-        }
+        // Use static raw read suffixes from config
+        raw_read_suffix_ch = staged_reads_ch.map{
+                                sample_id, reads, isPaired -> isPaired == 'true' ? [params.raw_R1_suffix, params.raw_R2_suffix] : [params.raw_R1_suffix]
+                             }.first()
 
-        isPaired_ch = reads_ch.map{sample_id, reads, isPaired -> isPaired}.first()
+        isPaired_ch = staged_reads_ch.map{sample_id, reads, isPaired -> isPaired}.first()
         samples_ch = runsheet_ch.first()
                      .concat(isPaired_ch)
                      .collate(2)
@@ -389,7 +393,7 @@ workflow {
               "group" : "groups",
               "depth" : params.rarefaction_depth,
               "assay_suffix" : params.assay_suffix,
-              "output_prefix" : params.output_prefix,
+              "output_prefix" : params.cleaned_prefix,
               "target_region" : params.target_region,
               "library_cutoff" : params.library_cutoff,
               "prevalence_cutoff" : params.prevalence_cutoff,
@@ -407,7 +411,7 @@ workflow {
               "group" : params.group,
               "depth" : params.rarefaction_depth,
               "assay_suffix" : params.assay_suffix,
-              "output_prefix" : params.output_prefix,
+              "output_prefix" : params.cleaned_prefix,
               "target_region" : params.target_region,
               "library_cutoff" : params.library_cutoff,
               "prevalence_cutoff" : params.prevalence_cutoff,

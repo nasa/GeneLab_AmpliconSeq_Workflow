@@ -24,7 +24,7 @@ process CLEAN_FASTQC_PATHS {
         echo "Purging paths from multiqc outputs"
         cd \${WORKDIR}/${OUT_DIR}/
         echo "Cleaning raw multiqc files with path info"
-        unzip ${params.output_prefix}raw_multiqc${params.assay_suffix}_report.zip && rm ${params.output_prefix}raw_multiqc${params.assay_suffix}_report.zip
+        unzip ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip && rm ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip
         cd raw_multiqc_report/raw_multiqc_data/
 
         # No reason not to just run it on all
@@ -33,10 +33,10 @@ process CLEAN_FASTQC_PATHS {
         cd \${WORKDIR}/${OUT_DIR}/
 
         echo "Re-zipping up raw multiqc"
-        zip -r ${params.output_prefix}raw_multiqc${params.assay_suffix}_report.zip raw_multiqc_report/ && rm -rf raw_multiqc_report/
+        zip -r ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip raw_multiqc_report/ && rm -rf raw_multiqc_report/
 
         echo "Cleaning filtered multiqc files with path info..."
-        unzip ${params.output_prefix}filtered_multiqc${params.assay_suffix}_report.zip && rm ${params.output_prefix}filtered_multiqc${params.assay_suffix}_report.zip
+        unzip ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip && rm ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip
         cd filtered_multiqc_report/filtered_multiqc_data/
 
 
@@ -47,7 +47,7 @@ process CLEAN_FASTQC_PATHS {
 
 
         echo "Re-zipping up filtered multiqc..."
-        zip -r ${params.output_prefix}filtered_multiqc${params.assay_suffix}_report.zip filtered_multiqc_report/ && rm -rf filtered_multiqc_report/
+        zip -r ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip filtered_multiqc_report/ && rm -rf filtered_multiqc_report/
         cd \${WORKDIR}
 
         echo "Purging paths from multiqc outputs completed successfully..."
@@ -88,28 +88,20 @@ process GENERATE_README {
     tag "Generating README for ${OSD_accession}"
     input:
         tuple val(name), val(email),
-              val(OSD_accession), val(protocol_id),
-              val(FastQC_Outputs), val(Filtered_Sequence_Data),
-              val(Trimmed_Sequence_Data), val(Final_Outputs)
-        path(processing_info)
+              val(OSD_accession), val(protocol_id)
 
     output:
         path("README${params.assay_suffix}.txt"), emit: readme
 
     script:
         """    
-        GL-gen-processed-amplicon-readme \\
-             --GLDS-ID '${OSD_accession}' \\
-             --output 'README${params.assay_suffix}.txt' \\
+        GL-gen-processed-data-amplicon-readme-updated.py \\
+             --osd-id '${OSD_accession}' \\
              --name '${name}' \\
              --email '${email}' \\
-             --protocol_ID '${protocol_id}' \\
+             --protocol-ID '${protocol_id}' \\
              --assay_suffix '${params.assay_suffix}' \\
-             --processing_zip_file '${processing_info}' \\
-             --fastqc_dir '${FastQC_Outputs}' \\
-             --filtered_reads_dir '${Filtered_Sequence_Data}' \\
-             --trimmed_reads_dir '${Trimmed_Sequence_Data}' \\
-             --final_outputs_dir  '${Final_Outputs}' ${params.readme_extra}
+             ${params.readme_extra}
         """
 
 }
@@ -125,7 +117,7 @@ process VALIDATE_PROCESSING {
                val(raw_suffix), val(raw_R1_suffix), val(raw_R2_suffix),
                val(primer_trimmed_suffix), val(primer_trimmed_R1_suffix), val(primer_trimmed_R2_suffix),
                val(filtered_suffix), val(filtered_R1_suffix), val(filtered_R2_suffix)
-        path(sample_ids_file)
+        path(runsheet)
         path(README)
         path(processing_info) 
         path(FastQC_Outputs)
@@ -134,17 +126,17 @@ process VALIDATE_PROCESSING {
         path(Final_Outputs)
 
     output:
-        path("${GLDS_accession}_${output_prefix}amplicon-validation.log"), emit: log
+        path("${GLDS_accession}_${params.cleaned_prefix}amplicon-validation.log"), emit: log
 
     script:
         """
         GL-validate-processed-amplicon-data \\
-             --output '${GLDS_accession}_${output_prefix}amplicon-validation.log' \\
+             --output '${GLDS_accession}_${params.cleaned_prefix}amplicon-validation.log' \\
              --GLDS-ID '${GLDS_accession}' \\
              --readme '${README}' \\
-             --sample-IDs-file '${sample_ids_file}' \\
+             --runsheet '${runsheet}' \\
              --V_V_guidelines_link '${V_V_guidelines_link}' \\
-             --output-prefix '${output_prefix}' \\
+             --output-prefix '${params.cleaned_prefix}' \\
              --zip_targets '${target_files}' \\
              --assay_suffix '${assay_suffix}' \\
              --raw_suffix '${raw_suffix}' \\
@@ -185,16 +177,15 @@ process GENERATE_CURATION_TABLE {
         path(FastQC_Outputs)
 
     output:
-        path("${GLDS_accession}_${output_prefix}-associated-file-names.tsv"), emit: curation_table
+        path("${GLDS_accession}_${params.cleaned_prefix}associated-file-names.tsv"), emit: curation_table
 
     script:
-        def INPUT_TABLE = params.assay_table ? "--assay-table ${input_table}" :  "--isa-zip  ${input_table}"
         """
 
-        GL-gen-amplicon-file-associations-table ${INPUT_TABLE} \\
-                    --output '${GLDS_accession}_${output_prefix}-associated-file-names.tsv' \\
+        GL-gen-amplicon-file-associations-table-GLfile.py --GL-file ${input_table} \\
+                    --output '${GLDS_accession}_${params.cleaned_prefix}associated-file-names.tsv' \\
                     --GLDS-ID  '${GLDS_accession}' \\
-                    --output-prefix '${output_prefix}' \\
+                    --output-prefix '${params.cleaned_prefix}' \\
                     --assay_suffix '${assay_suffix}' \\
                     --raw_suffix '${raw_suffix}' \\
                     --raw_R1_suffix '${raw_R1_suffix}' \\
@@ -211,7 +202,8 @@ process GENERATE_CURATION_TABLE {
                     --fastqc_dir '${FastQC_Outputs}' \\
                     --filtered_reads_dir '${filtered_reads_dir}' \\
                     --trimmed_reads_dir '${trimmed_reads_dir}' \\
-                    --final_outputs_dir '${final_outputs_dir}'  ${params.file_association_extra}
+                    --final_outputs_dir '${final_outputs_dir}' \\
+                    ${params.file_association_extra}
 
         """
 }
@@ -251,10 +243,11 @@ process GENERATE_PROTOCOL {
     input:
         path(software_versions)
         val(protocol_id)
+        path(rarefaction_depth)
     output:
         path("protocol.txt")
     script:
         """
-        generate_protocol.sh ${software_versions} ${protocol_id} > protocol.txt
+        generate_protocol_updated.sh ${software_versions} ${protocol_id} ${rarefaction_depth} > protocol.txt
         """
 }

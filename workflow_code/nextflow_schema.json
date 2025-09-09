@@ -122,7 +122,8 @@
         },
         "output_prefix": {
             "type": "string",
-            "description": "Unique name to tag onto output files."
+            "default": "",
+            "description": "Unique name to tag onto output files. Automatically appends '_' if not empty and does not end with '_' or '-'."
         },
         "publishDir_mode": {
             "type": "string",

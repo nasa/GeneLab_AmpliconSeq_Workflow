@@ -12,16 +12,13 @@ import pandas as pd
 import zipfile
 import re
 
-parser = argparse.ArgumentParser(description = "This program generates the file-associations table needed by Curation for \
+parser = argparse.ArgumentParser(description = "This program generates the file-assocations table needed by Curation for \
                                                newly processed amplicon datasets. It is intended to be run after `GL-validate-processed-data` \
                                                has been run successfully.")
 required = parser.add_argument_group('required arguments')
 required.add_argument("-g", "--GLDS-ID", help = 'GLDS ID (e.g. "GLDS-276")', action = "store", required = True)
-parser.add_argument("-i", "--isa-zip", help = "Appropriate ISA file for dataset (a zip archive, providing this will assume there is only one a_*amplicon* assay table in there, \
-                                               if that's not the case, explicitly provide the assay table to the '-a' argument instead)",
-                                       action = "store", default = "")
-parser.add_argument("--assay-table", 
-                    help = 'Appropriate assay table for dataset (this can be provided directly instead of being pulled from an ISA object)', 
+parser.add_argument("--GL-file", 
+                    help = 'A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. This is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input. ', 
                     action = "store", default = "")
 parser.add_argument("--runsheet",
                     help = """
@@ -120,16 +117,6 @@ def report_failure(message, color = "yellow"):
     sys.exit(1)
 
 
-def preflight_checks(isa_zip, assay_table):
-    """Check that either one of isa_zip or assay_table is passed as argument"""
-    # Ensure that at least one of isa_zip or assay_table is passed as argument
-    if isa_zip == "" and assay_table == "":
-        report_failure("This program requires either an input ISA object (passed to '-i') or a specific assay table (passed to '-a').")
-    # Ensure that only one of isa_zip or assay_table is passed as argument 
-    if isa_zip != "" and assay_table != "":
-        report_failure("This program requires *only* an input ISA object (passed to '-i') or a specific assay table (passed to '-a'), not both.")
-
-
 def check_for_file_and_contents(file_path):
     """Checks if file exists and that it is not empty"""
     if not os.path.exists(file_path):
@@ -155,24 +142,6 @@ def get_assay_table_from_ISA(isa_zip):
 
     return(df)
 
-
-def get_assay_table(isa_zip, assay_table):
-    """ Returns the assay table whether provided directly or pulled from ISA archive """
-
-    # Get assay table if we are using an input isa object
-    if isa_zip != "":
-        # Check if ISA exists and thet it isn't empty
-        check_for_file_and_contents(isa_zip)
-
-        assay_table_df = get_assay_table_from_ISA(isa_zip)
-
-    # Reading assay table if provided directly
-    else:
-        # Check if assay_table exists and that it isn't empty
-        check_for_file_and_contents(assay_table)
-        assay_table_df = pd.read_csv(assay_table, sep = "\t")
-
-    return(assay_table_df)
 
 
 def parse_amplicon_names(name, raw_file_prefix, raw_R1_suffix, raw_R2_suffix, raw_suffix):
@@ -201,9 +170,8 @@ def get_sample_names_and_unique_filenames(assay_table,  raw_file_prefix, raw_R1_
     Unless the --use-sample-names-from-assay-table flag was provided, then it just uses what's
     in the 'Sample Name' column.
     """
-
     sample_names = assay_table["Sample Name"].tolist()
-
+    
     if use_sample_names_from_assay_table:
         unique_filename_prefixes = sample_names
         return(sample_names, unique_filename_prefixes)
@@ -302,6 +270,11 @@ def get_read_count_from_df(sample_name, read_counts_tab,
         return(round(read_counts_tab.at[str(sample_name) + \
                      raw_suffix.replace("_raw.fastq.gz", ""), "counts"]))
     else:
+        # Debug prints -JY
+        #print("Looking for:", str(sample_name) + raw_R1_suffix.replace("_raw.fastq.gz", ""))
+        #print("Available indices (first 10):", list(read_counts_tab.index)[:10])
+        #JY
+        
         return(round(read_counts_tab.at[str(sample_name) + \
                     raw_R1_suffix.replace("_raw.fastq.gz", ""), "counts"]))
 
@@ -506,15 +479,22 @@ def main():
     Type = str(args.type)
 
 
-    # Check that either ISA zip or assay table is passed as argument
-    preflight_checks(args.isa_zip, args.assay_table)
+    # Ensure that GLfile.csv is passed as argument
+    if args.GL_file == "":
+        report_failure("This program requires a runsheet (such as GLfile.csv) as a required argument")
 
-    assay_table = get_assay_table(args.isa_zip, args.assay_table)
+    
+    # Check if assay_table exists and that it isn't empty
+    check_for_file_and_contents(args.GL_file)
 
-    sample_names, unique_filename_prefixes = get_sample_names_and_unique_filenames(assay_table,  raw_file_prefix, raw_R1_suffix,
-                                                                                   raw_R2_suffix, raw_suffix, 
-                                                                                   args.use_sample_names_from_assay_table,
-                                                                                   args.additional_string_to_remove_from_unique_filenames)
+    #Read GLfile into dataframe and set sample names and unique prefixes
+    GL_file = pd.read_csv(args.GL_file, sep = ",")
+    sample_names = unique_filename_prefixes = GL_file["sample_id"].tolist()
+
+    #sample_names, unique_filename_prefixes = get_sample_names_and_unique_filenames(assay_table,  raw_file_prefix, raw_R1_suffix,
+     #                                                                              raw_R2_suffix, raw_suffix, 
+      #                                                                             args.use_sample_names_from_assay_table,
+       #                                                                            args.additional_string_to_remove_from_unique_filenames)
 
     sample_file_dict = dict(zip(unique_filename_prefixes, sample_names))
 
