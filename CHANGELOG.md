@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed relative paths of input/output directories for post-processing workflow
 - Removed "samples" parameter ("unique-sample-IDs.txt") from post-processing workflow, now uses "GLfile.csv"
 - File associations table generation now uses sample names from assay table 
-- An underscore ("_") is now appended to the output prefix if params.output_prefix is not empty and does not end with "_" or "-"
+- An underscore ("\_") is now appended to the output prefix if params.output_prefix is not empty and does not end with "\_" or "-"
 - Updated README generation script and linked it to workflow
 - Updated protocol generation script with rarefaction depth checks
 
