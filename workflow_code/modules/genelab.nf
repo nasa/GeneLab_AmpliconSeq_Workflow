@@ -248,6 +248,6 @@ process GENERATE_PROTOCOL {
         path("protocol.txt")
     script:
         """
-        generate_protocol_updated.sh ${software_versions} ${protocol_id} ${rarefaction_depth} > protocol.txt
+        generate_protocol.sh ${software_versions} ${protocol_id} ${rarefaction_depth} > protocol.txt
         """
 }
