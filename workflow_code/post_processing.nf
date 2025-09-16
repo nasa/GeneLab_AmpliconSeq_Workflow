@@ -1,6 +1,9 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+def prefix = params.output_prefix ?: ""
+params.cleaned_prefix = (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
+
 // Terminal text color definitions
 c_back_bright_red = "\u001b[41;1m"
 c_bright_green    = "\u001b[32;1m"
@@ -32,9 +35,9 @@ if(params.help){
   println("  --name [STRING] The analyst's full name. E.g. 'FirstName A. LastName'.  Default: FirstName A. LastName")
   println("  --email [STRING] The analyst's email address. E.g. 'mail@nasa.gov'.  Default: mail@nasa.gov")
   println("  --assay_suffix [STRING]  Genelab's assay suffix. Default: _GLAmpSeq.")
-  println("  --output_prefix [STRING] Unique name to tag onto output files. Default: empty string.")
-  println("  --V_V_guidelines_link [URL] Genelab metagenomics data validation and verification guidelines link. Default: https://genelab-tools.arc.nasa.gov/confluence/pages/viewpage.action?pageId=2428598.")
-  println("  --target_files [STRING] A comma separated list of target files and/or directories to find in processing_info.zip. Default: main.nf,nextflow.config,unique-sample-IDs.txt,envs/,bin/,config/,modules/.")
+  println("  --output_prefix [STRING] Unique name to tag onto output files. Adds a "_" separator to the string if it is not empty and does not end with '_' or '-'. Default: empty string.")
+  println("  --V_V_guidelines_link [URL] Genelab metagenomics data validation and verification guidelines link. Default: https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/main/README.md.")
+  println("  --target_files [STRING] A comma separated list of target files to find in processing_info.zip. Default: command.txt,nextflow_processing_info_GLAmpSeq.txt.")
   println()
   println("File Suffixes:")
   println("      --raw_suffix [STRING]  Suffix used for the raw reads during processing. Only applicable when input reads are single-end. Default: _raw.fastq.gz.")  
@@ -48,29 +51,29 @@ if(params.help){
   println("      --filtered_R2_suffix [STRING]  Suffix to use for quality filtered reverse reads during processing. Default: _R2_filtered.fastq.gz.")
   println()
   println("Extra parameters to scripts:")
-  println("      --readme_extra [STRING] Extra parameters and arguments to GL-gen-processed-amplicon-data-readme command. Run 'GL-gen-processed-amplicon-readme --help' for extra parameters that can be set. Example '--raw-reads-dir  ../Raw_Sequence_Data/'. Default: empty string")
+  println("      --readme_extra [STRING] Extra parameters and arguments to GL-gen-processed-amplicon-data-readme command. Run 'GL-gen-processed-amplicon-readme --help' for extra parameters that can be set. Example '--raw-reads-dir  ./Raw_Sequence_Data/'. Default: empty string")
   println("      --validation_extra [STRING] Extra parameters and arguments to GL-validate-processed-amplicon-data command. Run 'GL-validate-processed-amplicon-data --help' for extra parameters that can be set. Example '--single-ended --R1-used-as-single-ended-data --skip_raw_multiqc'. Default: empty string ")
   println("      --file_association_extra [STRING] Extra parameters and arguments to GL-gen-amplicon-file-associations-table command. Run 'GL-gen-amplicon-file-associations-table --help' for extra parameters that can be set. Example '--single-ended --R1-used-as-single-ended-data'. Default: empty string ")
   println()
   println("Files:")
   println("    --run_command  [PATH] File containing the nextflow run command used in processing. Default: ./processing_scripts/command.txt")
-  println("    --processing_commands  [PATH] File containing all the process names and scripts used during processing. Default: ./processing_scripts/nextflow_processing_info_GLAmpliseq.txt")
-  println("    --samples  [PATH] A single column file with sample ids on each line generated after running the processing pipeline. Default: ./unique-sample-IDs.txt")
+  println("    --processing_commands  [PATH] File containing all the process names and scripts used during processing. Default: ./processing_scripts/nextflow_processing_info_GLAmpSeq.txt")
   println("You only need to supply one of --assay_table or --isa_zip. If you supply both it will use only the assay_table.")
   println("""  --assay_table  [PATH] GLDS assay table generated after running the processing pipeline with accession number as input.
-                               Example, ../GeneLab/a_GLDS-487_amplicon-sequencing_16s_illumina-1.txt. Default: null""")
+                               Example, ./GeneLab/a_GLDS-487_amplicon-sequencing_16s_illumina-1.txt. Default: null""")
   println("""  --isa_zip  [PATH] GLDS ISA ZIP file generated after running the processing pipeline with accession number as input.
-                               Example, ../GeneLab/OSD-487_metadata_GLDS-487-ISA.zip. Default: null""")
-  println("    --runsheet  [PATH] A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. This is the value set to the parameter --csv_file when run the processing pipeline with a csv file as input otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input. Example '../GeneLab/GLfile.csv'.  Default: null")
-  println("    --software_versions  [PATH] A file generated after running the processing pipeline listing the software versions used. Default: ../Metadata/software_versions.txt")
+                               Example, ./GeneLab/OSD-487_metadata_GLDS-487-ISA.zip. Default: null""")
+  println("    --runsheet  [PATH] A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. This is the value set to the parameter --csv_file when run the processing pipeline with a csv file as input otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input. Example './GeneLab/GLfile.csv'.  Default: null")
+  println("    --software_versions  [PATH] A file generated after running the processing pipeline listing the software versions used. Default: ./Metadata/software_versions.txt")
+  println("    --rarefaction_depth  [PATH] A file generated after running the processing pipeline storing the rarefaction depth used. Default: ./workflow_outputs/Final_Outputs/alpha_diversity/*rarefaction_depth.txt")
   println()
   println("Directories:")
-  println("    --Raw_Sequence_Data [PATH] A directory containing raw sequence and raw sequence outputs. Default: ../Raw_Sequence_Data/")
-  println("    --FastQC_Outputs [PATH] A directory containing fastqc and multiqc zip reports. Default: ../workflow_outputs/FastQC_Outputs/")
-  println("    --Trimmed_Sequence_Data  [PATH] A directory containing the outputs of read trimming after running the processing pipeline. Default: ../workflow_outputs/Trimmed_Sequence_Data/")
-  println("    --Filtered_Sequence_Data  [PATH] A directory containing the outputs of read filtering after running the processing pipeline. Default: ../Filtered_Sequence_Data/")  
-  println("    --Final_Outputs  [PATH] A directory containing the outputs of assembly based processing after running the processing pipeline. Default: ../workflow_outputs/Final_Outputs/")
-  println("    --Output_dir  [PATH] Specifies the directory where outputs of this post-processing workflow will be published. Default: ../Post_Processing/")
+  println("    --Raw_Sequence_Data [PATH] A directory containing raw sequence and raw sequence outputs. Default: ./Raw_Sequence_Data/")
+  println("    --FastQC_Outputs [PATH] A directory containing fastqc and multiqc zip reports. Default: ./workflow_outputs/FastQC_Outputs/")
+  println("    --Trimmed_Sequence_Data  [PATH] A directory containing the outputs of read trimming after running the processing pipeline. Default: ./workflow_outputs/Trimmed_Sequence_Data/")
+  println("    --Filtered_Sequence_Data  [PATH] A directory containing the outputs of read filtering after running the processing pipeline. Default: ./Filtered_Sequence_Data/")  
+  println("    --Final_Outputs  [PATH] A directory containing the outputs of assembly based processing after running the processing pipeline. Default: ./workflow_outputs/Final_Outputs/")
+  println("    --Output_dir  [PATH] Specifies the directory where outputs of this post-processing workflow will be published. Default: ./Post_Processing/")
   println()
   println("Optional arguments:")  
   println("    --help  Print this help message and exit")
@@ -123,11 +126,11 @@ log.info """${c_blue}
          Files:
          Nextflow Command: ${params.run_command}
          Processing Commands : ${params.processing_commands}
-         Samples: ${params.samples}
          Assay Table: ${params.assay_table}
          ISA Zip: ${params.isa_zip}
          Input Runsheet: ${params.runsheet}
          Software Versions: ${params.software_versions}
+         Rarefaction Depth: ${params.rarefaction_depth}
 
          Directories:
          Raw Reads Directory: ${params.Raw_Sequence_Data}
@@ -144,6 +147,7 @@ log.info """${c_blue}
 include { CLEAN_FASTQC_PATHS; PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
            GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
 
+
 workflow {
 
         // Make sure accessions numbers are set
@@ -156,8 +160,11 @@ workflow {
 
        // ---------------------- Input channels -------------------------------- //
        // Input files
-       sample_ids_file     =  Channel.fromPath(params.samples, checkIfExists: true)
        software_versions   =  Channel.fromPath(params.software_versions, checkIfExists: true)
+       rarefaction_depth_file = Channel
+                                  .fromPath(params.rarefaction_depth)
+                                  .ifEmpty { file("empty_depth.txt").tap { it.text = "" } }
+
 
        // Runsheet used to execute the processing workflow
        runsheet_ch = Channel.fromPath(params.runsheet, checkIfExists: true)
@@ -169,20 +176,16 @@ workflow {
 
        // Input Value channels
        OSD_ch    =  Channel.of([params.name, params.email,
-                                params.OSD_accession, params.protocol_id,
-                                params.FastQC_Outputs, 
-                                params.Filtered_Sequence_Data,
-                                params.Trimmed_Sequence_Data,
-                                params.Final_Outputs])
+                                params.OSD_accession, params.protocol_id])
 
-       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.output_prefix,
+       GLDS_ch   =  Channel.of([params.GLDS_accession, params.V_V_guidelines_link, params.cleaned_prefix,
                                 params.target_files, params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 
                                 params.filtered_R1_suffix, params.filtered_R2_suffix])
 
-       suffix_ch =  Channel.of([params.GLDS_accession, params.output_prefix, params.assay_suffix,
+       suffix_ch =  Channel.of([params.GLDS_accession, params.cleaned_prefix, params.assay_suffix,
                                 params.raw_suffix, params.raw_R1_suffix, params.raw_R2_suffix,
                                 params.primer_trimmed_suffix, params.primer_trimmed_R1_suffix,
                                 params.primer_trimmed_R2_suffix, params.filtered_suffix, 
@@ -203,20 +206,18 @@ workflow {
                                       }  
 
 
-        // If an assay table is provided use it as the input table otherwise use the provided ISA zip file
-        input_table_ch = Channel.fromPath( params.assay_table ? params.assay_table : params.isa_zip,
-                                          checkIfExists: true)
+        // If an assay table is provided use it as the input table otherwise use the provided ISA zip file - no longer needed, using GLfile.csv for GENERATE_CURATION_TABLE
+        //input_table_ch = Channel.fromPath( params.assay_table ? params.assay_table : params.isa_zip,
+          //                                checkIfExists: true)
 
 
         // Files and directories to be package in processing_info.zip
-        files_and_dirs_ch = Channel.of(params.run_command, params.processing_commands, 
-                                       params.samples)
+        files_and_dirs_ch = Channel.of(params.run_command, params.processing_commands)
                                        .collect()
-                                       .map{ run_command, processing_commands, samples -> 
+                                       .map{ run_command, processing_commands -> 
                                             tuple( 
                                                    file(run_command, checkIfExists: true),
-                                                   file(processing_commands, checkIfExists: true),
-                                                   file(samples, checkIfExists: true)
+                                                   file(processing_commands, checkIfExists: true)
                                                  ) }
 
 
@@ -224,14 +225,14 @@ workflow {
         PACKAGE_PROCESSING_INFO(files_and_dirs_ch)
 
 
-        GENERATE_README(OSD_ch, PACKAGE_PROCESSING_INFO.out.zip)
+        GENERATE_README(OSD_ch)
 
         
         FastQC_Outputs_dir  =  Channel.fromPath(params.FastQC_Outputs, type: 'dir',  checkIfExists: true)
         CLEAN_FASTQC_PATHS(FastQC_Outputs_dir)
 
        // Automatic verification and validation
-        VALIDATE_PROCESSING(GLDS_ch, sample_ids_file, 
+        VALIDATE_PROCESSING(GLDS_ch, runsheet_ch, 
                             GENERATE_README.out.readme,
                             PACKAGE_PROCESSING_INFO.out.zip, 
                             CLEAN_FASTQC_PATHS.out.clean_dir,
@@ -257,11 +258,11 @@ workflow {
 
           // Generate file association table for curation
           GENERATE_CURATION_TABLE(suffix_ch, file_label_ch, 
-                                  dir_label_ch, input_table_ch,
+                                  dir_label_ch, runsheet_ch,
                                   CLEAN_FASTQC_PATHS.out.clean_dir)
 
           // Write methods
-          GENERATE_PROTOCOL(software_versions, params.protocol_id)
+          GENERATE_PROTOCOL(software_versions, params.protocol_id, rarefaction_depth_file)
 
 
 }

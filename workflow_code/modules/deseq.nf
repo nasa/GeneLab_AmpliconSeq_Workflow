@@ -16,8 +16,8 @@ process DESEQ  {
 
     output:
         path("differential_abundance/deseq2/"), emit: output_dir
-        path("differential_abundance/${meta.output_prefix}contrasts${meta.assay_suffix}.csv"), emit: contrasts_file, optional: true
-        path("differential_abundance/${meta.output_prefix}SampleTable${meta.assay_suffix}.csv"), emit: sample_table_file, optional: true
+        path("differential_abundance/${params.cleaned_prefix}contrasts${meta.assay_suffix}.csv"), emit: contrasts_file, optional: true
+        path("differential_abundance/${params.cleaned_prefix}SampleTable${meta.assay_suffix}.csv"), emit: sample_table_file, optional: true
         path("versions.txt"), emit: version
 
     script:
@@ -29,7 +29,7 @@ process DESEQ  {
                   --group '${meta.group}' \\
                   --samples-column '${meta.samples}' \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${meta.output_prefix}' \\
+                  --output-prefix  '${params.cleaned_prefix}' \\
                   --target-region  '${meta.target_region}' \\
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
@@ -47,7 +47,7 @@ workflow {
                         "group" : params.group,
                         "depth" : params.rarefaction_depth,
                         "assay_suffix" : params.assay_suffix,
-                        "output_prefix" : params.output_prefix,
+                        "output_prefix" : params.cleaned_prefix,
                         "target_region" : params.target_region,
                         "library_cutoff" : params.library_cutoff,
                         "prevalence_cutoff" : params.prevalence_cutoff,

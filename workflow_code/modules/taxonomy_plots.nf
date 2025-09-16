@@ -34,12 +34,13 @@ process PLOT_TAXONOMY  {
                   --group '${meta.group}' \\
                   --samples-column '${meta.samples}' \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${meta.output_prefix}'
+                  --output-prefix  '${params.cleaned_prefix}'
                  
-        Rscript -e "VERSIONS=sprintf('tidyverse %s\\nglue %s\\ntools %s\\n',  \\
+        Rscript -e "VERSIONS=sprintf('tidyverse %s\\nglue %s\\ntools %s\\nggplot2 %s\\n',  \\
                                     packageVersion('tidyverse'), \\
                                     packageVersion('glue'), \\
-                                    packageVersion('tools')); \\
+                                    packageVersion('tools'), \\
+                                    packageVersion('ggplot2')); \\
                     write(x=VERSIONS, file='versions.txt', append=TRUE)"
         """
 
@@ -53,7 +54,7 @@ workflow {
                          "group" : params.group,
                          "depth" : params.rarefaction_depth,
                          "assay_suffix" : params.assay_suffix,
-                         "output_prefix" : params.output_prefix,
+                         "output_prefix" : params.cleaned_prefix,
                          "target_region" : params.target_region,
                          "library_cutoff" : params.library_cutoff,
                          "prevalence_cutoff" : params.prevalence_cutoff,

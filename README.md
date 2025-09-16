@@ -93,8 +93,8 @@ We recommend installing Singularity on a system wide level as per the associated
 All files required for utilizing the NF_AmpIllumina GeneLab workflow for processing amplicon Illumina data are in the [workflow_code](workflow_code) directory. To get a copy of the latest *NF_AmpIllumina* version on to your system, the code can be downloaded as a zip file from the release page then unzipped after downloading by running the following commands: 
 
 ```bash
-wget https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/releases/download/v1.0.0/NF_AmpIllumina_1.0.0.zip
-unzip NF_AmpIllumina_1.0.0.zip && cd NF_AmpIllumina_1.0.0
+wget https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/releases/download/v1.0.1/NF_AmpIllumina_1.0.1.zip
+unzip NF_AmpIllumina_1.0.1.zip && cd NF_AmpIllumina_1.0.1
 ```
 
 <br>
@@ -107,7 +107,7 @@ Although Nextflow can fetch Singularity images from a url, doing so may cause is
 
 To avoid this issue, run the following command to fetch the Singularity images prior to running the NF_AmpIllumina workflow:
 
-> Note: This command should be run in the location containing the `NF_AmpIllumina_1.0.0` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
+> Note: This command should be run in the location containing the `NF_AmpIllumina_1.0.1` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
 
 ```bash
 bash ./bin/prepull_singularity.sh nextflow.config
@@ -125,7 +125,7 @@ export NXF_SINGULARITY_CACHEDIR=$(pwd)/singularity
 
 ### 4. Run the Workflow
 
-> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.0` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.0` directory.*
+> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.1` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.1` directory.*
 
 For options and detailed help on how to run the workflow, run the following command:
 
@@ -166,7 +166,7 @@ nextflow run main.nf \
 
 **Required Parameters For All Approaches:**
 
-* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.0`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
+* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.1`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
 * `-resume` - Resumes  workflow execution using previously cached results
 * `-profile` – Specifies the configuration profile(s) to load (multiple options can be provided as a comma-separated list)
    * Software environment profile options (choose one):
@@ -217,7 +217,7 @@ nextflow run main.nf \
 * `--remove_rare` - Whether to filter out rare features and samples with low library sizes. Set this to true if using `prevalence_cutoff` or `library_cutoff` (type: boolean, default: false)
 * `--prevalence_cutoff` - Taxa with prevalence below this fraction will be excluded (type: float, default: 0)
 * `--library_cutoff` - Samples with library sizes below this threshold will be excluded (type: integer, default: 0)
-* `--output_prefix` - Prefix to add to output filenames, e.g. "Study1_" (type: string, default: "")
+* `--output_prefix` - Prefix to add to output filenames, e.g. "Study1_". If the string is not empty and does not end with '_' or '-', an underscore will be automatically appended (type: string, default: "")
 * `--assay_suffix` - Suffix to add to output filenames (type: string, default: "_GLAmpSeq")
 * `--use_conda` - Whether Conda environments should be used to run Nextflow processes (type: boolean, default: false)
 * `--conda_cutadapt` - Path to existing Cutadapt conda environment (type: string, default: null)
@@ -288,7 +288,7 @@ The outputs of the post-processing workflow are described below:
 **Post processing workflow output files** 
  - Post_processing/FastQC_Outputs/filtered_multiqc_GLAmpSeq_report.zip (Filtered sequence MultiQC report with paths purged) 
  - Post_processing/FastQC_Outputs/raw_multiqc_GLAmpSeq_report.zip (Raw sequence MultiQC report with paths purged)
- - Post_processing/<GLDS_accession>_-associated-file-names.tsv (File association table for OSDR curation)
+ - Post_processing/<GLDS_accession>_associated-file-names.tsv (File association table for OSDR curation)
  - Post_processing/<GLDS_accession>_amplicon-validation.log (Automated verification and validation log file)
  - Post_processing/processed_md5sum_GLAmpSeq.tsv (md5sums for the files published on OSDR)
  - Post_processing/processing_info_GLAmpSeq.zip  (Zip file containing all files used to run the workflow and required logs with paths purged) 
