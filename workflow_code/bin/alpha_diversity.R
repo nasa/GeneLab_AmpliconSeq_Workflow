@@ -400,14 +400,6 @@ writeLines(
   con = depth_file
 )
 
-#----- Rarefy sample counts to even depth per sample
-ps.rarefied <- rarefy_even_depth(physeq = ASV_physeq, 
-                                 sample.size = depth,
-                                 rngseed = 1, 
-                                 replace = FALSE, 
-                                 verbose = FALSE)
-
-
 # ------------------- Rarefaction curve
 # Calculate a rough estimate of the step sample step size for plotting.
 # This is meant to keep plotting time constant regardless of sample depth
