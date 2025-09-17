@@ -179,6 +179,19 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
     seq_per_sample <- colSums(feature_table) %>% sort()
     # Minimum value
     depth <- min(seq_per_sample)
+
+    # Error if the number of sequences per sample left after filtering is 
+    # insufficient for diversity analysis
+    if(max(seq_per_sample) < 100){
+      
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
+      writeLines(
+        text = glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100.
+Therefore, beta diversity analysis cannot be performed."),
+        con = warning_file
+      )
+      quit(status = 0)
+    }
     
     for (count in seq_per_sample) {
       # Get the count equal to rarefaction_depth or nearest to it
@@ -187,6 +200,24 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
         break
       }
       
+    }
+
+    # Error if the depth that ends up being used is also less than 100
+    if(depth < 100){
+      
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
+      writeLines(
+        text = glue("The rarefaction depth being used in the analysis ({depth}) is less than 100.
+Therefore, beta diversity analysis cannot be performed."),
+        con = warning_file
+      )
+      quit(status = 0)
+    } 
+    
+    #Warning if rarefaction depth is between 100 and 500
+    if (depth > 100 && depth < 500) {
+      warning(glue("Rarefaction depth ({depth}) is between 100 and 500.
+Beta diversity results may be unreliable."))
     }
     
     #----- Rarefy sample counts to even depth per sample
