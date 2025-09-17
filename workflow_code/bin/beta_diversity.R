@@ -494,62 +494,6 @@ feature_table <- feature_table[, samples2keep]
 metadata <- metadata[samples2keep,]
 
 
-# Check and adjust rarefaction depth to preserve at least 2 groups
-library_sizes <- colSums(feature_table)
-min_lib_size <- min(library_sizes)
-max_lib_size <- max(library_sizes)
-
-# Check group-wise library sizes 
-metadata_with_libsizes <- metadata
-metadata_with_libsizes$library_size <- library_sizes[rownames(metadata)]
-
-group_lib_stats <- metadata_with_libsizes %>%
-  group_by(!!sym(groups_colname)) %>%
-  summarise(
-    n_samples = n(),
-    min_lib = min(library_size),
-    max_lib = max(library_size),
-    median_lib = median(library_size),
-    .groups = 'drop'
-  )
-
-# Find max depth that preserves at least 2 groups
-groups_surviving_at_depth <- function(depth) {
-  sum(group_lib_stats$min_lib >= depth)
-}
-
-if(groups_surviving_at_depth(rarefaction_depth) < 2) {
-  
-  # Find the depth that preserves exactly 2 groups (use the 2nd highest group minimum)
-  group_mins <- sort(group_lib_stats$min_lib, decreasing = TRUE)
-  if(length(group_mins) >= 2) {
-    adjusted_depth <- group_mins[2] # Use 2nd highest group minimum directly
-  } else {
-    adjusted_depth <- max(10, floor(min_lib_size * 0.8))
-  }
-  
-  warning_msg <- c(
-    paste("Original rarefaction depth:", rarefaction_depth),
-    paste("Total groups in data:", nrow(group_lib_stats)),
-    "",
-    "Group-wise library size stats:",
-    paste(capture.output(print(group_lib_stats, row.names = FALSE)), collapse = "\n"),
-    "",
-    paste("WARNING: Rarefaction depth", rarefaction_depth, "would preserve only", 
-          groups_surviving_at_depth(rarefaction_depth), "group(s)"),
-    paste("Beta diversity analysis requires at least 2 groups for statistical tests."),
-    "",
-    paste("Automatically adjusted rarefaction depth to:", adjusted_depth),
-    paste("This should preserve", groups_surviving_at_depth(adjusted_depth), "groups for analysis.")
-  )
-  
-  writeLines(warning_msg, glue("{beta_diversity_out_dir}/{output_prefix}rarefaction_depth_warning.txt"))
-  message("WARNING: Rarefaction depth adjusted from ", rarefaction_depth, " to ", adjusted_depth, 
-          " to preserve at least 2 groups - see ", output_prefix, "rarefaction_depth_warning.txt")
-  
-  # Update the rarefaction depth
-  rarefaction_depth <- adjusted_depth
-}
 
 options(warn=-1) # ignore warnings
 
