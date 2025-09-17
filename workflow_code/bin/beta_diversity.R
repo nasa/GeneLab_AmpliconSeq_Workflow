@@ -187,10 +187,10 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
       warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
       writeLines(
         text = glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100.
-Therefore, beta diversity analysis cannot be performed."),
+Therefore, beta diversity analysis with rarefaction cannot be performed. Check VST method normalization instead."),
         con = warning_file
       )
-      quit(status = 0)
+      return(NULL)   # stop rarefaction branch, but don't kill script
     }
     
     for (count in seq_per_sample) {
@@ -208,10 +208,10 @@ Therefore, beta diversity analysis cannot be performed."),
       warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
       writeLines(
         text = glue("The rarefaction depth being used in the analysis ({depth}) is less than 100.
-Therefore, beta diversity analysis cannot be performed."),
+Therefore, beta diversity analysis with rarefaction cannot be performed. Check VST method normalization instead."),
         con = warning_file
       )
-      quit(status = 0)
+      return(NULL)   # stop rarefaction branch, but don't kill script
     } 
     
     #Warning if rarefaction depth is between 100 and 500
@@ -226,6 +226,19 @@ Beta diversity results may be unreliable."))
                             rngseed = 1, 
                             replace = FALSE, 
                             verbose = FALSE)
+    
+    # ---- Group check ----
+    survived_samples <- sample_names(ps)
+    remaining_groups <- unique(metadata[rownames(metadata) %in% survived_samples, groups_colname])
+    
+    if(length(remaining_groups) < 2){
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
+      writeLines(
+        text = glue("Not enough groups remain after rarefaction (only {length(remaining_groups)}). Skipping beta diversity with rarefaction."),
+        con = warning_file
+      )
+      return(NULL)  # stop analysis, like depth failure
+    }
     
     # Write rarefaction depth used into file
     depth_file <- glue("{beta_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
@@ -546,6 +559,12 @@ walk2(.x = normalization_methods, .y = distance_methods,
 ps <- transform_phyloseq(feature_table, metadata, 
                          method = normalization_method,
                          rarefaction_depth = rarefaction_depth)
+
+# Skip downstream analysis when normalization by rarefaction fails
+if (is.null(ps)) {
+  message(glue("{normalization_method} failed. Skipping downstream analysis."))
+  return(NULL)
+}
 
 # ---------Clustering and dendrogram plotting
 
