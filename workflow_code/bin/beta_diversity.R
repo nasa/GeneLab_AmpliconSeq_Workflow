@@ -227,6 +227,13 @@ Beta diversity results may be unreliable."))
                             replace = FALSE, 
                             verbose = FALSE)
     
+    # Write rarefaction depth used into file
+    depth_file <- glue("{beta_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
+    writeLines(
+      text = as.character(depth),
+      con = depth_file
+    )
+    
   }else if(method == "vst"){
     
     # Using deseq
