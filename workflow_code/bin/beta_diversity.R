@@ -214,6 +214,13 @@ Therefore, beta diversity analysis with rarefaction cannot be performed. Check V
       return(NULL)   # stop rarefaction branch, but don't kill script
     } 
     
+    # Write rarefaction depth used into file
+    depth_file <- glue("{beta_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
+    writeLines(
+      text = as.character(depth),
+      con = depth_file
+    )
+    
     #Warning if rarefaction depth is between 100 and 500
     if (depth > 100 && depth < 500) {
       warning(glue("Rarefaction depth ({depth}) is between 100 and 500.
@@ -239,13 +246,6 @@ Beta diversity results may be unreliable."))
       )
       return(NULL)  # stop analysis, like depth failure
     }
-    
-    # Write rarefaction depth used into file
-    depth_file <- glue("{beta_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
-    writeLines(
-      text = as.character(depth),
-      con = depth_file
-    )
     
   }else if(method == "vst"){
     
