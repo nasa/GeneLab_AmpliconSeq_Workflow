@@ -184,7 +184,7 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
     # insufficient for diversity analysis
     if(max(seq_per_sample) < 100){
       
-      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure{assay_suffix}.txt")
       writeLines(
         text = glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100.
 Therefore, beta diversity analysis with rarefaction cannot be performed. Check VST method normalization instead."),
@@ -205,7 +205,7 @@ Therefore, beta diversity analysis with rarefaction cannot be performed. Check V
     # Error if the depth that ends up being used is also less than 100
     if(depth < 100){
       
-      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure{assay_suffix}.txt")
       writeLines(
         text = glue("The rarefaction depth being used in the analysis ({depth}) is less than 100.
 Therefore, beta diversity analysis with rarefaction cannot be performed. Check VST method normalization instead."),
@@ -213,13 +213,6 @@ Therefore, beta diversity analysis with rarefaction cannot be performed. Check V
       )
       return(NULL)   # stop rarefaction branch, but don't kill script
     } 
-    
-    # Write rarefaction depth used into file
-    depth_file <- glue("{beta_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
-    writeLines(
-      text = as.character(depth),
-      con = depth_file
-    )
     
     #Warning if rarefaction depth is between 100 and 500
     if (depth > 100 && depth < 500) {
@@ -239,13 +232,20 @@ Beta diversity results may be unreliable."))
     remaining_groups <- unique(metadata[rownames(metadata) %in% survived_samples, groups_colname])
     
     if(length(remaining_groups) < 2){
-      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure.txt")
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure{assay_suffix}.txt")
       writeLines(
-        text = glue("Not enough groups remain after rarefaction (only {length(remaining_groups)}). Skipping beta diversity with rarefaction."),
+        text = glue("Not enough groups remain after rarefaction at {depth} (only {length(remaining_groups)}). Skipping beta diversity with rarefaction."),
         con = warning_file
       )
       return(NULL)  # stop analysis, like depth failure
     }
+
+    # Write rarefaction depth used into file
+    depth_file <- glue("{beta_diversity_out_dir}{output_prefix}rarefaction_depth{assay_suffix}.txt")
+    writeLines(
+      text = as.character(depth),
+      con = depth_file
+    )
     
   }else if(method == "vst"){
     
@@ -587,7 +587,7 @@ if(normalization_method == "vst"){
           title = element_text(face = "bold", size = 14))
   
   # Save VSD validation plot
-  ggsave(filename = glue("{beta_diversity_out_dir}/{output_prefix}vsd_validation_plot.png"),
+  ggsave(filename = glue("{beta_diversity_out_dir}/{output_prefix}vsd_validation_plot{assay_suffix}.png"),
          plot = mead_sd_plot, width = 14, height = 10, 
          dpi = 300, units = "in", limitsize = FALSE)
 }

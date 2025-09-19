@@ -350,7 +350,7 @@ depth <- min(seq_per_sample)
 # insufficient for diversity analysis
 if(max(seq_per_sample) < 100){
  
-  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure.txt")
+  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure{assay_suffix}.txt")
   writeLines(
     text = glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100.
 Therefore, alpha diversity analysis cannot be performed."),
@@ -371,7 +371,7 @@ for (count in seq_per_sample) {
 # Error if the depth that ends up being used is also less than 100
 if(depth < 100){
  
-  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure.txt")
+  warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure{assay_suffix}.txt")
   writeLines(
     text = glue("The rarefaction depth being used in the analysis ({depth}) is less than 100.
 Therefore, alpha diversity analysis cannot be performed."),
@@ -394,7 +394,7 @@ ps.rarefied <- rarefy_even_depth(physeq = ASV_physeq,
                                  verbose = FALSE)
 
 # Write rarefaction depth used into file to be used in protocol
-depth_file <- glue("{alpha_diversity_out_dir}{output_prefix}rarefaction_depth.txt")
+depth_file <- glue("{alpha_diversity_out_dir}{output_prefix}rarefaction_depth{assay_suffix}.txt")
 writeLines(
   text = as.character(depth),
   con = depth_file
@@ -467,7 +467,7 @@ diversity_stats <- map_dfr(.x = diversity_metrics, function(metric){
   number_of_groups <- merged_table[,groups_colname] %>% unique() %>% length()
   
   if (number_of_groups < 2){
-    warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure.txt")
+    warning_file <- glue("{alpha_diversity_out_dir}{output_prefix}alpha_diversity_failure{assay_suffix}.txt")
     original_groups <- length(unique(metadata[[groups_colname]]))
     writeLines(
       text = glue("Group count information:
