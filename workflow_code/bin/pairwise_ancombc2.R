@@ -535,7 +535,7 @@ tryCatch({
               paste("- Sample sizes per group:"),
               paste("  ", paste(names(table(tse[[group]])), "=", table(tse[[group]]), collapse="\n  ")),
               "\nPossibly insufficient data for ANCOMBC2 analysis. Consider adjusting filtering parameters or group assignments."), 
-            file.path(diff_abund_out_dir, glue("{output_prefix}ancombc2_failure.txt")))
+            file.path(diff_abund_out_dir, glue("{output_prefix}ancombc2_failure{assay_suffix}.txt")))
   quit(status = 0)
 })
 
@@ -751,7 +751,7 @@ volcano_plots <- map(uniq_comps, function(comparison){
     theme(legend.position="top", legend.key = element_rect(colour=NA),
           plot.caption = element_text(face = 'bold.italic'))
 
-  file_name <-  glue("{output_prefix}{comparison %>% str_replace_all('[:space:]+','_')}_volcano.png")
+  file_name <-  glue("{output_prefix}{comparison %>% str_replace_all('[:space:]+','_')}_volcano{assay_suffix}.png")
   ggsave(filename = file_name,
          plot = p, device = "png",
          width = plot_width_inches,

@@ -524,7 +524,7 @@ final_results_bc1  <- map(pairwise_comp_df, function(col){
     # Write to log file
     writeLines(log_msg, 
               file.path(diff_abund_out_dir, 
-                       glue("{output_prefix}ancombc1_failure.txt")))
+                       glue("{output_prefix}ancombc1_failure{assay_suffix}.txt")))
     
     # Print to console and quit
     message(log_msg)
@@ -622,7 +622,7 @@ volcano_plots <- map(comp_names, function(comparison){
     theme(legend.position="top", legend.key = element_rect(colour=NA),
           plot.caption = element_text(face = 'bold.italic'))
  
-  file_name <-  glue("{output_prefix}{comparison %>% str_replace_all('[:space:]+','_')}_volcano.png")
+  file_name <-  glue("{output_prefix}{comparison %>% str_replace_all('[:space:]+','_')}_volcano{assay_suffix}.png")
   ggsave(filename = file_name,
          plot = p, device = "png", width = plot_width_inches,
          height = plot_height_inches, units = "in",
