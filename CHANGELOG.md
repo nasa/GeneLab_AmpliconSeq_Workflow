@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Beta diversity script now uses the same rarefaction depth logic as the alpha diversity script; removed separate rarefaction adjustment.
+- Added "GLAmpSeq" suffixes to all output files
+- Added 3 retry attempts for OSDR file downloads
 
 
 <br>
