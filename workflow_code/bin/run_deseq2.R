@@ -472,7 +472,7 @@ deseq_modeled <- tryCatch({
 
     writeLines(c("Error:", e2$message,
                 "\nUsing gene-wise estimates as final estimates instead of standard curve fitting."), 
-              file.path(diff_abund_out_dir, glue("{output_prefix}deseq2_warning.txt")))
+              file.path(diff_abund_out_dir, glue("{output_prefix}deseq2_warning{assay_suffix}.txt")))
     
     # Use gene-wise estimates as final estimates
     deseq_obj <- estimateDispersionsGeneEst(deseq_obj)
@@ -486,7 +486,7 @@ deseq_modeled <- tryCatch({
 sparsity_plot <- plotSparsity(deseq_modeled) 
 
 # Save VSD Sparsity plot
-ggsave(filename = glue("{diff_abund_out_dir}/{output_prefix}asv_sparsity_plot.png"),
+ggsave(filename = glue("{diff_abund_out_dir}/{output_prefix}asv_sparsity_plot{assay_suffix}.png"),
        plot = sparsity_plot, width = 14, height = 10, dpi = 300, units = "in")
 
 # Get unique group comparison as a matrix
@@ -695,7 +695,7 @@ walk(pairwise_comp_df, function(col){
   # Replace space in group name with underscore 
   group1 <- str_replace_all(group1, "[:space:]+", "_")
   group2 <- str_replace_all(group2, "[:space:]+", "_")
-  ggsave(filename = glue("{output_prefix}({group2})v({group1})_volcano.png"),
+  ggsave(filename = glue("{output_prefix}({group2})v({group1})_volcano{assay_suffix}.png"),
          plot = p,
          width = plot_width_inches, 
          height = plot_height_inches, 

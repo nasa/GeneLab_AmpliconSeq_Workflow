@@ -179,6 +179,19 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
     seq_per_sample <- colSums(feature_table) %>% sort()
     # Minimum value
     depth <- min(seq_per_sample)
+
+    # Error if the number of sequences per sample left after filtering is 
+    # insufficient for diversity analysis
+    if(max(seq_per_sample) < 100){
+      
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure{assay_suffix}.txt")
+      writeLines(
+        text = glue("The maximum sequence count per sample ({max(seq_per_sample)}) is less than 100.
+Therefore, beta diversity analysis with rarefaction cannot be performed. Check VST method normalization instead."),
+        con = warning_file
+      )
+      return(NULL)   # stop rarefaction branch, but don't kill script
+    }
     
     for (count in seq_per_sample) {
       # Get the count equal to rarefaction_depth or nearest to it
@@ -188,6 +201,24 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
       }
       
     }
+
+    # Error if the depth that ends up being used is also less than 100
+    if(depth < 100){
+      
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure{assay_suffix}.txt")
+      writeLines(
+        text = glue("The rarefaction depth being used in the analysis ({depth}) is less than 100.
+Therefore, beta diversity analysis with rarefaction cannot be performed. Check VST method normalization instead."),
+        con = warning_file
+      )
+      return(NULL)   # stop rarefaction branch, but don't kill script
+    } 
+    
+    #Warning if rarefaction depth is between 100 and 500
+    if (depth > 100 && depth < 500) {
+      warning(glue("Rarefaction depth ({depth}) is between 100 and 500.
+Beta diversity results may be unreliable."))
+    }
     
     #----- Rarefy sample counts to even depth per sample
     ps <- rarefy_even_depth(physeq = ASV_physeq, 
@@ -195,6 +226,26 @@ transform_phyloseq <- function( feature_table, metadata, method, rarefaction_dep
                             rngseed = 1, 
                             replace = FALSE, 
                             verbose = FALSE)
+    
+    # ---- Group check ----
+    survived_samples <- sample_names(ps)
+    remaining_groups <- unique(metadata[rownames(metadata) %in% survived_samples, groups_colname])
+    
+    if(length(remaining_groups) < 2){
+      warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure{assay_suffix}.txt")
+      writeLines(
+        text = glue("Not enough groups remain after rarefaction at {depth} (only {length(remaining_groups)}). Skipping beta diversity with rarefaction."),
+        con = warning_file
+      )
+      return(NULL)  # stop analysis, like depth failure
+    }
+
+    # Write rarefaction depth used into file
+    depth_file <- glue("{beta_diversity_out_dir}{output_prefix}rarefaction_depth{assay_suffix}.txt")
+    writeLines(
+      text = as.character(depth),
+      con = depth_file
+    )
     
   }else if(method == "vst"){
     
@@ -494,62 +545,6 @@ feature_table <- feature_table[, samples2keep]
 metadata <- metadata[samples2keep,]
 
 
-# Check and adjust rarefaction depth to preserve at least 2 groups
-library_sizes <- colSums(feature_table)
-min_lib_size <- min(library_sizes)
-max_lib_size <- max(library_sizes)
-
-# Check group-wise library sizes 
-metadata_with_libsizes <- metadata
-metadata_with_libsizes$library_size <- library_sizes[rownames(metadata)]
-
-group_lib_stats <- metadata_with_libsizes %>%
-  group_by(!!sym(groups_colname)) %>%
-  summarise(
-    n_samples = n(),
-    min_lib = min(library_size),
-    max_lib = max(library_size),
-    median_lib = median(library_size),
-    .groups = 'drop'
-  )
-
-# Find max depth that preserves at least 2 groups
-groups_surviving_at_depth <- function(depth) {
-  sum(group_lib_stats$min_lib >= depth)
-}
-
-if(groups_surviving_at_depth(rarefaction_depth) < 2) {
-  
-  # Find the depth that preserves exactly 2 groups (use the 2nd highest group minimum)
-  group_mins <- sort(group_lib_stats$min_lib, decreasing = TRUE)
-  if(length(group_mins) >= 2) {
-    adjusted_depth <- group_mins[2] # Use 2nd highest group minimum directly
-  } else {
-    adjusted_depth <- max(10, floor(min_lib_size * 0.8))
-  }
-  
-  warning_msg <- c(
-    paste("Original rarefaction depth:", rarefaction_depth),
-    paste("Total groups in data:", nrow(group_lib_stats)),
-    "",
-    "Group-wise library size stats:",
-    paste(capture.output(print(group_lib_stats, row.names = FALSE)), collapse = "\n"),
-    "",
-    paste("WARNING: Rarefaction depth", rarefaction_depth, "would preserve only", 
-          groups_surviving_at_depth(rarefaction_depth), "group(s)"),
-    paste("Beta diversity analysis requires at least 2 groups for statistical tests."),
-    "",
-    paste("Automatically adjusted rarefaction depth to:", adjusted_depth),
-    paste("This should preserve", groups_surviving_at_depth(adjusted_depth), "groups for analysis.")
-  )
-  
-  writeLines(warning_msg, glue("{beta_diversity_out_dir}/{output_prefix}rarefaction_depth_warning.txt"))
-  message("WARNING: Rarefaction depth adjusted from ", rarefaction_depth, " to ", adjusted_depth, 
-          " to preserve at least 2 groups - see ", output_prefix, "rarefaction_depth_warning.txt")
-  
-  # Update the rarefaction depth
-  rarefaction_depth <- adjusted_depth
-}
 
 options(warn=-1) # ignore warnings
 
@@ -564,6 +559,12 @@ walk2(.x = normalization_methods, .y = distance_methods,
 ps <- transform_phyloseq(feature_table, metadata, 
                          method = normalization_method,
                          rarefaction_depth = rarefaction_depth)
+
+# Skip downstream analysis when normalization by rarefaction fails
+if (is.null(ps)) {
+  message(glue("{normalization_method} failed. Skipping downstream analysis."))
+  return(NULL)
+}
 
 # ---------Clustering and dendrogram plotting
 
@@ -586,7 +587,7 @@ if(normalization_method == "vst"){
           title = element_text(face = "bold", size = 14))
   
   # Save VSD validation plot
-  ggsave(filename = glue("{beta_diversity_out_dir}/{output_prefix}vsd_validation_plot.png"),
+  ggsave(filename = glue("{beta_diversity_out_dir}/{output_prefix}vsd_validation_plot{assay_suffix}.png"),
          plot = mead_sd_plot, width = 14, height = 10, 
          dpi = 300, units = "in", limitsize = FALSE)
 }
