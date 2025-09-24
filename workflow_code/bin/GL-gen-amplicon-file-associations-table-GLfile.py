@@ -270,18 +270,13 @@ def get_read_count_from_df(sample_name, read_counts_tab,
         return(round(read_counts_tab.at[str(sample_name) + \
                      raw_suffix.replace("_raw.fastq.gz", ""), "counts"]))
     else:
-        # Debug prints -JY
-        #print("Looking for:", str(sample_name) + raw_R1_suffix.replace("_raw.fastq.gz", ""))
-        #print("Available indices (first 10):", list(read_counts_tab.index)[:10])
-        #JY
-        
         return(round(read_counts_tab.at[str(sample_name) + \
                     raw_R1_suffix.replace("_raw.fastq.gz", ""), "counts"]))
 
 
 
 def write_colnames(raw_reads_dir, trimmed_reads_dir,
-                  filtered_reads_dir, fastqc_dir, final_outputs_dir):
+                  filtered_reads_dir, fastqc_dir):
 
     ## Builds as if primers were trimmed by the workflow (with Trimmed column),
     #  but that is removed later if
@@ -294,7 +289,16 @@ def write_colnames(raw_reads_dir, trimmed_reads_dir,
                 f"Parameter Value[{trimmed_reads_dir}]",
                 f"Parameter Value[{filtered_reads_dir}]",
                 f"Parameter Value[{fastqc_dir}]",
-                f"Parameter Value[{final_outputs_dir}]",
+                "Parameter Value[Taxonomy and ASV Counts Data]",
+                "Parameter Value[Alpha Diversity Data]",
+                "Parameter Value[Beta Diversity Data]",
+                "Parameter Value[Beta Diversity Data/Bray-Curtis]",
+                "Parameter Value[Beta Diversity Data/Euclidean_distance]",
+                "Parameter Value[Taxonomy Plots]",
+                "Parameter Value[Differential Abundance]",
+                "Parameter Value[Differential Abundance/ANCOMBC1]",
+                "Parameter Value[Differential Abundance/ANCOMBC2]",
+                "Parameter Value[Differential Abundance/DESeq2]",
                 "Parameter Value[Processing Info]"]
 
     return colnames
@@ -323,6 +327,84 @@ def create_constants(include_raw_multiqc_in_output, raw_multiqc_zip,
  
     return fastqc, final_outputs
 
+def collect_final_outputs_columns(final_outputs_dir, file_prefix, output_prefix, assay_suffix):
+    """
+    Returns a dict with each new column as key and a comma-separated string of files as value
+    """
+
+    results = {}
+
+    # Primary files
+    primary_files = [
+        f"{output_prefix}ASVs{assay_suffix}.fasta",
+        f"{output_prefix}counts{assay_suffix}.tsv",
+        f"{output_prefix}taxonomy{assay_suffix}.tsv",
+        f"{output_prefix}taxonomy-and-counts{assay_suffix}.tsv",
+        f"{output_prefix}taxonomy-and-counts{assay_suffix}.biom.zip",
+        f"{output_prefix}read-count-tracking{assay_suffix}.tsv"
+    ]
+    primary_files = [file_prefix + f for f in primary_files if os.path.exists(os.path.join(final_outputs_dir, f))]
+    results["Taxonomy and ASV Counts Data"] = ",".join(primary_files)
+    
+    # Alpha diversity
+    alpha_dir = os.path.join(final_outputs_dir, "alpha_diversity")
+    all_alpha_files = [file_prefix + f for f in sorted(os.listdir(alpha_dir))] if os.path.isdir(alpha_dir) else []
+    if all_alpha_files:
+        alpha_files = [f for f in all_alpha_files if ".png" not in f.lower()]
+        results["Alpha Diversity Data"] = ", ".join(alpha_files)
+
+    # Beta diversity (vsd, bray-curtis, euclidean directly under beta_diversity)
+    beta_dir = os.path.join(final_outputs_dir, "beta_diversity")
+    if os.path.isdir(beta_dir):
+        beta_files = os.listdir(beta_dir)
+
+        # top-level (vsd validation)
+        vsd = [file_prefix + f for f in beta_files if "vsd" in f.lower()]
+        if vsd:
+            results["Beta Diversity Data"] = ", ".join(vsd)
+
+        # bray-curtis group
+        bray = sorted([file_prefix + f for f in beta_files if "bray" in f.lower() and ".png" not in f.lower()])
+        failure = sorted([file_prefix + f for f in beta_files if "failure" in f.lower()])
+        if bray:
+            results["Beta Diversity Data/Bray-Curtis"] = ", ".join(bray)
+        elif failure:
+            results["Beta Diversity Data/Bray-Curtis"] = ", ".join(failure)
+        else:
+            results["Beta Diversity Data/Bray-Curtis"] = ""
+            print("Beta diversity with rarefaction failed without generating a failure text file.")
+
+        # euclidean group
+        euclidean = sorted([file_prefix + f for f in beta_files if "euclidean" in f.lower() and ".png" not in f.lower()])
+        results["Beta Diversity Data/Euclidean_distance"] = ", ".join(euclidean)
+
+    # Taxonomy plots
+    tax_plot_dir = os.path.join(final_outputs_dir, "taxonomy_plots")
+    all_tax_plot_files = [file_prefix + f for f in sorted(os.listdir(tax_plot_dir))] if os.path.isdir(tax_plot_dir) else []
+    if all_tax_plot_files:
+        tax_plot_files = [f for f in all_tax_plot_files if ".png" not in f.lower()]
+        results["Taxonomy Plots"] = ", ".join(tax_plot_files)
+
+
+    # Differential abundance
+    da_dir = os.path.join(final_outputs_dir, "differential_abundance")
+    if os.path.isdir(da_dir):
+        # top-level DA files
+        da_files = [f for f in os.listdir(da_dir) if os.path.isfile(os.path.join(da_dir, f))]
+        if da_files:
+            results["Differential Abundance"] = ", ".join(file_prefix + f for f in da_files)
+
+        # method-specific
+        for method in ["ANCOMBC1", "ANCOMBC2", "DESeq2"]:
+            subdir = os.path.join(da_dir, method.lower())
+            if os.path.isdir(subdir):
+                method_files = sorted([file_prefix + f for f in os.listdir(subdir) if not ("volcano" in f.lower() and f.lower().endswith(".png"))])
+                if method_files:
+                    results[f"Differential Abundance/{method}"] = ", ".join(method_files)
+
+    return results
+
+
 
 def runsheet_to_dict(runsheet):
     """ Reads the input nextflow runsheet into a dataframe and converts it to 
@@ -340,9 +422,9 @@ def runsheet_to_dict(runsheet):
 
 
 
-def create_association_table(header_colnames, fastqc, final_outputs,
+def create_association_table(header_colnames, fastqc,
                              unique_filename_prefixes, read_count_tab, 
-                             sample_file_dict, file_prefix,  combined_prefix,
+                             sample_file_dict, file_prefix,  output_prefix, combined_prefix,
                              readme, assay_suffix,  raw_file_prefix, 
                              raw_suffix, raw_R1_suffix, raw_R2_suffix,
                              primer_trimmed_suffix, primer_trimmed_R1_suffix, primer_trimmed_R2_suffix,
@@ -390,6 +472,8 @@ def create_association_table(header_colnames, fastqc, final_outputs,
         curr_read_count = get_read_count_from_df(sample, read_count_tab, raw_suffix,
                                                  raw_R1_suffix, single_ended, sample_raw_prefix_dict)
 
+        final_outputs_dict = collect_final_outputs_columns(args.final_outputs_dir, file_prefix, output_prefix, assay_suffix)
+
         curr_row_as_list = [sample_file_dict[sample],
                             readme,
                             ", ".join(curr_raw_data),
@@ -398,7 +482,16 @@ def create_association_table(header_colnames, fastqc, final_outputs,
                             ", ".join(curr_trimmed_data),
                             ", ".join(curr_filt_data),
                             ", ".join(fastqc),
-                            ", ".join(final_outputs),
+                            final_outputs_dict["Taxonomy and ASV Counts Data"],
+                            final_outputs_dict["Alpha Diversity Data"],
+                            final_outputs_dict["Beta Diversity Data"],
+                            final_outputs_dict["Beta Diversity Data/Bray-Curtis"],
+                            final_outputs_dict["Beta Diversity Data/Euclidean_distance"],
+                            final_outputs_dict["Taxonomy Plots"],
+                            final_outputs_dict["Differential Abundance"],
+                            final_outputs_dict["Differential Abundance/ANCOMBC1"],
+                            final_outputs_dict["Differential Abundance/ANCOMBC2"],
+                            final_outputs_dict["Differential Abundance/DESeq2"],
                             processing_info]
 
         # Apped row to the association dataframe
@@ -458,7 +551,7 @@ def main():
     output_prefix = str(args.output_prefix)
     combined_prefix = file_prefix + output_prefix
     raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
-    processing_info = combined_prefix + str(args.processing_zip_file)
+    processing_info = file_prefix + str(args.processing_zip_file)
 
     if args.map:
         map_tab = pd.read_csv(args.map, sep = "\t", names = ["sample", "prefix"])
@@ -474,7 +567,7 @@ def main():
     else:
         outfile = args.output
     
-    readme = combined_prefix + args.readme
+    readme = file_prefix + args.readme
     include_raw_multiqc_in_output = str(args.include_raw_multiqc_in_output)
     Type = str(args.type)
 
@@ -503,7 +596,7 @@ def main():
     
     ###################################  Write file association table ##########################################
     header = write_colnames(raw_reads_dir, trimmed_reads_dir,
-                  filtered_reads_dir, fastqc_dir, final_outputs_dir)
+                  filtered_reads_dir, fastqc_dir)
     
     fastqc, final_outputs = create_constants(include_raw_multiqc_in_output, raw_multiqc_zip,
                      filtered_multiqc_zip, Type, combined_prefix, assay_suffix)
@@ -511,9 +604,9 @@ def main():
     # Retrieve a dictionary with sample names as keys and raw fatqfile prefix as values 
     sample_raw_prefix_dict = runsheet_to_dict(args.runsheet) if args.runsheet != "" else ""
 
-    association_df = create_association_table(header, fastqc, final_outputs,
+    association_df = create_association_table(header, fastqc,
                              unique_filename_prefixes, read_counts_df, 
-                             sample_file_dict, file_prefix,  combined_prefix,
+                             sample_file_dict, file_prefix,  output_prefix, combined_prefix,
                              readme, assay_suffix,  raw_file_prefix, 
                              raw_suffix, raw_R1_suffix, raw_R2_suffix,
                              primer_trimmed_suffix, primer_trimmed_R1_suffix, primer_trimmed_R2_suffix,
