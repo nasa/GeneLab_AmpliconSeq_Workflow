@@ -242,8 +242,8 @@ def write_amplicon_body(output):
                             ### How to represent failure files? ###
     add_level(f"richness_and_diversity_estimates_by_group_{assay_suffix}.png", "", pad, output, continues=[True, True, True])
     add_level(f"richness_and_diversity_estimates_by_sample_{assay_suffix}.png", "", pad, output, continues=[True, True, True])
-    add_level(f"statistics_table_{assay_suffix}.png", "", pad, output, continues=[True, True, True])
-    add_level(f"summary_table_{assay_suffix}.png", "", pad, output, continues=[True, True, True], is_last=True)
+    add_level(f"statistics_table_{assay_suffix}.csv", "", pad, output, continues=[True, True, True])
+    add_level(f"summary_table_{assay_suffix}.csv", "", pad, output, continues=[True, True, True], is_last=True)
     # Beta diversity Reports
     add_level(b_diversity_dir, "", pad, output, continues=[True, True])
     add_level("vsd_validation_plot.png", "VST transformation validation diagnostic plot", pad, output, continues=[True, True, True])
@@ -312,7 +312,7 @@ ancombc1_dir = "ancombc1/"
 ancombc2_dir = "ancombc2/"
 deseq2_dir = "deseq2/"
 
-output_file = f"{str(args.output)}_{assay_suffix}.txt" 
+output_file = f"{str(args.output)}" 
 
 if __name__ == "__main__":
     main()

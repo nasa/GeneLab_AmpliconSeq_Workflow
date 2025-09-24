@@ -64,7 +64,7 @@ process PACKAGE_PROCESSING_INFO {
     input:
         val(files_and_dirs) 
     output:
-        path("processing_info${params.assay_suffix}.zip"), emit: zip
+        path("${params.output_prefix}_processing_info${params.assay_suffix}.zip"), emit: zip
 
     script:
         """
@@ -77,7 +77,7 @@ process PACKAGE_PROCESSING_INFO {
         find processing_info/ -type f -exec bash ./clean-paths.sh '{}' ${params.baseDir} \\;
         
         # Purge file paths and then zip
-        zip -r processing_info${params.assay_suffix}.zip processing_info/
+        zip -r ${params.output_prefix}_processing_info${params.assay_suffix}.zip processing_info/
         """
 } 
 
@@ -91,11 +91,12 @@ process GENERATE_README {
               val(OSD_accession), val(protocol_id)
 
     output:
-        path("README${params.assay_suffix}.txt"), emit: readme
+        path("${params.output_prefix}_README${params.assay_suffix}.txt"), emit: readme
 
     script:
         """    
         GL-gen-processed-data-amplicon-readme-updated.py \\
+             --output '${params.output_prefix}_README${params.assay_suffix}.txt' \\
              --osd-id '${OSD_accession}' \\
              --name '${name}' \\
              --email '${email}' \\
