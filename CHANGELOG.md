@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated file associations table to include outputs of Final_outputs subdirectories
 
 
+### Fixed
+
+- Fixed regex pattern in ANCOMBC scripts so factor conditions with underscores are parsed correctly
+- Fixed runsheet handling so params.input_file paths with spaces no longer break processes
+
 <br>
 
 ---

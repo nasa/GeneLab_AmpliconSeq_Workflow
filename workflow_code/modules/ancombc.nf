@@ -38,7 +38,7 @@ process ANCOMBC {
         fi
         
         \${script_name} \\
-                  --metadata-table '${metadata}' \\
+                  --metadata-table ${metadata} \\
                   --feature-table '${feature_table}' \\
                   --taxonomy-table '${taxonomy}' \\
                   --group '${meta.group}' \\
