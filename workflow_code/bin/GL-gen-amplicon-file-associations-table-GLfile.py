@@ -358,10 +358,10 @@ def collect_final_outputs_columns(final_outputs_dir, file_prefix, output_prefix,
     if os.path.isdir(beta_dir):
         beta_files = os.listdir(beta_dir)
 
-        # top-level (vsd validation)
-        vsd = [file_prefix + f for f in beta_files if "vsd" in f.lower()]
-        if vsd:
-            results["Beta Diversity Data"] = ", ".join(vsd)
+        # top-level (vsd validation + rarefaction depth)
+        top_files = [file_prefix + f for f in beta_files if "vsd" in f.lower() or "rarefaction_depth" in f.lower() ]
+        if top_files:
+            results["Beta Diversity Data"] = ", ".join(top_files)
 
         # bray-curtis group
         bray = sorted([file_prefix + f for f in beta_files if "bray" in f.lower() and ".png" not in f.lower()])
