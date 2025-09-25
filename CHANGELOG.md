@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Used assay_suffix param instead of hardcoded value in config files
 - Fixed README typo and pass expected output filename
 - Updated file associations table to include outputs of Final_outputs subdirectories
+- Updated README file and processed md5sum file to replace individual plot files with their respective zipped files and reflect OSDR's Files tree structure
 
 
 ### Fixed

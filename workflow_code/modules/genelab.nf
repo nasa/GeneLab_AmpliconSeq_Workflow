@@ -235,7 +235,7 @@ process GENERATE_MD5SUMS {
             ! -path "*/differential_abundance/*/*volcano*.png" \
         \\) -exec md5sum '{}' \\; |
         awk -v OFS='\\t' 'BEGIN{OFS="\\t"; printf "File Path\\tFile Name\\tmd5\\n"} \\
-                {N=split(\$2,a,"/"); sub(/processing\\//, "", \$2); print \$2,a[N],\$1}' \\
+                {N=split(\$2,a,"/"); sub(/processing\\//, "", \$2); gsub(/^Final_Outputs\\//, "", \$2); print \$2,a[N],\$1}' \\
         > ${params.cleaned_prefix}processed_md5sum${params.assay_suffix}.tsv
         """
 }
