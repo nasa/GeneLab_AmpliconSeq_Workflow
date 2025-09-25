@@ -223,15 +223,20 @@ process GENERATE_MD5SUMS {
         path("${params.cleaned_prefix}processed_md5sum${params.assay_suffix}.tsv"), emit: md5sum
     script:
         """
-        mkdir processing/ && \\
-        cp -r ${dirs.join(" ")} ${processing_info} ${README} \\
-              processing/
+        mkdir processing/
+        cp -r ${dirs.join(" ")} ${processing_info} ${README} processing/
 
         # Generate md5sums
-        find -L processing/ -type f -exec md5sum '{}' \\; |
+        find -L processing/ -type f \\( \
+            ! -name "versions.txt" -a \
+            ! -path "*/alpha_diversity/*.png" -a \
+            ! -path "*/taxonomy_plots/*.png" -a \
+            \\( ! -path "*/beta_diversity/*.png" -o -path "*/beta_diversity/vsd_validation_plot.png" \\) -a \
+            ! -path "*/differential_abundance/*/*volcano*.png" \
+        \\) -exec md5sum '{}' \\; |
         awk -v OFS='\\t' 'BEGIN{OFS="\\t"; printf "File Path\\tFile Name\\tmd5\\n"} \\
                 {N=split(\$2,a,"/"); sub(/processing\\//, "", \$2); print \$2,a[N],\$1}' \\
-                | grep -v "versions.txt" > ${params.cleaned_prefix}processed_md5sum${params.assay_suffix}.tsv
+        > ${params.cleaned_prefix}processed_md5sum${params.assay_suffix}.tsv
         """
 }
 
