@@ -28,7 +28,7 @@ process PLOT_TAXONOMY  {
     script:
         """
         plot_taxonomy.R \\
-                  --metadata-table '${metadata}' \\
+                  --metadata-table ${metadata} \\
                   --feature-table '${feature_table}' \\
                   --taxonomy-table '${taxonomy_table}' \\
                   --group '${meta.group}' \\
