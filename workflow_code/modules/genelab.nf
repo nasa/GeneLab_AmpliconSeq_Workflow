@@ -64,7 +64,7 @@ process PACKAGE_PROCESSING_INFO {
     input:
         val(files_and_dirs) 
     output:
-        path("processing_info${params.assay_suffix}.zip"), emit: zip
+        path("${params.cleaned_prefix}processing_info${params.assay_suffix}.zip"), emit: zip
 
     script:
         """
@@ -77,7 +77,7 @@ process PACKAGE_PROCESSING_INFO {
         find processing_info/ -type f -exec bash ./clean-paths.sh '{}' ${params.baseDir} \\;
         
         # Purge file paths and then zip
-        zip -r processing_info${params.assay_suffix}.zip processing_info/
+        zip -r ${params.cleaned_prefix}processing_info${params.assay_suffix}.zip processing_info/
         """
 } 
 
@@ -91,11 +91,12 @@ process GENERATE_README {
               val(OSD_accession), val(protocol_id)
 
     output:
-        path("README${params.assay_suffix}.txt"), emit: readme
+        path("${params.cleaned_prefix}README${params.assay_suffix}.txt"), emit: readme
 
     script:
         """    
         GL-gen-processed-data-amplicon-readme-updated.py \\
+             --output '${params.cleaned_prefix}README${params.assay_suffix}.txt' \\
              --osd-id '${OSD_accession}' \\
              --name '${name}' \\
              --email '${email}' \\
@@ -126,12 +127,12 @@ process VALIDATE_PROCESSING {
         path(Final_Outputs)
 
     output:
-        path("${GLDS_accession}_${params.cleaned_prefix}amplicon-validation.log"), emit: log
+        path("${GLDS_accession}_${params.cleaned_prefix}amplicon-validation${assay_suffix}.log"), emit: log
 
     script:
         """
         GL-validate-processed-amplicon-data \\
-             --output '${GLDS_accession}_${params.cleaned_prefix}amplicon-validation.log' \\
+             --output '${GLDS_accession}_${params.cleaned_prefix}amplicon-validation${assay_suffix}.log' \\
              --GLDS-ID '${GLDS_accession}' \\
              --readme '${README}' \\
              --runsheet '${runsheet}' \\
@@ -177,13 +178,13 @@ process GENERATE_CURATION_TABLE {
         path(FastQC_Outputs)
 
     output:
-        path("${GLDS_accession}_${params.cleaned_prefix}associated-file-names.tsv"), emit: curation_table
+        path("${GLDS_accession}_${params.cleaned_prefix}associated-file-names${assay_suffix}.tsv"), emit: curation_table
 
     script:
         """
 
         GL-gen-amplicon-file-associations-table-GLfile.py --GL-file ${input_table} \\
-                    --output '${GLDS_accession}_${params.cleaned_prefix}associated-file-names.tsv' \\
+                    --output '${GLDS_accession}_${params.cleaned_prefix}associated-file-names${assay_suffix}.tsv' \\
                     --GLDS-ID  '${GLDS_accession}' \\
                     --output-prefix '${params.cleaned_prefix}' \\
                     --assay_suffix '${assay_suffix}' \\
@@ -219,18 +220,23 @@ process GENERATE_MD5SUMS {
         val(dirs)
 
     output:
-        path("processed_md5sum${params.assay_suffix}.tsv"), emit: md5sum
+        path("${params.cleaned_prefix}processed_md5sum${params.assay_suffix}.tsv"), emit: md5sum
     script:
         """
-        mkdir processing/ && \\
-        cp -r ${dirs.join(" ")} ${processing_info} ${README} \\
-              processing/
+        mkdir processing/
+        cp -r ${dirs.join(" ")} ${processing_info} ${README} processing/
 
         # Generate md5sums
-        find -L processing/ -type f -exec md5sum '{}' \\; |
+        find -L processing/ -type f \\( \
+            ! -name "versions.txt" -a \
+            ! -path "*/alpha_diversity/*.png" -a \
+            ! -path "*/taxonomy_plots/*.png" -a \
+            \\( ! -path "*/beta_diversity/*.png" -o -path "*/beta_diversity/vsd_validation_plot.png" \\) -a \
+            ! -path "*/differential_abundance/*/*volcano*.png" \
+        \\) -exec md5sum '{}' \\; |
         awk -v OFS='\\t' 'BEGIN{OFS="\\t"; printf "File Path\\tFile Name\\tmd5\\n"} \\
-                {N=split(\$2,a,"/"); sub(/processing\\//, "", \$2); print \$2,a[N],\$1}' \\
-                | grep -v "versions.txt" > processed_md5sum${params.assay_suffix}.tsv
+                {N=split(\$2,a,"/"); sub(/processing\\//, "", \$2); gsub(/^Final_Outputs\\//, "", \$2); print \$2,a[N],\$1}' \\
+        > ${params.cleaned_prefix}processed_md5sum${params.assay_suffix}.tsv
         """
 }
 

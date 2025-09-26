@@ -30,7 +30,7 @@ process ALPHA_DIVERSITY {
     script:
         """
         alpha_diversity.R \\
-                  --metadata-table '${metadata}' \\
+                  --metadata-table ${metadata} \\
                   --feature-table '${feature_table}' \\
                   --taxonomy-table '${taxonomy_table}' \\
                   --group '${meta.group}' \\
@@ -73,7 +73,7 @@ process BETA_DIVERSITY {
     script:
         """
         beta_diversity.R \\
-                  --metadata-table '${metadata}' \\
+                  --metadata-table ${metadata} \\
                   --feature-table '${feature_table}' \\
                   --taxonomy-table '${taxonomy_table}' \\
                   --group '${meta.group}' \\

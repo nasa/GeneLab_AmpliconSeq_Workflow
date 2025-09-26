@@ -44,7 +44,7 @@ process RUN_R_TRIM {
                            "${params.left_maxEE}" \
                            "${params.right_maxEE}" \
                            "\${TRIM_PRIMERS}" \
-                           "${sample_IDs_file}" \
+                           ${sample_IDs_file} \
                            "Trimmed_Sequence_Data/" \
                            "Filtered_Sequence_Data/" \
                            "${params.primer_trimmed_R1_suffix}" \
@@ -69,7 +69,7 @@ process RUN_R_TRIM {
                           "${params.left_trunc}" \
                           "${params.left_maxEE}" \
                           "\${TRIM_PRIMERS}" \
-                          "${sample_IDs_file}" \
+                          ${sample_IDs_file} \
                           "Trimmed_Sequence_Data/" \
                           "Filtered_Sequence_Data/" \
                           "${params.primer_trimmed_R1_suffix}" \
@@ -128,7 +128,7 @@ process RUN_R_NOTRIM {
                             "${params.left_maxEE}" \
                             "${params.right_maxEE}" \
                             "\${TRIM_PRIMERS}" \
-                            "${sample_IDs_file}" \
+                            ${sample_IDs_file} \
                             "raw_reads/" \
                             "Filtered_Sequence_Data/" \
                             "${raw_read_suffix[0]}" \
@@ -151,7 +151,7 @@ process RUN_R_NOTRIM {
                            "${params.left_trunc}" \
                            "${params.left_maxEE}" \
                            "\${TRIM_PRIMERS}" \
-                           "${sample_IDs_file}" \
+                           ${sample_IDs_file} \
                            "raw_reads/" \
                            "Filtered_Sequence_Data/" \
                            "${raw_read_suffix[0]}" \
