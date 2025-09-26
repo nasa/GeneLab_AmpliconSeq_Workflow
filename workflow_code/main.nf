@@ -216,9 +216,11 @@ include { ZIP_BIOM } from './modules/zip_biom.nf'
 // Diversity, differential abundance and visualizations
 include { ALPHA_DIVERSITY; BETA_DIVERSITY } from './modules/diversity.nf'
 include { PLOT_TAXONOMY } from './modules/taxonomy_plots.nf'
+include { ZIP as ZIP_ALPHA; ZIP as ZIP_BETA_EUCLIDEAN; ZIP as ZIP_BETA_BRAY; ZIP as ZIP_TAXONOMY_SAMPLES; ZIP as ZIP_TAXONOMY_GROUPS } from './modules/zip.nf'
 include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
 include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
 include { DESEQ } from './modules/deseq.nf'
+include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
 include { SOFTWARE_VERSIONS } from './modules/utils.nf'
 
 
@@ -428,8 +430,76 @@ workflow {
     // Diversity analysis
     ALPHA_DIVERSITY(meta, dada_counts, dada_taxonomy, metadata)
     BETA_DIVERSITY(meta, dada_counts, dada_taxonomy, metadata)
+
+    // Zipping diversity plots
+    // Alpha diversity (if rarefaction succeeded)
+    ALPHA_DIVERSITY.out.output_dir
+    	.map { dir ->
+		    def pngs = file(dir).listFiles()?.findAll { it.name.endsWith('.png') }
+        	pngs ? tuple(
+            	"alpha_diversity_plots",
+            	pngs,
+            	"${params.final_outputs_dir}alpha_diversity"
+        	) : null
+    	}
+    	.filter { it != null }
+    	| ZIP_ALPHA
+
+    // Beta diversity - euclidean distance
+    BETA_DIVERSITY.out.output_dir
+	    .map { dir ->
+		    def pngs = file(dir).listFiles()?.findAll { it.name.contains('euclidean') && it.name.endsWith('.png') }
+        	pngs ? tuple(
+            	"euclidean_distance_plots",
+            	pngs,
+            	"${params.final_outputs_dir}beta_diversity"
+        	) : null
+    	}
+	    .filter { it != null }
+        | ZIP_BETA_EUCLIDEAN
+
+    // Beta diversity - bray curtis (if rarefaction succeeded)
+    BETA_DIVERSITY.out.output_dir
+        .map { dir ->
+            def pngs = file(dir).listFiles()?.findAll { it.name.contains('bray') && it.name.endsWith('.png') }
+            pngs ? tuple(
+                "bray_curtis_plots",
+                pngs,
+                "${params.final_outputs_dir}beta_diversity"
+            ) : null
+        }
+        .filter { it != null }
+    	| ZIP_BETA_BRAY
+
     // Taxonomy plotting
     PLOT_TAXONOMY(meta, dada_counts, dada_taxonomy, metadata)
+
+    // Zipping taxonomy plots
+   // Sample plots
+    PLOT_TAXONOMY.out.output_dir
+        .map { dir ->
+            def pngs = file(dir).listFiles()?.findAll { it.name.contains('samples') && it.name.endsWith('.png') }
+            pngs ? tuple(
+                "sample_taxonomy_plots",
+                pngs,
+                "${params.final_outputs_dir}taxonomy_plots"
+            ) : null
+        }
+        .filter { it != null }
+        | ZIP_TAXONOMY_SAMPLES
+
+   // Group taxonomy plots
+    PLOT_TAXONOMY.out.output_dir
+        .map { dir ->
+            def pngs = file(dir).listFiles()?.findAll { it.name.contains('groups') && it.name.endsWith('.png') }
+            pngs ? tuple(
+                "group_taxonomy_plots",
+                pngs,
+                "${params.final_outputs_dir}taxonomy_plots"
+            ) : null
+        }
+        .filter { it != null }
+        | ZIP_TAXONOMY_GROUPS
     
     ALPHA_DIVERSITY.out.version | mix(software_versions_ch) | set{software_versions_ch}
     BETA_DIVERSITY.out.version | mix(software_versions_ch) | set{software_versions_ch}
@@ -441,16 +511,52 @@ workflow {
     
         DESEQ(meta, dada_counts, dada_taxonomy, metadata, filtered_count)
         DESEQ.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        // Zipping DESeq2 plots
+	    DESEQ.out.output_dir
+		    .map { dir ->
+                def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
+                pngs ? tuple(
+                    "deseq2_volcano_plots",
+                    pngs,
+                    "${params.final_outputs_dir}/differential_abundance/deseq2"
+                ) : null
+            }
+            .filter { it != null }
+  	        | ZIP_DESEQ2
     
     }else if (params.diff_abund_method == "ancombc1"){
     
         ANCOMBC1(method, meta, dada_counts, dada_taxonomy, metadata, filtered_count)
         ANCOMBC1.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        // Zipping ANCOMBC1 plots
+	    ANCOMBC1.out.output_dir
+            .map { dir ->
+                def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
+                pngs ? tuple(
+                    "ancombc1_volcano_plots",
+                    pngs,
+                    "${params.final_outputs_dir}/differential_abundance/ancombc1"
+                ) : null
+            }
+            .filter { it != null }
+            | ZIP_ANCOMBC1
 
     }else if (params.diff_abund_method == "ancombc2"){
 
         ANCOMBC2(method, meta, dada_counts, dada_taxonomy, metadata, filtered_count)
         ANCOMBC2.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        // Zipping ANCOMBC2 plots
+	    ANCOMBC2.out.output_dir
+            .map { dir ->
+                def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
+                pngs ? tuple(
+                    "ancombc2_volcano_plots",
+                    pngs,
+                    "${params.final_outputs_dir}/differential_abundance/ancombc2"
+                ) : null
+            }
+            .filter { it != null }
+            | ZIP_ANCOMBC2
 
     }else{
 
@@ -462,6 +568,44 @@ workflow {
 
         DESEQ(meta, dada_counts, dada_taxonomy, metadata, ANCOMBC2.out.output_dir)
         DESEQ.out.version | mix(software_versions_ch) | set{software_versions_ch}
+
+        // Zipping DA plots
+	    //ANCOMBC1
+	    ANCOMBC1.out.output_dir
+            .map { dir ->
+                def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
+                pngs ? tuple(
+                    "ancombc1_volcano_plots",
+                    pngs,
+                    "${params.final_outputs_dir}/differential_abundance/ancombc1"
+                ) : null
+            }
+            .filter { it != null }
+            | ZIP_ANCOMBC1
+	    //ANCOMBC2
+	    ANCOMBC2.out.output_dir
+            .map { dir ->
+                def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
+                pngs ? tuple(
+                    "ancombc2_volcano_plots",
+                    pngs,
+                    "${params.final_outputs_dir}/differential_abundance/ancombc2"
+                ) : null
+            }
+            .filter { it != null }
+            | ZIP_ANCOMBC2
+	    // DESeq2
+	    DESEQ.out.output_dir
+            .map { dir ->
+                def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
+                pngs ? tuple(
+                    "deseq2_volcano_plots",
+                    pngs,
+                    "${params.final_outputs_dir}/differential_abundance/deseq2"
+                ) : null
+            }
+            .filter { it != null }
+            | ZIP_DESEQ2
 
     }
     

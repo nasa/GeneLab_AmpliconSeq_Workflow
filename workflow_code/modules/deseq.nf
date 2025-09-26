@@ -23,7 +23,7 @@ process DESEQ  {
     script:
         """
         run_deseq2.R \\
-                  --metadata-table '${metadata}' \\
+                  --metadata-table ${metadata} \\
                   --feature-table '${feature_table}' \\
                   --taxonomy-table '${taxonomy_table}' \\
                   --group '${meta.group}' \\

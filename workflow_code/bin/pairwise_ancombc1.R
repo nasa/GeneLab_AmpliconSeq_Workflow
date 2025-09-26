@@ -577,7 +577,7 @@ volcano_plots <- map(comp_names, function(comparison){
   sub_res_df <- merged_stats_df %>% 
     select(!!feature, all_of(comp_col)) %>% drop_na()
   colnames(sub_res_df) <- str_replace_all(colnames(sub_res_df),
-                                          pattern = "(.+)_.+", 
+                                          pattern = "(.+)_\\(.+\\)v\\(.+\\)$", 
                                           replacement = "\\1")
   
   p_val <- 0.1
