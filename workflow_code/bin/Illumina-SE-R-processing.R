@@ -53,6 +53,64 @@ library(biomformat); packageVersion("biomformat")
 # Set default internet timeout to 1 hour
 options(timeout=3600)
 
+# attempt to download RData file with retries
+download_retry <- function(url,
+                           destfile = basename(url),
+                           mode = "wb",
+                           tries = 3,
+                           sleep_min = 2,
+                           sleep_max = 5,
+                           ...) {
+
+    tries <- as.integer(tries)
+    total_attempts <- tries
+
+    while (tries > 0) {
+
+        if (file.exists(destfile)) {
+            unlink(destfile)
+        }
+
+        attempt_number <- total_attempts - tries + 1
+        message(sprintf("  Download attempt %d of %d for %s", attempt_number, total_attempts, destfile))
+
+        result <- tryCatch(
+            utils::download.file(url = url,
+                                 destfile = destfile,
+                                 mode = mode,
+                                 method = "libcurl",
+                                 headers = c("User-Agent" = "Mozilla/5.0"),
+                                 quiet = TRUE,
+                                 ...),
+            warning = identity,
+            error = identity
+        )
+
+        if (!inherits(result, "condition")) {
+            ok <- tryCatch({
+                load(destfile, envir = new.env())
+                TRUE
+            }, error = function(e) FALSE)
+
+            if (ok) {
+                return(invisible(destfile))
+            } else {
+                message("  Download failed, retrying...")
+            }
+        } else {
+            message(sprintf("  Download error: %s", conditionMessage(result)))
+        }
+
+        tries <- tries - 1
+
+        if (tries > 0) {
+            Sys.sleep(runif(1, sleep_min, sleep_max))
+        }
+    }
+
+    stop(sprintf("download_retry() failed for %s", url))
+}
+
     ### general processing ###
     # Sample name reading function
 read_sample_names <- function(sample_file) {
@@ -179,10 +237,8 @@ dna <- DNAStringSet(getSequences(seqtab.nochim))
     # downloading reference R taxonomy object (at some point this will be stored somewhere on GeneLab's server and we won't download it, but should leave the code here, just commented out)
 cat("\n\n  Downloading reference database...\n\n")
 if ( target_region == "16S" ) { 
-    download.file(url = "https://figshare.com/ndownloader/files/52846199", 
-                  destfile = "SILVA_SSU_r138_2_2024.RData", 
-                  method = "libcurl", 
-                  headers = c("User-Agent" = "Mozilla/5.0"))
+    download_retry(url = "https://figshare.com/ndownloader/files/52846199",
+                   destfile = "SILVA_SSU_r138_2_2024.RData")
     # loading reference taxonomy object
     load("SILVA_SSU_r138_2_2024.RData")
     # removing downloaded file
@@ -191,10 +247,8 @@ if ( target_region == "16S" ) {
 
 } else if (target_region == "ITS" ) {
 
-    download.file(url = "https://figshare.com/ndownloader/files/52846346", 
-                  destfile = "UNITE_v2024_April2024.RData", 
-                  method = "libcurl", 
-                  headers = c("User-Agent" = "Mozilla/5.0"))
+    download_retry(url = "https://figshare.com/ndownloader/files/52846346",
+                   destfile = "UNITE_v2024_April2024.RData")
     # loading reference taxonomy object
     load("UNITE_v2024_April2024.RData")
     # removing downloaded file
@@ -203,10 +257,8 @@ if ( target_region == "16S" ) {
 
 } else if (target_region == "18S" ) {
 
-    download.file(url = "https://figshare.com/ndownloader/files/46241917", 
-                  destfile = "PR2_v4_13_March2021.RData", 
-                  method = "libcurl", 
-                  headers = c("User-Agent" = "Mozilla/5.0"))   
+    download_retry(url = "https://figshare.com/ndownloader/files/46241917",
+                   destfile = "PR2_v4_13_March2021.RData")
     # https://github.com/pr2database/pr2database/releases/download/v4.14.0/pr2_version_4.14.0_SSU.decipher.trained.rds 
     # loading reference taxonomy object
     load("PR2_v4_13_March2021.RData")

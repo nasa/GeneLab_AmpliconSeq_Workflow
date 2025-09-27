@@ -367,6 +367,30 @@ custom_palette <- custom_palette[-c(21:23, grep(pattern = pattern_to_filter,
                                                 ignore.case = TRUE))]
 
 
+legend_guide <- guide_legend(ncol = 1, byrow = TRUE,
+                             keyheight = unit(0.5, "cm"),
+                             keywidth = unit(0.5, "cm"),
+                             title.position = "top",
+                             label.hjust = 0)
+
+# dynamically shrink legend text when taxa names are long
+calculate_legend_text_size <- function(labels,
+                                       base_size = 14,
+                                       min_size = 9,
+                                       reference_length = 18,
+                                       step = 5,
+                                       decrement = 1.5) {
+  labels <- labels[!is.na(labels)]
+  if (length(labels) == 0) {
+    return(base_size)
+  }
+  max_len <- max(nchar(as.character(labels)), na.rm = TRUE)
+  size_penalty <- max(0, ceiling((max_len - reference_length) / step)) * decrement
+  size <- base_size - size_penalty
+  return(max(min_size, size))
+}
+
+
 ###############################################################################
 
 
@@ -521,13 +545,20 @@ walk2(.x = relAbundance_tbs_rare_grouped, .y = taxon_levels,
                              df <- relAbundance_tb %>%
                                left_join(metadata %>% rownames_to_column("samples"))
                              
+                          legend_text_size <- calculate_legend_text_size(
+                            df %>% pull(!!sym(taxon_level)) %>% unique()
+                          )
                           p <- ggplot(data =  df, mapping = aes(x= !!sym(x), y=!!sym(y) )) +
                                geom_col(aes(fill = !!sym(taxon_level) )) + 
                                facet_wrap(facet_by, scales = "free",
                                           nrow = 1, labeller = label_wrap_gen(width=10)) +
                                publication_format +
+                               theme(legend.text = element_text(size = legend_text_size,
+                                                                face = 'bold',
+                                                                color = 'black')) +
                                labs(x = x_lab , y = y_lab, fill= tools::toTitleCase(taxon_level)) + 
-                               scale_fill_manual(values = custom_palette) +
+                               scale_fill_manual(values = custom_palette,
+                                                 guide = legend_guide) +
                                theme(axis.text.x=element_text(
                                  margin=margin(t=0.5,r=0,b=0,l=0,unit ="cm"),
                                  angle = 90, 
@@ -603,6 +634,9 @@ if(plot_width < 7.5) {
 walk2(.x = group_relAbundance_tbs, .y = taxon_levels, 
                            .f = function(relAbundance_tb=.x, taxon_level=.y){
                              
+                             legend_text_size <- calculate_legend_text_size(
+                               relAbundance_tb %>% pull(!!sym(taxon_level)) %>% unique()
+                             )
                              p <- ggplot(data =  relAbundance_tb %>%
                                            mutate(X=str_wrap(!!sym(groups_colname),
                                                              width = 10) # wrap long group names
@@ -610,12 +644,16 @@ walk2(.x = group_relAbundance_tbs, .y = taxon_levels,
                                            , mapping = aes(x= X, y = !!sym(y)   )) +
                                geom_col(aes(fill = !!sym(taxon_level))) + 
                                publication_format +
+                               theme(legend.text = element_text(size = legend_text_size,
+                                                                face = 'bold',
+                                                                color = 'black')) +
                                theme(axis.text.x=element_text(
                                  margin=margin(t=0.5,r=0,b=0,l=0,unit ="cm"),
                                  angle = 0, 
                                  hjust = 0.5, vjust = 0.5)) + 
                                labs(x = NULL , y = y_lab, fill = tools::toTitleCase(taxon_level)) + 
-                               scale_fill_manual(values = custom_palette)
+                               scale_fill_manual(values = custom_palette,
+                                                 guide = legend_guide)
                              ggsave(filename = glue("{taxonomy_plots_out_dir}/{output_prefix}groups_{taxon_level}{assay_suffix}.png"),
                                     plot=p, width = plot_width, 
                                     height = 10, dpi = 300, limitsize = FALSE)
