@@ -1,0 +1,1065 @@
+Sep-25 14:02:04.282 [main] DEBUG nextflow.cli.Launcher - $> nextflow -C /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow.config -bg -q run /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/main.nf -profile slurm,singularity -name edge-nZ8saWswvyprfJU0
+Sep-25 14:02:04.359 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.10.5
+Sep-25 14:02:04.384 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/user1/.nextflow/plugins; core-plugins: nf-amazon@2.9.2,nf-azure@1.10.2,nf-cloudcache@0.4.2,nf-codecommit@0.2.2,nf-console@1.1.4,nf-google@1.15.4,nf-tower@1.9.3,nf-wave@1.7.4
+Sep-25 14:02:04.416 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Sep-25 14:02:04.417 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Sep-25 14:02:04.421 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Sep-25 14:02:04.436 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Sep-25 14:02:04.465 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow.config
+Sep-25 14:02:04.498 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/user1/.nextflow/secrets/store.json
+Sep-25 14:02:04.502 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@1bf0f6f6] - activable => nextflow.secret.LocalSecretsProvider@1bf0f6f6
+Sep-25 14:02:04.510 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `slurm,singularity`
+Sep-25 14:02:05.349 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [slurm, mamba, conda, singularity, docker]
+Sep-25 14:02:05.396 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
+Sep-25 14:02:05.419 [main] INFO  nextflow.cli.CmdRun - Launching `/project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/main.nf` [edge-nZ8saWswvyprfJU0] DSL2 - revision: c7f1242612
+Sep-25 14:02:05.421 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Sep-25 14:02:05.421 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Sep-25 14:02:05.475 [main] DEBUG nextflow.Session - Session UUID: aa8eb356-d5ca-4cf5-80e1-c21ca4403e7f
+Sep-25 14:02:05.476 [main] DEBUG nextflow.Session - Run name: edge-nZ8saWswvyprfJU0
+Sep-25 14:02:05.477 [main] DEBUG nextflow.Session - Executor pool size: 8
+Sep-25 14:02:05.486 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Sep-25 14:02:05.492 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Sep-25 14:02:05.525 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 24.10.5 build 5935
+  Created: 04-03-2025 17:55 UTC 
+  System: Linux 6.1.105-1.el9.elrepo.x86_64
+  Runtime: Groovy 4.0.23 on OpenJDK 64-Bit Server VM 17.0.10+7
+  Encoding: UTF-8 (UTF-8)
+  Process: 275541@login1.int.edgev3.mcb180107.jetstream-cloud.org [10.0.61.103]
+  CPUs: 8 - Mem: 29.1 GB (1.3 GB) - Swap: 1024 MB (983.8 MB)
+Sep-25 14:02:05.563 [main] DEBUG nextflow.Session - Work-dir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work [nfs]
+Sep-25 14:02:05.611 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Sep-25 14:02:05.621 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Sep-25 14:02:05.657 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Sep-25 14:02:05.668 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
+Sep-25 14:02:05.748 [main] DEBUG nextflow.Session - Session start
+Sep-25 14:02:06.608 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Sep-25 14:02:08.020 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:COPY_READS` matches process COPY_READS
+Sep-25 14:02:08.038 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.038 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.049 [main] DEBUG nextflow.executor.Executor - [warm up] executor > slurm
+Sep-25 14:02:08.056 [main] DEBUG n.processor.TaskPollingMonitor - Creating task monitor for executor 'slurm' > capacity: 20; pollInterval: 5s; dumpInterval: 5m 
+Sep-25 14:02:08.058 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: slurm)
+Sep-25 14:02:08.061 [main] DEBUG n.executor.AbstractGridExecutor - Creating executor 'slurm' > queue-stat-interval: 1m
+Sep-25 14:02:08.119 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:fastqc` matches labels `fastqc` for process with name RAW_FASTQC
+Sep-25 14:02:08.120 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:RAW_FASTQC` matches process RAW_FASTQC
+Sep-25 14:02:08.121 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:RAW_FASTQC` matches process RAW_FASTQC
+Sep-25 14:02:08.123 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.123 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.142 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:RAW_MULTIQC|TRIMMED_MULTIQC` matches process RAW_MULTIQC
+Sep-25 14:02:08.143 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:RAW_MULTIQC|TRIMMED_MULTIQC` matches process RAW_MULTIQC
+Sep-25 14:02:08.146 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.146 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.155 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:zip` matches labels `zip` for process with name ZIP_MULTIQC_RAW
+Sep-25 14:02:08.156 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:ZIP_MULTIQC_RAW|ZIP_MULTIQC_TRIMMED` matches process ZIP_MULTIQC_RAW
+Sep-25 14:02:08.156 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:ZIP_MULTIQC_RAW|ZIP_MULTIQC_TRIMMED` matches process ZIP_MULTIQC_RAW
+Sep-25 14:02:08.158 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.158 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.186 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:CUTADAPT|COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE` matches process CUTADAPT
+Sep-25 14:02:08.187 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:CUTADAPT|COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE` matches process CUTADAPT
+Sep-25 14:02:08.190 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.190 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.208 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:CUTADAPT|COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE` matches process COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE
+Sep-25 14:02:08.210 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.210 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.216 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:fastqc` matches labels `fastqc` for process with name TRIMMED_FASTQC
+Sep-25 14:02:08.217 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:TRIMMED_FASTQC` matches process TRIMMED_FASTQC
+Sep-25 14:02:08.218 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:TRIMMED_FASTQC` matches process TRIMMED_FASTQC
+Sep-25 14:02:08.221 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.221 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.228 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:RAW_MULTIQC|TRIMMED_MULTIQC` matches process TRIMMED_MULTIQC
+Sep-25 14:02:08.229 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:RAW_MULTIQC|TRIMMED_MULTIQC` matches process TRIMMED_MULTIQC
+Sep-25 14:02:08.231 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.231 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.238 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:zip` matches labels `zip` for process with name ZIP_MULTIQC_TRIMMED
+Sep-25 14:02:08.239 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:ZIP_MULTIQC_RAW|ZIP_MULTIQC_TRIMMED` matches process ZIP_MULTIQC_TRIMMED
+Sep-25 14:02:08.239 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:ZIP_MULTIQC_RAW|ZIP_MULTIQC_TRIMMED` matches process ZIP_MULTIQC_TRIMMED
+Sep-25 14:02:08.241 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.241 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.270 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:RUN_R_TRIM|RUN_R_NOTRIM` matches process RUN_R_TRIM
+Sep-25 14:02:08.272 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.273 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.294 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:zip` matches labels `zip` for process with name ZIP_BIOM
+Sep-25 14:02:08.295 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:ZIP_BIOM` matches process ZIP_BIOM
+Sep-25 14:02:08.297 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.297 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.309 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:visualization` matches labels `visualization` for process with name ALPHA_DIVERSITY
+Sep-25 14:02:08.311 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.311 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.317 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:visualization` matches labels `visualization` for process with name BETA_DIVERSITY
+Sep-25 14:02:08.319 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.319 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.326 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:visualization` matches labels `visualization` for process with name PLOT_TAXONOMY
+Sep-25 14:02:08.328 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.328 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.348 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:visualization` matches labels `visualization` for process with name ANCOMBC1
+Sep-25 14:02:08.351 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.351 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.361 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:visualization` matches labels `visualization` for process with name ANCOMBC2
+Sep-25 14:02:08.364 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.364 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.379 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:visualization` matches labels `visualization` for process with name DESEQ
+Sep-25 14:02:08.381 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.381 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.422 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:fastqc` matches labels `fastqc` for process with name SOFTWARE_VERSIONS
+Sep-25 14:02:08.422 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:SOFTWARE_VERSIONS` matches process SOFTWARE_VERSIONS
+Sep-25 14:02:08.424 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Sep-25 14:02:08.424 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Sep-25 14:02:08.427 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: DESEQ, FASTQC, ZIP_MULTIQC, RUN_R_NOTRIM, COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE, CUTADAPT_ANCHORED, MULTIQC, CUTADAPT, COPY_READS, ZIP_BIOM, RAW_FASTQC, ALPHA_DIVERSITY, BETA_DIVERSITY, ANCOMBC1, RUN_R_TRIM, ANCOMBC2, GET_RUNSHEET, TRIMMED_FASTQC, ZIP_MULTIQC_RAW, CUTADAPT_UNANCHORED, RAW_MULTIQC, PLOT_TAXONOMY, ZIP_MULTIQC_TRIMMED, ANCOMBC, SOFTWARE_VERSIONS, COPY_REMOTE_READS, TRIMMED_MULTIQC
+Sep-25 14:02:08.431 [main] DEBUG nextflow.Session - Igniting dataflow network (26)
+Sep-25 14:02:08.438 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > COPY_READS
+Sep-25 14:02:08.438 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > RAW_FASTQC
+Sep-25 14:02:08.438 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > RAW_MULTIQC
+Sep-25 14:02:08.438 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > ZIP_MULTIQC_RAW
+Sep-25 14:02:08.438 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > CUTADAPT
+Sep-25 14:02:08.439 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE
+Sep-25 14:02:08.439 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > TRIMMED_FASTQC
+Sep-25 14:02:08.439 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > TRIMMED_MULTIQC
+Sep-25 14:02:08.439 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > ZIP_MULTIQC_TRIMMED
+Sep-25 14:02:08.439 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > RUN_R_TRIM
+Sep-25 14:02:08.439 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > ZIP_BIOM
+Sep-25 14:02:08.443 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > ALPHA_DIVERSITY
+Sep-25 14:02:08.443 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > BETA_DIVERSITY
+Sep-25 14:02:08.443 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > PLOT_TAXONOMY
+Sep-25 14:02:08.443 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > ANCOMBC1
+Sep-25 14:02:08.444 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > ANCOMBC2
+Sep-25 14:02:08.444 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > DESEQ
+Sep-25 14:02:08.444 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > SOFTWARE_VERSIONS
+Sep-25 14:02:08.444 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_50a22746e4de6335: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/utils.nf
+  Script_054fa9b42acfb473: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/main.nf
+  Script_44a307788ab432ce: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/copy_reads.nf
+  Script_fda9e4ef5c4b0558: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/ancombc.nf
+  Script_be65c467e805f754: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/taxonomy_plots.nf
+  Script_e81b43030d516b4f: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/diversity.nf
+  Script_4cd1675c4baf8d07: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/zip_biom.nf
+  Script_09aec84708e97344: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/create_runsheet.nf
+  Script_516aa13dfd6ef87d: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/run_dada.nf
+  Script_6f31a91e87bc5609: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/cutadapt.nf
+  Script_97c27d08f49e2528: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/deseq.nf
+  Script_a63a1a6dec2a4940: /project/nasa/GeneLab_AmpliconSeq_Workflow/workflow_code/./modules/quality_assessment.nf
+Sep-25 14:02:08.444 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Sep-25 14:02:08.445 [main] DEBUG nextflow.Session - Session await
+Sep-25 14:02:08.792 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (GC_LAR_FluidAA_G3) > jobId: 6248; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/50/d39caecfe9009bb96f90906e8c38c9
+Sep-25 14:02:08.793 [Task submitter] INFO  nextflow.Session - [50/d39cae] Submitted process > COPY_READS (GC_LAR_FluidAA_G3)
+Sep-25 14:02:08.829 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (FLT_LAR_FluidAA_F10) > jobId: 6249; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/09/ff4721123c7e771f8bf9d42b2dabf7
+Sep-25 14:02:08.829 [Task submitter] INFO  nextflow.Session - [09/ff4721] Submitted process > COPY_READS (FLT_LAR_FluidAA_F10)
+Sep-25 14:02:08.851 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (GC_LAR_FluidAA_G2) > jobId: 6250; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/72/2b90a665a71729e232d7b90b726f91
+Sep-25 14:02:08.852 [Task submitter] INFO  nextflow.Session - [72/2b90a6] Submitted process > COPY_READS (GC_LAR_FluidAA_G2)
+Sep-25 14:02:08.876 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (GC_LAR_FluidAA_G5) > jobId: 6251; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/7c/cdcf2246b519c680d1444670f92144
+Sep-25 14:02:08.876 [Task submitter] INFO  nextflow.Session - [7c/cdcf22] Submitted process > COPY_READS (GC_LAR_FluidAA_G5)
+Sep-25 14:02:08.899 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (GC_LAR_FluidAA_G10) > jobId: 6252; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/a0/856fb07e35a9e5bcc9a40257b82077
+Sep-25 14:02:08.900 [Task submitter] INFO  nextflow.Session - [a0/856fb0] Submitted process > COPY_READS (GC_LAR_FluidAA_G10)
+Sep-25 14:02:08.925 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (FLT_LAR_FluidAA_F9) > jobId: 6253; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/ed/22a22935b7399f40f4e7e1ba18ce05
+Sep-25 14:02:08.925 [Task submitter] INFO  nextflow.Session - [ed/22a229] Submitted process > COPY_READS (FLT_LAR_FluidAA_F9)
+Sep-25 14:02:08.949 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (FLT_LAR_FluidAA_F2) > jobId: 6254; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/13/1e9f0f0e1c30d179243af520aa567c
+Sep-25 14:02:08.950 [Task submitter] INFO  nextflow.Session - [13/1e9f0f] Submitted process > COPY_READS (FLT_LAR_FluidAA_F2)
+Sep-25 14:02:08.974 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (FLT_LAR_FluidAA_F5) > jobId: 6255; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/82/57e614c5dad8fb0c79bda77f4cfdbc
+Sep-25 14:02:08.975 [Task submitter] INFO  nextflow.Session - [82/57e614] Submitted process > COPY_READS (FLT_LAR_FluidAA_F5)
+Sep-25 14:02:08.997 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (FLT_LAR_FluidAA_F3) > jobId: 6256; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/a6/a4192a5770cbd62da1d4f8b9d7bbb7
+Sep-25 14:02:08.998 [Task submitter] INFO  nextflow.Session - [a6/a4192a] Submitted process > COPY_READS (FLT_LAR_FluidAA_F3)
+Sep-25 14:02:09.021 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COPY_READS (GC_LAR_FluidAA_G9) > jobId: 6257; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/93/e7c1627b8a226573d6813518f6d801
+Sep-25 14:02:09.022 [Task submitter] INFO  nextflow.Session - [93/e7c162] Submitted process > COPY_READS (GC_LAR_FluidAA_G9)
+Sep-25 14:02:13.077 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6248; id: 8; name: COPY_READS (GC_LAR_FluidAA_G3); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/50/d39caecfe9009bb96f90906e8c38c9 started: 1758808933072; exited: 2025-09-25T14:02:09.448119938Z; ]
+Sep-25 14:02:13.079 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Sep-25 14:02:13.086 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6249; id: 1; name: COPY_READS (FLT_LAR_FluidAA_F10); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/09/ff4721123c7e771f8bf9d42b2dabf7 started: 1758808933083; exited: 2025-09-25T14:02:09.445119925Z; ]
+Sep-25 14:02:13.091 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6250; id: 7; name: COPY_READS (GC_LAR_FluidAA_G2); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/72/2b90a665a71729e232d7b90b726f91 started: 1758808933088; exited: 2025-09-25T14:02:09.441119908Z; ]
+Sep-25 14:02:13.096 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6251; id: 9; name: COPY_READS (GC_LAR_FluidAA_G5); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/7c/cdcf2246b519c680d1444670f92144 started: 1758808933093; exited: 2025-09-25T14:02:09.444119921Z; ]
+Sep-25 14:02:13.103 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6252; id: 6; name: COPY_READS (GC_LAR_FluidAA_G10); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/a0/856fb07e35a9e5bcc9a40257b82077 started: 1758808933098; exited: 2025-09-25T14:02:09.736121178Z; ]
+Sep-25 14:02:13.108 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6253; id: 5; name: COPY_READS (FLT_LAR_FluidAA_F9); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/ed/22a22935b7399f40f4e7e1ba18ce05 started: 1758808933105; exited: 2025-09-25T14:02:09.720121109Z; ]
+Sep-25 14:02:13.113 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6254; id: 2; name: COPY_READS (FLT_LAR_FluidAA_F2); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/13/1e9f0f0e1c30d179243af520aa567c started: 1758808933109; exited: 2025-09-25T14:02:09.720121109Z; ]
+Sep-25 14:02:13.120 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6255; id: 4; name: COPY_READS (FLT_LAR_FluidAA_F5); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/82/57e614c5dad8fb0c79bda77f4cfdbc started: 1758808933116; exited: 2025-09-25T14:02:09.714121083Z; ]
+Sep-25 14:02:13.125 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6256; id: 3; name: COPY_READS (FLT_LAR_FluidAA_F3); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/a6/a4192a5770cbd62da1d4f8b9d7bbb7 started: 1758808933123; exited: 2025-09-25T14:02:09.753121251Z; ]
+Sep-25 14:02:13.131 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6257; id: 10; name: COPY_READS (GC_LAR_FluidAA_G9); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/93/e7c1627b8a226573d6813518f6d801 started: 1758808933129; exited: 2025-09-25T14:02:09.734121169Z; ]
+Sep-25 14:02:13.163 [TaskFinalizer-5] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Sep-25 14:02:13.236 [Actor Thread 19] WARN  nextflow.container.SingularityCache - Singularity cache directory has not been defined -- Remote image will be stored in the path: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity -- Use the environment variable NXF_SINGULARITY_CACHEDIR to specify a different location
+Sep-25 14:02:13.236 [Actor Thread 19] INFO  nextflow.container.SingularityCache - Pulling Singularity image docker://quay.io/biocontainers/cutadapt:5.0--py39hbcbf7aa_0 [cache /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-biocontainers-cutadapt-5.0--py39hbcbf7aa_0.img]
+Sep-25 14:02:13.236 [Actor Thread 18] INFO  nextflow.container.SingularityCache - Pulling Singularity image docker://staphb/fastqc:0.12.1 [cache /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/staphb-fastqc-0.12.1.img]
+Sep-25 14:02:15.360 [Actor Thread 18] DEBUG nextflow.container.SingularityCache - Singularity pull complete image=docker://staphb/fastqc:0.12.1 path=/project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/staphb-fastqc-0.12.1.img
+Sep-25 14:02:15.414 [Actor Thread 19] DEBUG nextflow.container.SingularityCache - Singularity pull complete image=docker://quay.io/biocontainers/cutadapt:5.0--py39hbcbf7aa_0 path=/project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-biocontainers-cutadapt-5.0--py39hbcbf7aa_0.img
+Sep-25 14:02:15.414 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F2...) > jobId: 6258; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/76/d618758e81f218af4df4e150bdfb90
+Sep-25 14:02:15.415 [Task submitter] INFO  nextflow.Session - [76/d61875] Submitted process > RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F2...)
+Sep-25 14:02:15.454 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F10...) > jobId: 6259; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/96/0a6ebf6e5eed349bb4bee384b13ad3
+Sep-25 14:02:15.454 [Task submitter] INFO  nextflow.Session - [96/0a6ebf] Submitted process > RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F10...)
+Sep-25 14:02:15.484 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G2...) > jobId: 6260; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/73/152fbd1de1e8d7b14f84884add50a7
+Sep-25 14:02:15.485 [Task submitter] INFO  nextflow.Session - [73/152fbd] Submitted process > RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G2...)
+Sep-25 14:02:15.506 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G10...) > jobId: 6261; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/10/28299fec15bac439c4f1a9d75bc0db
+Sep-25 14:02:15.506 [Task submitter] INFO  nextflow.Session - [10/28299f] Submitted process > RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G10...)
+Sep-25 14:02:15.529 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G3...) > jobId: 6262; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/08/5338d4ad5d7198263cec31858f7772
+Sep-25 14:02:15.529 [Task submitter] INFO  nextflow.Session - [08/5338d4] Submitted process > RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G3...)
+Sep-25 14:02:15.551 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G5...) > jobId: 6263; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f3/62aaba94073d7dc727cd5d1b79b724
+Sep-25 14:02:15.551 [Task submitter] INFO  nextflow.Session - [f3/62aaba] Submitted process > RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G5...)
+Sep-25 14:02:15.579 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F5...) > jobId: 6264; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/9c/857189f25145a5f477e11ae213478a
+Sep-25 14:02:15.579 [Task submitter] INFO  nextflow.Session - [9c/857189] Submitted process > RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F5...)
+Sep-25 14:02:15.599 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F9...) > jobId: 6265; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/b9/a3efa276b5a7802b084b78a83cdd3f
+Sep-25 14:02:15.599 [Task submitter] INFO  nextflow.Session - [b9/a3efa2] Submitted process > RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F9...)
+Sep-25 14:02:15.619 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F3...) > jobId: 6266; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/6c/11a7396054307f5d6d6f48cbb85490
+Sep-25 14:02:15.621 [Task submitter] INFO  nextflow.Session - [6c/11a739] Submitted process > RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F3...)
+Sep-25 14:02:15.651 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G9...) > jobId: 6267; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/18/6c95dfa46a6e65469e1b16ee9e49dc
+Sep-25 14:02:15.652 [Task submitter] INFO  nextflow.Session - [18/6c95df] Submitted process > RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G9...)
+Sep-25 14:02:15.684 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F9 using cutadapt...) > jobId: 6268; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/df/6172fa52ceb1ec02295144487e4c09
+Sep-25 14:02:15.684 [Task submitter] INFO  nextflow.Session - [df/6172fa] Submitted process > CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F9 using cutadapt...)
+Sep-25 14:02:15.713 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G5 using cutadapt...) > jobId: 6269; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/da/3be578c8014a17b9939f09cf948fdd
+Sep-25 14:02:15.713 [Task submitter] INFO  nextflow.Session - [da/3be578] Submitted process > CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G5 using cutadapt...)
+Sep-25 14:02:15.741 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F10 using cutadapt...) > jobId: 6270; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/4a/50abfbb1935ac8520eb9bd147951da
+Sep-25 14:02:15.741 [Task submitter] INFO  nextflow.Session - [4a/50abfb] Submitted process > CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F10 using cutadapt...)
+Sep-25 14:02:15.763 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F2 using cutadapt...) > jobId: 6271; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/63/5edd0a6b687aa8e5193283a79483c6
+Sep-25 14:02:15.764 [Task submitter] INFO  nextflow.Session - [63/5edd0a] Submitted process > CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F2 using cutadapt...)
+Sep-25 14:02:15.785 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G2 using cutadapt...) > jobId: 6272; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/77/bc17449b19b95bef20baa134791cdc
+Sep-25 14:02:15.785 [Task submitter] INFO  nextflow.Session - [77/bc1744] Submitted process > CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G2 using cutadapt...)
+Sep-25 14:02:15.810 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G3 using cutadapt...) > jobId: 6273; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/de/433463e07b371a374e6fa3477308e3
+Sep-25 14:02:15.810 [Task submitter] INFO  nextflow.Session - [de/433463] Submitted process > CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G3 using cutadapt...)
+Sep-25 14:02:15.847 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F5 using cutadapt...) > jobId: 6274; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/ad/b8906f45d7e0d1a7948f00ab3c8b41
+Sep-25 14:02:15.847 [Task submitter] INFO  nextflow.Session - [ad/b8906f] Submitted process > CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F5 using cutadapt...)
+Sep-25 14:02:15.884 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G10 using cutadapt...) > jobId: 6275; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/2a/f85aa368a77421393fdc7cd1d54fd9
+Sep-25 14:02:15.884 [Task submitter] INFO  nextflow.Session - [2a/f85aa3] Submitted process > CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G10 using cutadapt...)
+Sep-25 14:02:15.914 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F3 using cutadapt...) > jobId: 6276; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/99/c2057da339b3e03f2f8f951f3dcb50
+Sep-25 14:02:15.914 [Task submitter] INFO  nextflow.Session - [99/c2057d] Submitted process > CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F3 using cutadapt...)
+Sep-25 14:02:15.947 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G9 using cutadapt...) > jobId: 6277; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/2f/e3637124ce68c65968ba1fa1114100
+Sep-25 14:02:15.947 [Task submitter] INFO  nextflow.Session - [2f/e36371] Submitted process > CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G9 using cutadapt...)
+Sep-25 14:02:23.087 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6268; id: 23; name: CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F9 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/df/6172fa52ceb1ec02295144487e4c09 started: 1758808938109; exited: 2025-09-25T14:02:19.022161149Z; ]
+Sep-25 14:02:23.090 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6269; id: 22; name: CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G5 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/da/3be578c8014a17b9939f09cf948fdd started: 1758808938111; exited: 2025-09-25T14:02:18.923160722Z; ]
+Sep-25 14:02:23.093 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6270; id: 17; name: CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F10 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/4a/50abfbb1935ac8520eb9bd147951da started: 1758808938112; exited: 2025-09-25T14:02:19.163161755Z; ]
+Sep-25 14:02:23.101 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6271; id: 16; name: CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F2 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/63/5edd0a6b687aa8e5193283a79483c6 started: 1758808938113; exited: 2025-09-25T14:02:19.137161644Z; ]
+Sep-25 14:02:23.117 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6272; id: 12; name: CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G2 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/77/bc17449b19b95bef20baa134791cdc started: 1758808938115; exited: 2025-09-25T14:02:18.979160963Z; ]
+Sep-25 14:02:23.145 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6273; id: 27; name: CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G3 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/de/433463e07b371a374e6fa3477308e3 started: 1758808938116; exited: 2025-09-25T14:02:18.89016058Z; ]
+Sep-25 14:02:23.172 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6274; id: 13; name: CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F5 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/ad/b8906f45d7e0d1a7948f00ab3c8b41 started: 1758808938117; exited: 2025-09-25T14:02:18.89016058Z; ]
+Sep-25 14:02:23.194 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6275; id: 15; name: CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G10 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/2a/f85aa368a77421393fdc7cd1d54fd9 started: 1758808938120; exited: 2025-09-25T14:02:19.023161153Z; ]
+Sep-25 14:02:23.204 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6276; id: 28; name: CUTADAPT (Trimming off primers for FLT_LAR_FluidAA_F3 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/99/c2057da339b3e03f2f8f951f3dcb50 started: 1758808943198; exited: 2025-09-25T14:02:21.723172775Z; ]
+Sep-25 14:02:23.225 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F10...) > jobId: 6278; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/c4/cb020f95a3c0495d2ff490987fed9f
+Sep-25 14:02:23.225 [Task submitter] INFO  nextflow.Session - [c4/cb020f] Submitted process > TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F10...)
+Sep-25 14:02:23.232 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6277; id: 30; name: CUTADAPT (Trimming off primers for GC_LAR_FluidAA_G9 using cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/2f/e3637124ce68c65968ba1fa1114100 started: 1758808943217; exited: 2025-09-25T14:02:21.628172367Z; ]
+Sep-25 14:02:23.522 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F9...) > jobId: 6279; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/fd/d24ab608b30082eb2d6bc90a5f7dda
+Sep-25 14:02:23.523 [Task submitter] INFO  nextflow.Session - [fd/d24ab6] Submitted process > TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F9...)
+Sep-25 14:02:23.588 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G5...) > jobId: 6280; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/0b/fe9602f8bd3b22030e7378f28b62a7
+Sep-25 14:02:23.588 [Task submitter] INFO  nextflow.Session - [0b/fe9602] Submitted process > TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G5...)
+Sep-25 14:02:23.609 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F2...) > jobId: 6281; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/b0/5e97b4ddbaa4abac09f8553499d74a
+Sep-25 14:02:23.609 [Task submitter] INFO  nextflow.Session - [b0/5e97b4] Submitted process > TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F2...)
+Sep-25 14:02:23.626 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G2...) > jobId: 6282; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/83/07db471c2e3bf53d036d504546c2fc
+Sep-25 14:02:23.626 [Task submitter] INFO  nextflow.Session - [83/07db47] Submitted process > TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G2...)
+Sep-25 14:02:23.647 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G3...) > jobId: 6283; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/75/e0f1bd74196b9198c947ac5a6fdd83
+Sep-25 14:02:23.647 [Task submitter] INFO  nextflow.Session - [75/e0f1bd] Submitted process > TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G3...)
+Sep-25 14:02:23.666 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F5...) > jobId: 6284; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/02/46dcda402c14fb91b3b3d254099bbd
+Sep-25 14:02:23.666 [Task submitter] INFO  nextflow.Session - [02/46dcda] Submitted process > TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F5...)
+Sep-25 14:02:23.691 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G10...) > jobId: 6285; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/6d/b77da7946f854f1150f2846070882b
+Sep-25 14:02:23.691 [Task submitter] INFO  nextflow.Session - [6d/b77da7] Submitted process > TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G10...)
+Sep-25 14:02:23.711 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F3...) > jobId: 6286; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/37/927336332e2019a9b2acf20631b4d5
+Sep-25 14:02:23.712 [Task submitter] INFO  nextflow.Session - [37/927336] Submitted process > TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F3...)
+Sep-25 14:02:23.729 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G9...) > jobId: 6287; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/df/4770cf1a376a914ffbc5c5812b74e8
+Sep-25 14:02:23.729 [Task submitter] INFO  nextflow.Session - [df/4770cf] Submitted process > TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G9...)
+Sep-25 14:02:23.889 [PublishDir-3] DEBUG nextflow.processor.PublishDir - Failed to publish file: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/2a/f85aa368a77421393fdc7cd1d54fd9/versions.txt; to: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/output/AmpIllumina/workflow_output/Trimmed_Sequence_Data/versions.txt [copy] -- attempt: 1; reason: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/output/AmpIllumina/workflow_output/Trimmed_Sequence_Data/versions.txt
+Sep-25 14:02:28.075 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6258; id: 19; name: RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F2...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/76/d618758e81f218af4df4e150bdfb90 started: 1758808938069; exited: 2025-09-25T14:02:24.253183666Z; ]
+Sep-25 14:02:28.079 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6259; id: 20; name: RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F10...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/96/0a6ebf6e5eed349bb4bee384b13ad3 started: 1758808938095; exited: 2025-09-25T14:02:23.188179082Z; ]
+Sep-25 14:02:28.082 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6260; id: 11; name: RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G2...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/73/152fbd1de1e8d7b14f84884add50a7 started: 1758808938097; exited: 2025-09-25T14:02:23.23417928Z; ]
+Sep-25 14:02:28.087 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6261; id: 18; name: RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G10...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/10/28299fec15bac439c4f1a9d75bc0db started: 1758808938098; exited: 2025-09-25T14:02:23.19017909Z; ]
+Sep-25 14:02:28.096 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6262; id: 25; name: RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G3...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/08/5338d4ad5d7198263cec31858f7772 started: 1758808938100; exited: 2025-09-25T14:02:23.211179181Z; ]
+Sep-25 14:02:28.108 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6263; id: 21; name: RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G5...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f3/62aaba94073d7dc727cd5d1b79b724 started: 1758808938102; exited: 2025-09-25T14:02:23.19717912Z; ]
+Sep-25 14:02:28.116 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6264; id: 14; name: RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F5...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/9c/857189f25145a5f477e11ae213478a started: 1758808938103; exited: 2025-09-25T14:02:23.209179172Z; ]
+Sep-25 14:02:28.126 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6265; id: 24; name: RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F9...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/b9/a3efa276b5a7802b084b78a83cdd3f started: 1758808938105; exited: 2025-09-25T14:02:24.180183352Z; ]
+Sep-25 14:02:28.135 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6266; id: 26; name: RAW_FASTQC (Running fastqc on FLT_LAR_FluidAA_F3...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/6c/11a7396054307f5d6d6f48cbb85490 started: 1758808938107; exited: 2025-09-25T14:02:23.201179138Z; ]
+Sep-25 14:02:28.145 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6267; id: 29; name: RAW_FASTQC (Running fastqc on GC_LAR_FluidAA_G9...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/18/6c95dfa46a6e65469e1b16ee9e49dc started: 1758808938108; exited: 2025-09-25T14:02:23.261179396Z; ]
+Sep-25 14:02:28.171 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE (Combining the logs generated by cutadapt...) > jobId: 6288; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/4b/8091b42bc06a9895fe8b96af255a4b
+Sep-25 14:02:28.171 [Task submitter] INFO  nextflow.Session - [4b/8091b4] Submitted process > COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE (Combining the logs generated by cutadapt...)
+Sep-25 14:02:28.188 [Actor Thread 19] INFO  nextflow.container.SingularityCache - Pulling Singularity image docker://quay.io/biocontainers/multiqc:1.27.1--pyhdfd78af_0 [cache /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-biocontainers-multiqc-1.27.1--pyhdfd78af_0.img]
+Sep-25 14:02:28.559 [PublishDir-6] DEBUG nextflow.processor.PublishDir - Failed to publish file: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/10/28299fec15bac439c4f1a9d75bc0db/versions.txt; to: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/output/AmpIllumina/Raw_Sequence_Data/versions.txt [copy] -- attempt: 1; reason: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/output/AmpIllumina/Raw_Sequence_Data/versions.txt
+Sep-25 14:02:29.647 [Actor Thread 19] DEBUG nextflow.container.SingularityCache - Singularity pull complete image=docker://quay.io/biocontainers/multiqc:1.27.1--pyhdfd78af_0 path=/project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-biocontainers-multiqc-1.27.1--pyhdfd78af_0.img
+Sep-25 14:02:29.687 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RAW_MULTIQC (Running multiqc on the raw files...) > jobId: 6289; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/de/bf781d4eaf630a849baf69b876143a
+Sep-25 14:02:29.687 [Task submitter] INFO  nextflow.Session - [de/bf781d] Submitted process > RAW_MULTIQC (Running multiqc on the raw files...)
+Sep-25 14:02:33.074 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6278; id: 33; name: TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F10...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/c4/cb020f95a3c0495d2ff490987fed9f started: 1758808948149; exited: 2025-09-25T14:02:29.836207698Z; ]
+Sep-25 14:02:33.077 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6279; id: 31; name: TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F9...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/fd/d24ab608b30082eb2d6bc90a5f7dda started: 1758808948155; exited: 2025-09-25T14:02:29.482206175Z; ]
+Sep-25 14:02:33.080 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6280; id: 32; name: TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G5...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/0b/fe9602f8bd3b22030e7378f28b62a7 started: 1758808948161; exited: 2025-09-25T14:02:29.484206183Z; ]
+Sep-25 14:02:33.083 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6281; id: 34; name: TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F2...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/b0/5e97b4ddbaa4abac09f8553499d74a started: 1758808948169; exited: 2025-09-25T14:02:29.595206661Z; ]
+Sep-25 14:02:33.085 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6282; id: 35; name: TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G2...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/83/07db471c2e3bf53d036d504546c2fc started: 1758808948175; exited: 2025-09-25T14:02:30.580210901Z; ]
+Sep-25 14:02:33.089 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6283; id: 36; name: TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G3...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/75/e0f1bd74196b9198c947ac5a6fdd83 started: 1758808948183; exited: 2025-09-25T14:02:30.532210694Z; ]
+Sep-25 14:02:33.094 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6284; id: 37; name: TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F5...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/02/46dcda402c14fb91b3b3d254099bbd started: 1758808948187; exited: 2025-09-25T14:02:30.644211176Z; ]
+Sep-25 14:02:33.098 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6285; id: 38; name: TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G10...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/6d/b77da7946f854f1150f2846070882b started: 1758808948192; exited: 2025-09-25T14:02:29.504206269Z; ]
+Sep-25 14:02:33.112 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6286; id: 39; name: TRIMMED_FASTQC (Running fastqc on FLT_LAR_FluidAA_F3...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/37/927336332e2019a9b2acf20631b4d5 started: 1758808948195; exited: 2025-09-25T14:02:30.571210862Z; ]
+Sep-25 14:02:33.123 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6287; id: 40; name: TRIMMED_FASTQC (Running fastqc on GC_LAR_FluidAA_G9...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/df/4770cf1a376a914ffbc5c5812b74e8 started: 1758808948202; exited: 2025-09-25T14:02:30.693211387Z; ]
+Sep-25 14:02:33.137 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6288; id: 41; name: COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE (Combining the logs generated by cutadapt...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/4b/8091b42bc06a9895fe8b96af255a4b started: 1758808953129; exited: 2025-09-25T14:02:29.571206558Z; ]
+Sep-25 14:02:33.162 [Actor Thread 3] INFO  nextflow.container.SingularityCache - Pulling Singularity image docker://quay.io/nasa_genelab/r-dada-decipher-biomformat:1.1 [cache /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-nasa_genelab-r-dada-decipher-biomformat-1.1.img]
+Sep-25 14:02:33.217 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process TRIMMED_MULTIQC (Running multiqc on the filtered files...) > jobId: 6290; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/a9/1c7ee211bbd1f1974a5b4f3bdc685f
+Sep-25 14:02:33.217 [Task submitter] INFO  nextflow.Session - [a9/1c7ee2] Submitted process > TRIMMED_MULTIQC (Running multiqc on the filtered files...)
+Sep-25 14:02:33.423 [PublishDir-2] DEBUG nextflow.processor.PublishDir - Failed to publish file: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/0b/fe9602f8bd3b22030e7378f28b62a7/versions.txt; to: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/output/AmpIllumina/workflow_output/Filtered_Sequence_Data/versions.txt [copy] -- attempt: 1; reason: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/output/AmpIllumina/workflow_output/Filtered_Sequence_Data/versions.txt
+Sep-25 14:02:34.399 [Actor Thread 3] DEBUG nextflow.container.SingularityCache - Singularity pull complete image=docker://quay.io/nasa_genelab/r-dada-decipher-biomformat:1.1 path=/project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-nasa_genelab-r-dada-decipher-biomformat-1.1.img
+Sep-25 14:02:34.496 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process RUN_R_TRIM (Running dada2 on the trimmed reads...) > jobId: 6291; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/b1/a6632e1dea972b9f58b15c0d1ef91f
+Sep-25 14:02:34.496 [Task submitter] INFO  nextflow.Session - [b1/a6632e] Submitted process > RUN_R_TRIM (Running dada2 on the trimmed reads...)
+Sep-25 14:02:43.076 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6289; id: 42; name: RAW_MULTIQC (Running multiqc on the raw files...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/de/bf781d4eaf630a849baf69b876143a started: 1758808953140; exited: 2025-09-25T14:02:39.197247993Z; ]
+Sep-25 14:02:43.080 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6290; id: 44; name: TRIMMED_MULTIQC (Running multiqc on the filtered files...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/a9/1c7ee211bbd1f1974a5b4f3bdc685f started: 1758808958075; exited: 2025-09-25T14:02:42.994264336Z; ]
+Sep-25 14:02:43.092 [Actor Thread 16] INFO  nextflow.container.SingularityCache - Pulling Singularity image docker://quay.io/nasa_genelab/zip:3.0 [cache /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-nasa_genelab-zip-3.0.img]
+Sep-25 14:02:44.375 [Actor Thread 16] DEBUG nextflow.container.SingularityCache - Singularity pull complete image=docker://quay.io/nasa_genelab/zip:3.0 path=/project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-nasa_genelab-zip-3.0.img
+Sep-25 14:02:44.436 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process ZIP_MULTIQC_RAW (Zipping raw multiqc..) > jobId: 6292; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/89/e6cf4fa2ac30d0fd661b1bde03d0e8
+Sep-25 14:02:44.436 [Task submitter] INFO  nextflow.Session - [89/e6cf4f] Submitted process > ZIP_MULTIQC_RAW (Zipping raw multiqc..)
+Sep-25 14:02:44.458 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process ZIP_MULTIQC_TRIMMED (Zipping filtered multiqc..) > jobId: 6293; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f2/eefe5f97b9f7d9f0b1618c91a62d31
+Sep-25 14:02:44.459 [Task submitter] INFO  nextflow.Session - [f2/eefe5f] Submitted process > ZIP_MULTIQC_TRIMMED (Zipping filtered multiqc..)
+Sep-25 14:02:48.081 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6292; id: 45; name: ZIP_MULTIQC_RAW (Zipping raw multiqc..); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/89/e6cf4fa2ac30d0fd661b1bde03d0e8 started: 1758808968076; exited: 2025-09-25T14:02:45.751276204Z; ]
+Sep-25 14:02:48.086 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6293; id: 46; name: ZIP_MULTIQC_TRIMMED (Zipping filtered multiqc..); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f2/eefe5f97b9f7d9f0b1618c91a62d31 started: 1758808968083; exited: 2025-09-25T14:02:45.745276178Z; ]
+Sep-25 14:07:13.099 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor slurm > tasks to be completed: 1 -- submitted tasks are shown below
+~> TaskHandler[jobId: 6291; id: 43; name: RUN_R_TRIM (Running dada2 on the trimmed reads...); status: RUNNING; exit: -; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/b1/a6632e1dea972b9f58b15c0d1ef91f started: 1758808958079; exited: -; ]
+Sep-25 14:09:18.123 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6291; id: 43; name: RUN_R_TRIM (Running dada2 on the trimmed reads...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/b1/a6632e1dea972b9f58b15c0d1ef91f started: 1758808958079; exited: 2025-09-25T14:09:15.274952904Z; ]
+Sep-25 14:09:18.175 [Actor Thread 3] WARN  nextflow.container.SingularityCache - Singularity cache directory has not been defined -- Remote image will be stored in the path: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity -- Use the environment variable NXF_SINGULARITY_CACHEDIR to specify a different location
+Sep-25 14:09:18.176 [Actor Thread 3] INFO  nextflow.container.SingularityCache - Pulling Singularity image docker://quay.io/nasa_genelab/r-diversity:1.1 [cache /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-nasa_genelab-r-diversity-1.1.img]
+Sep-25 14:09:18.275 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process ZIP_BIOM (Zipping the taxonomy counts....) > jobId: 6294; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/79/1411060f5cc5257fb6ba2435987c11
+Sep-25 14:09:18.275 [Task submitter] INFO  nextflow.Session - [79/141106] Submitted process > ZIP_BIOM (Zipping the taxonomy counts....)
+Sep-25 14:09:19.678 [Actor Thread 3] DEBUG nextflow.container.SingularityCache - Singularity pull complete image=docker://quay.io/nasa_genelab/r-diversity:1.1 path=/project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-nasa_genelab-r-diversity-1.1.img
+Sep-25 14:09:19.744 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process PLOT_TAXONOMY (Making taxonomy plots...) > jobId: 6295; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/01/4c22453325c28fba1009837cd07b6b
+Sep-25 14:09:19.744 [Task submitter] INFO  nextflow.Session - [01/4c2245] Submitted process > PLOT_TAXONOMY (Making taxonomy plots...)
+Sep-25 14:09:19.764 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process ALPHA_DIVERSITY (Running alpha diversity analysis...) > jobId: 6296; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/6a/3e58a609d2a2caa70d8a5740de8363
+Sep-25 14:09:19.765 [Task submitter] INFO  nextflow.Session - [6a/3e58a6] Submitted process > ALPHA_DIVERSITY (Running alpha diversity analysis...)
+Sep-25 14:09:19.785 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process BETA_DIVERSITY (Running beta diversity analysis...) > jobId: 6297; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/30/85306b823eedc3c2f1637b5d385050
+Sep-25 14:09:19.785 [Task submitter] INFO  nextflow.Session - [30/85306b] Submitted process > BETA_DIVERSITY (Running beta diversity analysis...)
+Sep-25 14:09:19.807 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process ANCOMBC1 (Running ancombc1 for differential abundance testing...) > jobId: 6298; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f2/ab90cb79391d1ad512cf0a93d104a1
+Sep-25 14:09:19.807 [Task submitter] INFO  nextflow.Session - [f2/ab90cb] Submitted process > ANCOMBC1 (Running ancombc1 for differential abundance testing...)
+Sep-25 14:09:23.125 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6294; id: 47; name: ZIP_BIOM (Zipping the taxonomy counts....); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/79/1411060f5cc5257fb6ba2435987c11 started: 1758809363119; exited: 2025-09-25T14:09:18.960968771Z; ]
+Sep-25 14:09:38.120 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6295; id: 51; name: PLOT_TAXONOMY (Making taxonomy plots...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/01/4c22453325c28fba1009837cd07b6b started: 1758809363128; exited: 2025-09-25T14:09:34.190034323Z; ]
+Sep-25 14:09:38.124 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6296; id: 49; name: ALPHA_DIVERSITY (Running alpha diversity analysis...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/6a/3e58a609d2a2caa70d8a5740de8363 started: 1758809363154; exited: 2025-09-25T14:09:35.937041843Z; ]
+Sep-25 14:09:48.121 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6297; id: 50; name: BETA_DIVERSITY (Running beta diversity analysis...); status: COMPLETED; exit: 0; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/30/85306b823eedc3c2f1637b5d385050 started: 1758809363156; exited: 2025-09-25T14:09:44.852080217Z; ]
+Sep-25 14:09:53.121 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 6298; id: 48; name: ANCOMBC1 (Running ancombc1 for differential abundance testing...); status: COMPLETED; exit: 1; error: -; workDir: /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f2/ab90cb79391d1ad512cf0a93d104a1 started: 1758809363158; exited: 2025-09-25T14:09:52.731114131Z; ]
+Sep-25 14:09:53.129 [TaskFinalizer-1] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=ANCOMBC1 (Running ancombc1 for differential abundance testing...); work-dir=/project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f2/ab90cb79391d1ad512cf0a93d104a1
+  error [nextflow.exception.ProcessFailedException]: Process `ANCOMBC1 (Running ancombc1 for differential abundance testing...)` terminated with an error exit status (1)
+Sep-25 14:09:53.174 [TaskFinalizer-1] ERROR nextflow.processor.TaskProcessor - Error executing process > 'ANCOMBC1 (Running ancombc1 for differential abundance testing...)'
+
+Caused by:
+  Process `ANCOMBC1 (Running ancombc1 for differential abundance testing...)` terminated with an error exit status (1)
+
+
+Command executed:
+
+  if [  ancombc1 == "ancombc1" ]; then
+      script_name='pairwise_ancombc1.R'
+  else
+      script_name='pairwise_ancombc2.R'
+  fi
+  
+  ${script_name} \
+            --metadata-table 'runsheet.csv' \
+            --feature-table 'counts_GLAmpSeq.tsv' \
+            --taxonomy-table 'taxonomy_GLAmpSeq.tsv' \
+            --group 'groups' \
+            --samples-column 'sample_id' \
+            --assay-suffix  '_GLAmpSeq' \
+            --output-prefix  '' \
+            --cpus 5 \
+            --target-region  '16S' \
+            --prevalence-cutoff 0 \
+            --library-cutoff  0 
+  
+  Rscript -e "VERSIONS=sprintf('ANCOMBC %s\n', packageVersion('ANCOMBC'))
+              write(x=VERSIONS, file='versions.txt', append=TRUE)"
+
+Command exit status:
+  1
+
+Command output:
+  ANCOMBC will be run on the default 'groups' column 
+        since it was not set by the usertaxize options
+    ncbi_sleep_sec: 5
+  There are 7 features without 
+  taxonomy assignments. Keeping them in analysis ...
+
+Command error:
+  The input data is of type: TreeSummarizedExperiment
+  PASS
+  Checking the sample metadata ...
+  The specified variables in the formula: groups
+  The available variables in the sample metadata: sample_id, forward, reverse, paired, groups
+  PASS
+  Checking other arguments ...
+  The number of groups of interest is: 2
+  The sample size per group is: Flight = 5, Ground_Control = 5
+  PASS
+  Obtaining initial estimates ...
+  Estimating sample-specific biases ...
+  ANCOM-BC primary results ...
+  Joining with `by = join_by(taxon)`
+  Joining with `by = join_by(taxon)`
+  Joining with `by = join_by(taxon)`
+  Joining with `by = join_by(taxon)`
+  Joining with `by = join_by(taxon)`
+  Warning message:
+  The group variable has < 3 categories 
+  The multi-group comparisons (global/pairwise/dunnet/trend) will be deactivated 
+  Making volcano plots...
+  Error in `map()`:
+  ℹ In index: 1.
+  ℹ With name: (Ground_Control)v(Flight).
+  Caused by error in `mutate()`:
+  ℹ In argument: `diff = Q.value <= p_val`.
+  Caused by error:
+  ! object 'Q.value' not found
+  Backtrace:
+       ▆
+    1. ├─purrr::map(...)
+    2. │ └─purrr:::map_("list", .x, .f, ..., .progress = .progress)
+    3. │   ├─purrr:::with_indexed_errors(...)
+    4. │   │ └─base::withCallingHandlers(...)
+    5. │   ├─purrr:::call_with_cleanup(...)
+    6. │   └─global .f(.x[[i]], ...)
+    7. │     ├─ggplot2::ggplot(...)
+    8. │     └─sub_res_df %>% mutate(diff = Q.value <= p_val)
+    9. ├─dplyr::mutate(., diff = Q.value <= p_val)
+   10. ├─dplyr:::mutate.data.frame(., diff = Q.value <= p_val)
+   11. │ └─dplyr:::mutate_cols(.data, dplyr_quosures(...), by)
+   12. │   ├─base::withCallingHandlers(...)
+   13. │   └─dplyr:::mutate_col(dots[[i]], data, mask, new_columns)
+   14. │     └─mask$eval_all_mutate(quo)
+   15. │       └─dplyr (local) eval()
+   16. └─base::.handleSimpleError(...)
+   17.   └─dplyr (local) h(simpleError(msg, call))
+   18.     └─rlang::abort(message, class = error_class, parent = parent, call = error_call)
+  Execution halted
+
+Work dir:
+  /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/f2/ab90cb79391d1ad512cf0a93d104a1
+
+Container:
+  /project/nasa/NASA_EDGEv3/io/projects/nZ8saWswvyprfJU0/nextflow/work/singularity/quay.io-nasa_genelab-r-diversity-1.1.img
+
+Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+Sep-25 14:09:53.183 [TaskFinalizer-1] DEBUG nextflow.Session - Session aborted -- Cause: Process `ANCOMBC1 (Running ancombc1 for differential abundance testing...)` terminated with an error exit status (1)
+Sep-25 14:09:53.205 [TaskFinalizer-1] DEBUG nextflow.Session - The following nodes are still active:
+[process] SOFTWARE_VERSIONS
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: software_versions
+  port 1: (cntrl) -     ; channel: $
+
+Sep-25 14:09:53.209 [Actor Thread 26] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 9; slices: 1; internal sort time: 0.018 s; external sort time: 0.004 s; total time: 0.022 s
+Sep-25 14:09:53.211 [TaskFinalizer-1] DEBUG nextflow.Session - 
+Thread[Notification Thread,9,system]
+
+Thread[PublishDir-2,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-6,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Task monitor,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1757)
+  app//nextflow.processor.TaskPollingMonitor$_await_closure5.doCall(TaskPollingMonitor.groovy:529)
+  app//nextflow.processor.TaskPollingMonitor$_await_closure5.call(TaskPollingMonitor.groovy)
+  app//nextflow.extension.Bolts.withLock(Bolts.groovy:337)
+  app//nextflow.extension.Bolts.withLock(Bolts.groovy)
+  app//nextflow.processor.TaskPollingMonitor.await(TaskPollingMonitor.groovy:528)
+  app//nextflow.processor.TaskPollingMonitor.pollLoop(TaskPollingMonitor.groovy:453)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+  java.base@17.0.10/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  java.base@17.0.10/java.lang.reflect.Method.invoke(Method.java:568)
+  app//org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+  app//groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:645)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokeMethodSafe(InvokerHelper.java:82)
+  app//nextflow.processor.TaskPollingMonitor$_start_closure2.doCall(TaskPollingMonitor.groovy:318)
+  app//nextflow.processor.TaskPollingMonitor$_start_closure2.call(TaskPollingMonitor.groovy)
+  app//groovy.lang.Closure.run(Closure.java:505)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 14,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[main,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  app//nextflow.util.Barrier$_awaitCompletion_closure3.doCall(Barrier.groovy:92)
+  app//nextflow.util.Barrier$_awaitCompletion_closure3.call(Barrier.groovy)
+  app//nextflow.extension.Bolts.withLock(Bolts.groovy:337)
+  app//nextflow.extension.Bolts.withLock(Bolts.groovy)
+  app//nextflow.util.Barrier.awaitCompletion(Barrier.groovy:89)
+  app//nextflow.Session.await(Session.groovy:676)
+  app//nextflow.script.ScriptRunner.await(ScriptRunner.groovy:256)
+  app//nextflow.script.ScriptRunner.execute(ScriptRunner.groovy:144)
+  app//nextflow.cli.CmdRun.run(CmdRun.groovy:376)
+  app//nextflow.cli.Launcher.run(Launcher.groovy:503)
+  app//nextflow.cli.Launcher.main(Launcher.groovy:658)
+
+Thread[Actor Thread 5,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-4,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Signal Dispatcher,9,system]
+
+Thread[Actor Thread 24,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 2,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Reference Handler,10,system]
+  java.base@17.0.10/java.lang.ref.Reference.waitForReferencePendingList(Native Method)
+  java.base@17.0.10/java.lang.ref.Reference.processPendingReferences(Reference.java:253)
+  java.base@17.0.10/java.lang.ref.Reference$ReferenceHandler.run(Reference.java:215)
+
+Thread[TaskFinalizer-6,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 27,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Thread-1,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1672)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingDeque.pollFirst(LinkedBlockingDeque.java:515)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingDeque.poll(LinkedBlockingDeque.java:677)
+  app//nextflow.util.SimpleAgent.run(SimpleAgent.groovy:89)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+  java.base@17.0.10/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  java.base@17.0.10/java.lang.reflect.Method.invoke(Method.java:568)
+  app//org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+  app//groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethodClosure(MetaClassImpl.java:1017)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1207)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+  app//groovy.lang.Closure.call(Closure.java:433)
+  app//groovy.lang.Closure.call(Closure.java:412)
+  app//groovy.lang.Closure.run(Closure.java:505)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Task submitter,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  app//nextflow.processor.TaskPollingMonitor.awaitTasks(TaskPollingMonitor.groovy:388)
+  app//nextflow.processor.TaskPollingMonitor.submitLoop(TaskPollingMonitor.groovy:412)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+  java.base@17.0.10/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  java.base@17.0.10/java.lang.reflect.Method.invoke(Method.java:568)
+  app//org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+  app//groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethodClosure(MetaClassImpl.java:1017)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1207)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+  app//groovy.lang.Closure.call(Closure.java:433)
+  app//groovy.lang.Closure.call(Closure.java:412)
+  app//groovy.lang.Closure.run(Closure.java:505)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-5,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 12,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 26,5,main]
+  java.base@17.0.10/java.lang.Class.isArray(Native Method)
+  java.base@17.0.10/java.lang.Class.getComponentType(Class.java:1227)
+  java.base@17.0.10/jdk.internal.misc.Unsafe.checkPrimitiveArray(Unsafe.java:558)
+  java.base@17.0.10/jdk.internal.misc.Unsafe.checkPrimitivePointer(Unsafe.java:579)
+  java.base@17.0.10/jdk.internal.misc.Unsafe.copyMemoryChecks(Unsafe.java:833)
+  java.base@17.0.10/jdk.internal.misc.Unsafe.copyMemory(Unsafe.java:800)
+  java.base@17.0.10/jdk.internal.misc.ScopedMemoryAccess.copyMemoryInternal(ScopedMemoryAccess.java:167)
+  java.base@17.0.10/jdk.internal.misc.ScopedMemoryAccess.copyMemory(ScopedMemoryAccess.java:149)
+  java.base@17.0.10/java.nio.ByteBuffer.putBuffer(ByteBuffer.java:1102)
+  java.base@17.0.10/java.nio.ByteBuffer.put(ByteBuffer.java:1009)
+  java.base@17.0.10/java.nio.HeapByteBuffer.put(HeapByteBuffer.java:243)
+  java.base@17.0.10/sun.nio.ch.IOUtil.read(IOUtil.java:299)
+  java.base@17.0.10/sun.nio.ch.IOUtil.read(IOUtil.java:273)
+  java.base@17.0.10/sun.nio.ch.FileChannelImpl.read(FileChannelImpl.java:232)
+  java.base@17.0.10/sun.nio.ch.ChannelInputStream.read(ChannelInputStream.java:65)
+  java.base@17.0.10/sun.nio.ch.ChannelInputStream.read(ChannelInputStream.java:107)
+  java.base@17.0.10/sun.nio.ch.ChannelInputStream.read(ChannelInputStream.java:101)
+  java.base@17.0.10/java.io.InputStream.read(InputStream.java:218)
+  java.base@17.0.10/sun.nio.ch.ChannelInputStream.read(ChannelInputStream.java:81)
+  java.base@17.0.10/java.io.DataInputStream.readInt(DataInputStream.java:382)
+  app//nextflow.sort.BigSort$Lane.next(BigSort.java:517)
+  app//nextflow.sort.BigSort.externalSort(BigSort.java:347)
+  app//nextflow.sort.BigSort.sort(BigSort.java:244)
+  app//nextflow.file.SortFileCollector.makeHash(SortFileCollector.groovy:247)
+  app//nextflow.file.FileCollector.saveTo(FileCollector.groovy:239)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$DMH/0x00007f74680b3400.invokeVirtual(LambdaForm$DMH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468105800.guardWithCatch(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106000.reinvoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106400.guard(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106000.reinvoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106400.guard(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106000.reinvoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468107000.invoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f74680b9000.invokeExact_MT(LambdaForm$MH)
+  app//org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$DMH/0x00007f74680a6c00.invokeStatic(LambdaForm$DMH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468105000.invoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.Invokers$Holder.linkToCallSite(Invokers$Holder)
+  app//nextflow.extension.CollectFileOp.emitItems(CollectFileOp.groovy:187)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+  java.base@17.0.10/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+  java.base@17.0.10/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  java.base@17.0.10/java.lang.reflect.Method.invoke(Method.java:568)
+  app//org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+  app//groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethodClosure(MetaClassImpl.java:1017)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1207)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+  app//groovy.lang.Closure.call(Closure.java:433)
+  app//groovy.lang.Closure.call(Closure.java:422)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$DMH/0x00007f74680b3400.invokeVirtual(LambdaForm$DMH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f746816d000.invoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468105800.guardWithCatch(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106000.reinvoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106400.guard(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106000.reinvoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106400.guard(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468106000.reinvoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f746816d400.invoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f74680b9000.invokeExact_MT(LambdaForm$MH)
+  app//org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$DMH/0x00007f74680a6c00.invokeStatic(LambdaForm$DMH)
+  java.base@17.0.10/java.lang.invoke.LambdaForm$MH/0x00007f7468105000.invoke(LambdaForm$MH)
+  java.base@17.0.10/java.lang.invoke.Invokers$Holder.linkToCallSite(Invokers$Holder)
+  app//nextflow.extension.DataflowHelper$3.afterStop(DataflowHelper.groovy:257)
+  app//groovyx.gpars.dataflow.operator.DataflowProcessor.fireAfterStop(DataflowProcessor.java:324)
+  app//groovyx.gpars.dataflow.operator.DataflowProcessorActor.afterStop(DataflowProcessorActor.java:59)
+  jdk.internal.reflect.GeneratedMethodAccessor194.invoke(Unknown Source)
+  java.base@17.0.10/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  java.base@17.0.10/java.lang.reflect.Method.invoke(Method.java:568)
+  app//org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+  app//groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokePojoMethod(InvokerHelper.java:633)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:624)
+  app//groovyx.gpars.actor.Actor.callDynamic(Actor.java:369)
+  app//groovyx.gpars.actor.Actor.handleTermination(Actor.java:320)
+  app//groovyx.gpars.actor.AbstractLoopingActor.terminate(AbstractLoopingActor.java:204)
+  app//groovyx.gpars.dataflow.operator.DataflowProcessor.terminate(DataflowProcessor.java:147)
+  app//groovyx.gpars.dataflow.operator.DataflowProcessorActor.checkPoison(DataflowProcessorActor.java:115)
+  app//groovyx.gpars.dataflow.operator.DataflowOperatorActor.onMessage(DataflowOperatorActor.java:83)
+  app//groovyx.gpars.actor.impl.SDAClosure$1.call(SDAClosure.java:43)
+  app//groovyx.gpars.actor.AbstractLoopingActor.runEnhancedWithoutRepliesOnMessages(AbstractLoopingActor.java:293)
+  app//groovyx.gpars.actor.AbstractLoopingActor.access$400(AbstractLoopingActor.java:30)
+  app//groovyx.gpars.actor.AbstractLoopingActor$1.handleMessage(AbstractLoopingActor.java:93)
+  app//groovyx.gpars.util.AsyncMessagingCore.run(AsyncMessagingCore.java:132)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-8,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-2,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-9,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-10,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-10,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 3,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-8,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[process reaper,10,system]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Finalizer,8,system]
+  java.base@17.0.10/java.lang.Object.wait(Native Method)
+  java.base@17.0.10/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:155)
+  java.base@17.0.10/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:176)
+  java.base@17.0.10/java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:172)
+
+Thread[Actor Thread 4,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-5,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-7,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 6,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-3,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-1,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-9,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 19,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Common-Cleaner,8,InnocuousThreadGroup]
+  java.base@17.0.10/java.lang.Object.wait(Native Method)
+  java.base@17.0.10/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:155)
+  java.base@17.0.10/jdk.internal.ref.CleanerImpl.run(CleanerImpl.java:140)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+  java.base@17.0.10/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:162)
+
+Thread[TaskFinalizer-7,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-4,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[TaskFinalizer-1,5,main]
+  java.base@17.0.10/java.lang.Thread.dumpThreads(Native Method)
+  java.base@17.0.10/java.lang.Thread.getAllStackTraces(Thread.java:1671)
+  app//nextflow.util.SysHelper.dumpThreads(SysHelper.groovy:188)
+  app//nextflow.Session.abort(Session.groovy:800)
+  app//nextflow.Session.fault(Session.groovy:766)
+  app//nextflow.processor.TaskPollingMonitor.finalizeTask(TaskPollingMonitor.groovy:695)
+  app//nextflow.processor.TaskPollingMonitor.safeFinalizeTask(TaskPollingMonitor.groovy:678)
+  jdk.internal.reflect.GeneratedMethodAccessor168.invoke(Unknown Source)
+  java.base@17.0.10/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+  java.base@17.0.10/java.lang.reflect.Method.invoke(Method.java:568)
+  app//org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
+  app//groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+  app//groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
+  app//groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:645)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+  app//org.codehaus.groovy.runtime.InvokerHelper.invokeMethodSafe(InvokerHelper.java:82)
+  app//nextflow.processor.TaskPollingMonitor$_checkTaskStatus_lambda8.doCall(TaskPollingMonitor.groovy:668)
+  app//nextflow.processor.TaskPollingMonitor$$Lambda$451/0x00007f74684f7148.run(Unknown Source)
+  java.base@17.0.10/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+  java.base@17.0.10/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[PublishDir-3,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+  java.base@17.0.10/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+  java.base@17.0.10/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+  java.base@17.0.10/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[process reaper,10,system]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 16,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Thread[Actor Thread 25,5,main]
+  java.base@17.0.10/jdk.internal.misc.Unsafe.park(Native Method)
+  java.base@17.0.10/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)
+  java.base@17.0.10/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+  java.base@17.0.10/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+  java.base@17.0.10/java.lang.Thread.run(Thread.java:840)
+
+Sep-25 14:09:53.219 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: slurm) - terminating tasks monitor poll loop
+Sep-25 14:09:53.220 [main] DEBUG nextflow.Session - Session await > all processes finished
+Sep-25 14:09:53.220 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Sep-25 14:09:53.235 [main] INFO  nextflow.Nextflow - Oops .. something went wrong[0m
+Sep-25 14:09:53.242 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=50; failedCount=1; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=1h 15m 51s; failedDuration=2m 30s; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=18; peakCpus=36; peakMemory=130 GB; ]
+Sep-25 14:09:53.242 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+Sep-25 14:09:53.249 [Actor Thread 26] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-17937578635120876593
+Sep-25 14:09:53.712 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+Sep-25 14:09:53.775 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Sep-25 14:09:53.804 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
