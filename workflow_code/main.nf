@@ -189,6 +189,7 @@ include { GET_RUNSHEET } from "./modules/create_runsheet.nf"
 
 // Stage raw reads
 include { COPY_READS } from './modules/copy_reads.nf'
+include { COPY_REMOTE_READS } from './modules/copy_reads.nf'
 
 // Read quality check and filtering
 include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
