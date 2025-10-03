@@ -40,3 +40,29 @@ process COPY_READS {
         """
         }
 }
+
+
+process COPY_REMOTE_READS {
+    publishDir "${params.raw_reads_dir}",
+        mode: params.publishDir_mode
+    tag "${ sample_id }"
+
+    input:
+        tuple val(sample_id), val(paths), val(paired)
+
+    output:
+        tuple val(sample_id), path("${sample_id}*.gz"), val(paired), emit: raw_reads
+
+    script:
+        if ( paired == 'true' ) {
+        """
+        wget -O ${sample_id}${params.raw_R1_suffix} '${paths[0]}'
+        wget -O ${sample_id}${params.raw_R2_suffix} '${paths[1]}'
+        """
+        } else {
+        """
+        wget -O ${sample_id}${params.raw_R1_suffix} '${paths[0]}'
+        """
+        }
+
+}
