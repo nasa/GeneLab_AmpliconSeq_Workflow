@@ -93,8 +93,8 @@ We recommend installing Singularity on a system wide level as per the associated
 All files required for utilizing the NF_AmpIllumina GeneLab workflow for processing amplicon Illumina data are in the [workflow_code](workflow_code) directory. To get a copy of the latest *NF_AmpIllumina* version on to your system, the code can be downloaded as a zip file from the release page then unzipped after downloading by running the following commands: 
 
 ```bash
-wget https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/releases/download/v1.0.4/NF_AmpIllumina_1.0.4.zip
-unzip NF_AmpIllumina_1.0.4.zip && cd NF_AmpIllumina_1.0.4
+wget https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/releases/download/v1.0.5/NF_AmpIllumina_1.0.5.zip
+unzip NF_AmpIllumina_1.0.5.zip && cd NF_AmpIllumina_1.0.5
 ```
 
 <br>
@@ -107,7 +107,7 @@ Although Nextflow can fetch Singularity images from a url, doing so may cause is
 
 To avoid this issue, run the following command to fetch the Singularity images prior to running the NF_AmpIllumina workflow:
 
-> Note: This command should be run in the location containing the `NF_AmpIllumina_1.0.4` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
+> Note: This command should be run in the location containing the `NF_AmpIllumina_1.0.5` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
 
 ```bash
 bash ./bin/prepull_singularity.sh nextflow.config
@@ -125,7 +125,7 @@ export NXF_SINGULARITY_CACHEDIR=$(pwd)/singularity
 
 ### 4. Run the Workflow
 
-> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.4` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.4` directory.*
+> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.5` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.5` directory.*
 
 For options and detailed help on how to run the workflow, run the following command:
 
@@ -166,7 +166,7 @@ nextflow run main.nf \
 
 **Required Parameters For All Approaches:**
 
-* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.4`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
+* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.5`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
 * `-resume` - Resumes  workflow execution using previously cached results
 * `-profile` – Specifies the configuration profile(s) to load (multiple options can be provided as a comma-separated list)
    * Software environment profile options (choose one):
@@ -227,6 +227,7 @@ nextflow run main.nf \
 * `--conda_multiqc` - Path to existing MultiQC conda environment (type: string, default: null)
 * `--conda_R` - Path to existing R conda environment (type: string, default: null)
 * `--conda_zip` - Path to existing zip conda environment (type: string, default: null)
+* `--conda_wget` - Path to existing wget conda environment (type: string, default: null)
 
 <br>
 
