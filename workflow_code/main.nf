@@ -189,6 +189,7 @@ include { GET_RUNSHEET } from "./modules/create_runsheet.nf"
 
 // Stage raw reads
 include { COPY_READS } from './modules/copy_reads.nf'
+include { COPY_REMOTE_READS } from './modules/copy_reads.nf'
 
 // Read quality check and filtering
 include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
@@ -281,17 +282,23 @@ workflow {
 
       GET_RUNSHEET.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
+      file_ch.map{
+            row -> deleteWS(row.paired)  == 'true' ? tuple( "${row.sample_id}", ["${row.forward}","${row.reverse}"], deleteWS(row.paired)) : 
+                                tuple( "${row.sample_id}", [("${row.forward}")], deleteWS(row.paired))
+            }.set{reads_ch} 
+
+
    }else{
 
         Channel.fromPath(params.input_file, checkIfExists: true)
            .splitCsv(header:true)
            .set{file_ch}
-   }
-
-    file_ch.map{
-                     row -> deleteWS(row.paired)  == 'true' ? tuple( "${row.sample_id}", [file("${row.forward}"), file("${row.reverse}")], deleteWS(row.paired)) : 
-                                         tuple( "${row.sample_id}", [file("${row.forward}")], deleteWS(row.paired))
+           file_ch.map{
+                row -> deleteWS(row.paired)  == 'true' ? tuple( "${row.sample_id}", [file("${row.forward}"), file("${row.reverse}")], deleteWS(row.paired)) : 
+                                    tuple( "${row.sample_id}", [file("${row.forward}")], deleteWS(row.paired))
                 }.set{reads_ch} 
+   }
+    
 
     // Use original runsheet to preserve sample order
     if(params.accession){
@@ -301,8 +308,15 @@ workflow {
     }
 
     // Stage raw reads with standard naming
-    COPY_READS(reads_ch)
-    staged_reads_ch = COPY_READS.out.raw_reads
+    if(params.accession){
+        COPY_REMOTE_READS(reads_ch)
+        staged_reads_ch = COPY_REMOTE_READS.out.raw_reads
+        
+    }else{
+        COPY_READS(reads_ch)
+        staged_reads_ch = COPY_READS.out.raw_reads
+    }
+
 
     // Read quality check and trimming
     RAW_FASTQC(staged_reads_ch)
