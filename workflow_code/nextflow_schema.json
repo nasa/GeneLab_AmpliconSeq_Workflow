@@ -33,6 +33,10 @@
             "type": "string",
             "description": "Path to a conda environment containing fastqc."
         },
+        "conda_wget": {
+            "type": "string",
+            "description": "Path to a conda environment containing wget."
+        },
         "target_region": {
             "type": "string",
             "default": "16S",
