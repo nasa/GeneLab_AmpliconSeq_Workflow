@@ -21,7 +21,7 @@ else
 	RAREFACTION_DEPTH="N/A"
 fi
 
-PROTOCOL="Data were processed as described in ${PROTOCOL_ID} (https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/${PROTOCOL_ID}.md), using workflow NF_AmpIllumina v1.0.4 (https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/v1.0.4/README.md).
+PROTOCOL="Data were processed as described in ${PROTOCOL_ID} (https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/${PROTOCOL_ID}.md), using workflow NF_AmpIllumina v1.0.5 (https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/v1.0.5/README.md).
 
 Quality control: Primers were removed from raw reads using cutadapt v${CUTADAPT}. Quality assessment of raw and trimmed reads was performed with FastQC v${FASTQC} and reports were summarized with MultiQC v${MULTIQC}.
 
