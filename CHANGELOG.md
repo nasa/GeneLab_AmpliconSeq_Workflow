@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.6](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/NF_AmpIllumina_1.0.6)
 
+### Added
+
+- `dpt-isa-to-runsheet` now uses local plugin directories
+
 ### Changed
 
 - Moved reference taxonomy database download from DADA R script into a dedicated Nextflow process (DOWNLOAD_DATABASE)
