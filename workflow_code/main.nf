@@ -211,6 +211,7 @@ include { ZIP_MULTIQC as ZIP_MULTIQC_TRIMMED } from './modules/quality_assessmen
 
 
 // Cluster ASVs
+include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
 include { RUN_R_TRIM; RUN_R_NOTRIM } from './modules/run_dada.nf'
 include { ZIP_BIOM } from './modules/zip_biom.nf'
 
@@ -355,8 +356,12 @@ workflow {
         samples_ch = runsheet_ch.first()
                      .concat(isPaired_ch)
                      .collate(2)
+        
+        // Download reference database for taxonomic classification
+        DOWNLOAD_DATABASE(params.target_region)
+        
         // Run dada2
-        RUN_R_TRIM(samples_ch, trimmed_reads, COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE.out.counts)
+        RUN_R_TRIM(samples_ch, trimmed_reads, COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE.out.counts, DOWNLOAD_DATABASE.out.database)
 
         dada_counts = RUN_R_TRIM.out.counts
         dada_taxonomy = RUN_R_TRIM.out.taxonomy
@@ -384,7 +389,11 @@ workflow {
         samples_ch = runsheet_ch.first()
                      .concat(isPaired_ch)
                      .collate(2)
-        RUN_R_NOTRIM(samples_ch, raw_reads_ch, raw_read_suffix_ch)
+        
+        // Download reference database for taxonomic classification
+        DOWNLOAD_DATABASE(params.target_region)
+        
+        RUN_R_NOTRIM(samples_ch, raw_reads_ch, raw_read_suffix_ch, DOWNLOAD_DATABASE.out.database)
 
         dada_counts = RUN_R_NOTRIM.out.counts
         dada_taxonomy = RUN_R_NOTRIM.out.taxonomy
