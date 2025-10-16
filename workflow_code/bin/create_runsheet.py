@@ -113,23 +113,23 @@ def convert_isa_to_runsheet(accession_number, isa_zip, target_region=None):
         # Copy the ISA archive to the temporary directory
         temp_isa_zip_path = shutil.copy(isa_zip, temp_dir)
 
-        # Determine config-type based on target_region
-        if target_region:
-            if target_region.upper() == "16S":
-                config_type = "amplicon_16s"
-            elif target_region.upper() == "18S":
-                config_type = "amplicon_18s"
-            elif target_region.upper() == "ITS":
-                config_type = "amplicon_its"
-            else:
-                config_type = "amplicon"  # fallback to generic
+        # Exit if target is not specified
+        if not target_region:
+            print("Error: Target must be specified.", file=sys.stderr)
+            sys.exit(1)
+        
+        target_region_upper = target_region.upper()
+        if target_region_upper in ["16S", "18S", "ITS"]:
+            config_type = target_region_upper
         else:
-            config_type = "amplicon"  # default to generic if no target specified
+            print(f"Error: Unsupported target: '{target_region}'", file=sys.stderr)
+            sys.exit(1)
 
         try:
             # Run the dpt-isa-to-runsheet command in the temporary directory
+            plugin_dir = os.path.join(os.path.dirname(__file__), f"dp_tools__NF_AmpIllumina_{config_type}")
             subprocess.run(
-                ["dpt-isa-to-runsheet", "--accession", accession_number, "--config-type", config_type, "--config-version", "Latest", "--isa-archive", os.path.basename(temp_isa_zip_path)],
+                ["dpt-isa-to-runsheet", "--accession", accession_number, "--isa-archive", os.path.basename(temp_isa_zip_path), "--plugin-dir", plugin_dir],
                 check=True,
                 cwd=temp_dir,
                 stdout=sys.stdout,
