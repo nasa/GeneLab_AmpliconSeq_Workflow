@@ -45,15 +45,6 @@ Staging:
         #     determined from the ISA archive as well based on 'Study Protocol Name' and 'Study Protocol Type'
         #   Example: 'TRUE'
 
-        - ISA Field Name: 
-            - Characteristics[Organism]
-            - Characteristics[organism]
-          ISA Table Source: Sample
-          Runsheet Column Name: organism
-          Processing Usage: >-
-            Mapping to the appropriate alignment reference and annotation databases.
-          Example: Microbiota
-
         - ISA Field Name: Sample Name
           ISA Table Source: Assay
           Runsheet Column Name: sample_name
@@ -110,22 +101,6 @@ Staging:
           Processing Usage: >-
             Location to the raw data fastq file. May be a url or local path.
           Example: 'https://genelab-data.ndc.nasa.gov/genelab/static/media/dataset/GLDS-194_rna...'
-
-        - ISA Field Name: 
-            - Parameter Value[Merged Sequence Data File]
-            - Characteristics[Merged Sequence Data File]
-            - Parameter Value[Raw Sequence Data]
-            - Raw Data File
-          ISA Table Source: Assay
-          Multiple Values Per Entry: true
-          Multiple Values Delimiter: '\s*,\s*' # whitespace surrounded comma
-          Runsheet Column Name: 
-            - {'name':'raw_R1_suffix', 'index':0}
-            - {'name':'raw_R2_suffix', 'index':1, 'optional':true}
-
-          Processing Usage: >-
-            Raw data fastq file.
-          Example: '_R1_raw.fastq.gz or _raw.fastq.gz for SE'
 
         - ISA Field Name: Factor Value[{factor_name}]
           ISA Table Source: [Assay, Sample]
