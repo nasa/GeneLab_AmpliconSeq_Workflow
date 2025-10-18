@@ -239,14 +239,12 @@ def write_amplicon_body(output):
     # Alpha diversity Reports
     add_level(a_diversity_dir, "alpha diversity measurements and plots using observed features estimates and Shannon diversity indices", pad, output, continues=[True])
     add_level(f"alpha_diversity_plots{assay_suffix}.zip", "", pad, output, continues=[True, True])
-    add_level(f"rarefaction_depth{assay_suffix}.txt", "rarefaction depth used in alpha diversity analysis", pad, output, continues=[True, True])
                             ### How to represent failure files? ###
     add_level(f"statistics_table{assay_suffix}.csv", "", pad, output, continues=[True, True])
     add_level(f"summary_table{assay_suffix}.csv", "", pad, output, continues=[True, True], is_last=True)
     # Beta diversity Reports
     add_level(b_diversity_dir, "", pad, output, continues=[True])
     add_level(f"vsd_validation_plot{assay_suffix}.png", "VST transformation validation diagnostic plot", pad, output, continues=[True, True])
-    add_level(f"rarefaction_depth{assay_suffix}.txt", "rarefaction depth used in beta diversity analysis", pad, output, continues=[True, True])
     #Bray-Curtis results
     add_level("Bray-Curtis/", "beta diversity measurements and plots using Bray-Curtis dissimilarity", pad, output, continues=[True, True])
     add_level(f"bray_curtis_plots{assay_suffix}.zip", "", pad, output, continues=[True, True, True]) 
