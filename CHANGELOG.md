@@ -10,10 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `dpt-isa-to-runsheet` now uses local plugin directories
+- Versions of "hexbin" and "vsn" are now in software_versions.txt
 
 ### Changed
 
 - Moved reference taxonomy database download from DADA R script into a dedicated Nextflow process (DOWNLOAD_DATABASE)
+- Updated filtered FastQC/MultiQC steps to use filtered reads instead of trimmed reads
+- Removed `rarefaction_depth.txt` from README, processed_md5sum, and curation table
+- Excluded files not intended for OSDR from processed_md5sum
+- Revised curation table to match agreed-upon format with the curation team
+- Updated protocol text to remove unsupported characters
 
 <br>
 

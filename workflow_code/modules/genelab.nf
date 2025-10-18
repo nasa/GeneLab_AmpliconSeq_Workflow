@@ -197,8 +197,6 @@ process GENERATE_CURATION_TABLE {
                     --filtered_suffix '${filtered_suffix}' \\
                     --filtered_R1_suffix '${filtered_R1_suffix}' \\
                     --filtered_R2_suffix '${filtered_R2_suffix}' \\
-                    --processing_zip_file '${processing_zip_file}' \\
-                    --readme '${readme}' \\
                     --raw_reads_dir '${raw_reads_dir}' \\
                     --fastqc_dir '${FastQC_Outputs}' \\
                     --filtered_reads_dir '${filtered_reads_dir}' \\
