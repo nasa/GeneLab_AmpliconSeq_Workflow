@@ -84,7 +84,7 @@ process BETA_DIVERSITY {
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
         
-        Rscript -e "VERSIONS=sprintf('vegan %s\\nmia %s\\nphyloseq %s\\nggdendro %s\\nbroom %s\\nRColorBrewer %s\\ntaxize %s\\nDescTools %s\\npatchwork %s\\nggrepel %s\\n',  \\
+        Rscript -e "VERSIONS=sprintf('vegan %s\\nmia %s\\nphyloseq %s\\nggdendro %s\\nbroom %s\\nRColorBrewer %s\\ntaxize %s\\nDescTools %s\\npatchwork %s\\nggrepel %s\\nhexbin %s\\nvsn %s\\n',  \\
                                     packageVersion('vegan'), \\
                                     packageVersion('mia'), \\
                                     packageVersion('phyloseq'), \\
@@ -94,7 +94,9 @@ process BETA_DIVERSITY {
                                     packageVersion('taxize'), \\
                                     packageVersion('DescTools'), \\
                                     packageVersion('patchwork'), \\
-                                    packageVersion('ggrepel')); \\
+                                    packageVersion('ggrepel'), \\
+				                    packageVersion('hexbin'), \\
+				                    packageVersion('vsn')); \\
                     write(x=VERSIONS, file='versions.txt', append=TRUE)"         
         """
 

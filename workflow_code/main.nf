@@ -206,14 +206,14 @@ if (params.anchored_primers == "TRUE"){
 
 }
 
-include { FASTQC as TRIMMED_FASTQC ; MULTIQC as TRIMMED_MULTIQC  } from './modules/quality_assessment.nf'
-include { ZIP_MULTIQC as ZIP_MULTIQC_TRIMMED } from './modules/quality_assessment.nf'
-
-
 // Cluster ASVs
 include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
 include { RUN_R_TRIM; RUN_R_NOTRIM } from './modules/run_dada.nf'
 include { ZIP_BIOM } from './modules/zip_biom.nf'
+
+// Filtered quality check
+include { FASTQC as FILTERED_FASTQC ; MULTIQC as FILTERED_MULTIQC  } from './modules/quality_assessment.nf'
+include { ZIP_MULTIQC as ZIP_MULTIQC_FILTERED } from './modules/quality_assessment.nf'
 
 // Diversity, differential abundance and visualizations
 include { ALPHA_DIVERSITY; BETA_DIVERSITY } from './modules/diversity.nf'
@@ -343,11 +343,6 @@ workflow {
                                               }.flatten().collect()
 
         COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs, runsheet_ch)
-        TRIMMED_FASTQC(CUTADAPT.out.reads)
-        trimmed_fastqc_files = TRIMMED_FASTQC.out.html.flatten().collect()
-        
-        TRIMMED_MULTIQC("filtered", params.multiqc_config, trimmed_fastqc_files)
-        ZIP_MULTIQC_TRIMMED("filtered", TRIMMED_MULTIQC.out.report_dir)
 
         isPaired_ch = CUTADAPT.out.reads.map{ 
                                               sample_id, reads, isPaired -> isPaired
@@ -368,12 +363,38 @@ workflow {
         dada_biom = RUN_R_TRIM.out.biom
         filtered_count = RUN_R_TRIM.out.filtered_count
 
-        CUTADAPT.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        TRIMMED_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        TRIMMED_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        ZIP_MULTIQC_TRIMMED.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        RUN_R_TRIM.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        filtered_reads_ch = RUN_R_TRIM.out.reads
+                .flatten()
+		        .map { file ->
+                        // derive sample_id from filename
+                        def sample_id
+                        if (file.name.endsWith(params.filtered_R1_suffix)) {
+                                sample_id = file.name.replace(params.filtered_R1_suffix, "")
+                        } else if (file.name.endsWith(params.filtered_R2_suffix)) {
+                                sample_id = file.name.replace(params.filtered_R2_suffix, "")
+                        }
 
+                        tuple(sample_id, file)
+                }
+                .groupTuple(by:0)  // group R1/R2 by sample_id
+                .map { sample_id, files ->
+                        def pathFiles = files.collect { it instanceof String ? file(it) : it }  // ensure Path objects
+                        def isPaired = pathFiles.size() > 1
+                        tuple(sample_id, pathFiles, isPaired)
+                }
+
+        FILTERED_FASTQC(filtered_reads_ch)
+        filtered_fastqc_files = FILTERED_FASTQC.out.html.flatten().collect()
+
+        FILTERED_MULTIQC("filtered", params.multiqc_config, filtered_fastqc_files)
+        ZIP_MULTIQC_FILTERED("filtered", FILTERED_MULTIQC.out.report_dir)
+
+        CUTADAPT.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        RUN_R_TRIM.out.version | mix(software_versions_ch) | set{software_versions_ch}
+	    FILTERED_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        FILTERED_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        ZIP_MULTIQC_FILTERED.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        
     }else{
 
         raw_reads_ch = staged_reads_ch.map{
@@ -400,7 +421,36 @@ workflow {
         dada_biom = RUN_R_NOTRIM.out.biom
         filtered_count  = RUN_R_NOTRIM.out.filtered_count
 
-        RUN_R_NOTRIM.out.version | mix(software_versions_ch) | set{software_versions_ch}
+        filtered_reads_ch = RUN_R_NOTRIM.out.reads
+    		.flatten()
+		    .map { file ->
+        		// derive sample_id from filename
+        		def sample_id
+        		if (file.name.endsWith(params.filtered_R1_suffix)) {
+            			sample_id = file.name.replace(params.filtered_R1_suffix, "")
+        		} else if (file.name.endsWith(params.filtered_R2_suffix)) {
+            			sample_id = file.name.replace(params.filtered_R2_suffix, "")
+        		}
+
+        		tuple(sample_id, file)
+    		}
+    		.groupTuple(by:0)  // group R1/R2 by sample_id
+    		.map { sample_id, files ->
+        		def pathFiles = files.collect { it instanceof String ? file(it) : it }  // ensure Path objects
+        		def isPaired = pathFiles.size() > 1
+        		tuple(sample_id, pathFiles, isPaired)
+    		}
+
+	    FILTERED_FASTQC(filtered_reads_ch)
+    	filtered_fastqc_files = FILTERED_FASTQC.out.html.flatten().collect()
+
+    	FILTERED_MULTIQC("filtered", params.multiqc_config, filtered_fastqc_files)
+    	ZIP_MULTIQC_FILTERED("filtered", FILTERED_MULTIQC.out.report_dir)
+
+	    RUN_R_NOTRIM.out.version | mix(software_versions_ch) | set{software_versions_ch}
+	    FILTERED_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
+    	FILTERED_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
+	    ZIP_MULTIQC_FILTERED.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
     }
 
@@ -409,6 +459,7 @@ workflow {
     ZIP_BIOM(dada_biom)
 
     ZIP_BIOM.out.version | mix(software_versions_ch) | set{software_versions_ch}
+
 
    
     // Diversity, differential abundance testing and their corresponding visualizations

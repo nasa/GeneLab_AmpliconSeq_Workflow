@@ -254,7 +254,7 @@ workflow {
    
 
           GENERATE_MD5SUMS(PACKAGE_PROCESSING_INFO.out.zip,
-                              GENERATE_README.out.readme, dirs_ch)
+                              GENERATE_README.out.readme, software_versions, dirs_ch)
 
           // Generate file association table for curation
           GENERATE_CURATION_TABLE(suffix_ch, file_label_ch, 
