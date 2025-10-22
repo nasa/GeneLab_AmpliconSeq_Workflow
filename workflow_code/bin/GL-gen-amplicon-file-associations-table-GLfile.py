@@ -49,10 +49,6 @@ parser.add_argument("--primer_trimmed_R2_suffix", help = "Trimmed reverse reads 
 parser.add_argument("--filtered_suffix", help = "Filtered reads suffix", action = "store", default = "_filtered.fastq.gz")
 parser.add_argument("--filtered_R1_suffix", help = "Filtered forward reads suffix", action = "store", default = "_R1_filtered.fastq.gz")
 parser.add_argument("--filtered_R2_suffix", help = "Filtered reverse reads suffix", action = "store", default = "_R2_filtered.fastq.gz")
-parser.add_argument("--processing_zip_file", help = "Specifies the name of processing_info.zip", 
-                    action = "store", default = "processing_info.zip")
-parser.add_argument("--readme", help = "Specifies the name of README.txt", 
-                    action = "store", default = "README.txt")
 parser.add_argument("--raw_reads_dir", help = "Specifies the name of the raw reads directory if they are to be included",
                     action = "store", default = "Raw_Sequence_Data/")
 parser.add_argument("--fastqc_dir", help = "Specifies the name of fastqc and multiqc reports directory", 
@@ -276,19 +272,19 @@ def get_read_count_from_df(sample_name, read_counts_tab,
 
 
 def write_colnames(raw_reads_dir, trimmed_reads_dir,
-                  filtered_reads_dir, fastqc_dir):
+                  filtered_reads_dir, include_raw_multiqc_in_output):
 
     ## Builds as if primers were trimmed by the workflow (with Trimmed column),
     #  but that is removed later if
     ## --primers-already-trimmed argument was provided
     colnames = ["Sample Name", 
-                "Parameter Value[README]",
                 f"Parameter Value[{raw_reads_dir}]",
                 "Parameter Value[Read Depth]",
                 "Unit",
+                "Parameter Value[MultiQC File Names]",
                 f"Parameter Value[{trimmed_reads_dir}]",
                 f"Parameter Value[{filtered_reads_dir}]",
-                f"Parameter Value[{fastqc_dir}]",
+                f"Parameter Value[Filtered Sequence Data/MultiQC Reports]",
                 "Parameter Value[Taxonomy and ASV Counts Data]",
                 "Parameter Value[Alpha Diversity Data]",
                 "Parameter Value[Beta Diversity Data]",
@@ -298,8 +294,10 @@ def write_colnames(raw_reads_dir, trimmed_reads_dir,
                 "Parameter Value[Differential Abundance]",
                 "Parameter Value[Differential Abundance/ANCOMBC1]",
                 "Parameter Value[Differential Abundance/ANCOMBC2]",
-                "Parameter Value[Differential Abundance/DESeq2]",
-                "Parameter Value[Processing Info]"]
+                "Parameter Value[Differential Abundance/DESeq2]"]
+    
+    if not include_raw_multiqc_in_output:
+        colnames.remove("Parameter Value[MultiQC File Names]")
 
     return colnames
 
@@ -350,7 +348,7 @@ def collect_final_outputs_columns(final_outputs_dir, file_prefix, output_prefix,
     alpha_dir = os.path.join(final_outputs_dir, "alpha_diversity")
     all_alpha_files = [file_prefix + f for f in sorted(os.listdir(alpha_dir))] if os.path.isdir(alpha_dir) else []
     if all_alpha_files:
-        alpha_files = [f for f in all_alpha_files if ".png" not in f.lower()]
+        alpha_files = [f for f in all_alpha_files if ".png" not in f.lower() and "rarefaction_depth" not in f.lower()]
         results["Alpha Diversity Data"] = ", ".join(alpha_files)
 
     # Beta diversity (vsd, bray-curtis, euclidean directly under beta_diversity)
@@ -358,8 +356,8 @@ def collect_final_outputs_columns(final_outputs_dir, file_prefix, output_prefix,
     if os.path.isdir(beta_dir):
         beta_files = os.listdir(beta_dir)
 
-        # top-level (vsd validation + rarefaction depth)
-        top_files = [file_prefix + f for f in beta_files if "vsd" in f.lower() or "rarefaction_depth" in f.lower() ]
+        # top-level (vsd validation)
+        top_files = [file_prefix + f for f in beta_files if "vsd" in f.lower()]
         if top_files:
             results["Beta Diversity Data"] = ", ".join(top_files)
 
@@ -425,19 +423,16 @@ def runsheet_to_dict(runsheet):
 def create_association_table(header_colnames, fastqc,
                              unique_filename_prefixes, read_count_tab, 
                              sample_file_dict, file_prefix,  output_prefix, combined_prefix,
-                             readme, assay_suffix,  raw_file_prefix, 
+                             assay_suffix,  raw_file_prefix, 
                              raw_suffix, raw_R1_suffix, raw_R2_suffix,
                              primer_trimmed_suffix, primer_trimmed_R1_suffix, primer_trimmed_R2_suffix,
-                             filtered_suffix, filtered_R1_suffix, filtered_R2_suffix, processing_info,
+                             filtered_suffix, filtered_R1_suffix, filtered_R2_suffix,
                              single_ended, R1_used_as_single_ended_data, sample_raw_prefix_dict,
-                             read_count_unit = "read"):
+                             include_raw_multiqc_in_output, read_count_unit = "read"):
     """Create association table and add data rows to it"""
 
     # Initialize association table
     association_df = pd.DataFrame(columns = header_colnames)
-    trimmed_reads_count = combined_prefix + f"trimmed-read-counts{assay_suffix}.tsv"
-    cutadapt_log = combined_prefix + f"cutadapt{assay_suffix}.log"
-    filtered_reads_count = combined_prefix + f"filtered-read-counts{assay_suffix}.tsv"
     # Create row
     for sample in unique_filename_prefixes:
         # Single-end (Paired-end data where only the forward reads were analyzed)
@@ -447,27 +442,21 @@ def create_association_table(header_colnames, fastqc,
             curr_raw_data = [raw_file_prefix + sample + raw_R1_suffix,
                              raw_file_prefix + sample + raw_R2_suffix]
             # If only forward read was used, then we still want to include the _R1 portion of the filename 
-            curr_trimmed_data = [file_prefix + sample + primer_trimmed_R1_suffix, 
-                                 trimmed_reads_count, cutadapt_log]
-            curr_filt_data = [file_prefix + sample + filtered_R1_suffix, 
-                              filtered_reads_count]
+            curr_trimmed_data = [file_prefix + sample + primer_trimmed_R1_suffix]
+            curr_filt_data = [file_prefix + sample + filtered_R1_suffix]
         # Single-end without reverse reads
         elif single_ended:
             curr_raw_data = [raw_file_prefix + sample + raw_suffix]
-            curr_trimmed_data = [file_prefix + sample + primer_trimmed_suffix, 
-                                 trimmed_reads_count, cutadapt_log]
-            curr_filt_data = [file_prefix + sample + filtered_suffix, 
-                              filtered_reads_count]
+            curr_trimmed_data = [file_prefix + sample + primer_trimmed_suffix]
+            curr_filt_data = [file_prefix + sample + filtered_suffix]
         # Paired-end
         else:
             curr_raw_data = [raw_file_prefix + sample + raw_R1_suffix,
                              raw_file_prefix + sample + raw_R2_suffix]
             curr_trimmed_data = [file_prefix + sample + primer_trimmed_R1_suffix, 
-                                 file_prefix + sample + primer_trimmed_R2_suffix, 
-                                 trimmed_reads_count, cutadapt_log]
+                                 file_prefix + sample + primer_trimmed_R2_suffix]
             curr_filt_data = [file_prefix + sample + filtered_R1_suffix, 
-                              file_prefix + sample + filtered_R2_suffix, 
-                              filtered_reads_count]
+                              file_prefix + sample + filtered_R2_suffix]
         # Get sample raw read count
         curr_read_count = get_read_count_from_df(sample, read_count_tab, raw_suffix,
                                                  raw_R1_suffix, single_ended, sample_raw_prefix_dict)
@@ -475,24 +464,30 @@ def create_association_table(header_colnames, fastqc,
         final_outputs_dict = collect_final_outputs_columns(args.final_outputs_dir, file_prefix, output_prefix, assay_suffix)
 
         curr_row_as_list = [sample_file_dict[sample],
-                            readme,
                             ", ".join(curr_raw_data),
                             curr_read_count, 
-                            read_count_unit,
-                            ", ".join(curr_trimmed_data),
-                            ", ".join(curr_filt_data),
-                            ", ".join(fastqc),
-                            final_outputs_dict["Taxonomy and ASV Counts Data"],
-                            final_outputs_dict["Alpha Diversity Data"],
-                            final_outputs_dict["Beta Diversity Data"],
-                            final_outputs_dict["Beta Diversity Data/Bray-Curtis"],
-                            final_outputs_dict["Beta Diversity Data/Euclidean_distance"],
-                            final_outputs_dict["Taxonomy Plots"],
-                            final_outputs_dict["Differential Abundance"],
-                            final_outputs_dict["Differential Abundance/ANCOMBC1"],
-                            final_outputs_dict["Differential Abundance/ANCOMBC2"],
-                            final_outputs_dict["Differential Abundance/DESeq2"],
-                            processing_info]
+                            read_count_unit]
+        
+        # Divide fastqc into raw and filtered multiqc
+        if include_raw_multiqc_in_output:
+            raw_fastqc, filtered_fastqc = fastqc
+            curr_row_as_list.append(raw_fastqc)  # Add only if flag is True
+        else:
+            filtered_fastqc = fastqc
+
+        curr_row_as_list.extend([", ".join(curr_trimmed_data),
+                                 ", ".join(curr_filt_data),
+                                 filtered_fastqc,
+                                 final_outputs_dict["Taxonomy and ASV Counts Data"],
+                                 final_outputs_dict["Alpha Diversity Data"],
+                                 final_outputs_dict["Beta Diversity Data"],
+                                 final_outputs_dict["Beta Diversity Data/Bray-Curtis"],
+                                 final_outputs_dict["Beta Diversity Data/Euclidean_distance"],
+                                 final_outputs_dict["Taxonomy Plots"],
+                                 final_outputs_dict["Differential Abundance"],
+                                 final_outputs_dict["Differential Abundance/ANCOMBC1"],
+                                 final_outputs_dict["Differential Abundance/ANCOMBC2"],
+                                 final_outputs_dict["Differential Abundance/DESeq2"]])
 
         # Apped row to the association dataframe
         association_df.loc[len(association_df)] = curr_row_as_list
@@ -551,7 +546,6 @@ def main():
     output_prefix = str(args.output_prefix)
     combined_prefix = file_prefix + output_prefix
     raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
-    processing_info = file_prefix + str(args.processing_zip_file)
 
     if args.map:
         map_tab = pd.read_csv(args.map, sep = "\t", names = ["sample", "prefix"])
@@ -567,8 +561,7 @@ def main():
     else:
         outfile = args.output
     
-    readme = file_prefix + args.readme
-    include_raw_multiqc_in_output = str(args.include_raw_multiqc_in_output)
+    include_raw_multiqc_in_output = args.include_raw_multiqc_in_output
     Type = str(args.type)
 
 
@@ -596,7 +589,7 @@ def main():
     
     ###################################  Write file association table ##########################################
     header = write_colnames(raw_reads_dir, trimmed_reads_dir,
-                  filtered_reads_dir, fastqc_dir)
+                  filtered_reads_dir, include_raw_multiqc_in_output)
     
     fastqc, final_outputs = create_constants(include_raw_multiqc_in_output, raw_multiqc_zip,
                      filtered_multiqc_zip, Type, combined_prefix, assay_suffix)
@@ -607,12 +600,12 @@ def main():
     association_df = create_association_table(header, fastqc,
                              unique_filename_prefixes, read_counts_df, 
                              sample_file_dict, file_prefix,  output_prefix, combined_prefix,
-                             readme, assay_suffix,  raw_file_prefix, 
+                             assay_suffix,  raw_file_prefix, 
                              raw_suffix, raw_R1_suffix, raw_R2_suffix,
                              primer_trimmed_suffix, primer_trimmed_R1_suffix, primer_trimmed_R2_suffix,
-                             filtered_suffix, filtered_R1_suffix, filtered_R2_suffix, processing_info,
+                             filtered_suffix, filtered_R1_suffix, filtered_R2_suffix,
                              args.single_ended, args.R1_used_as_single_ended_data, 
-                             sample_raw_prefix_dict, read_count_unit = "read")
+                             sample_raw_prefix_dict, include_raw_multiqc_in_output, read_count_unit = "read")
     
 
     write_association_table(outfile, association_df, trimmed_reads_dir, args.primers_already_trimmed)
