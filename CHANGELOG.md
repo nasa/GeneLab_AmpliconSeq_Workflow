@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Excluded files not intended for OSDR from processed_md5sum
 - Revised curation table to match agreed-upon format with the curation team
 - Updated protocol text to remove unsupported characters
+- Updated differential abundance (ANCOMBC1, ANCOMBC2, DESEQ2) output table column headers to use hyphens instead of dots, sanitize sample names before saving output tables. 
 
 <br>
 
