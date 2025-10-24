@@ -525,8 +525,8 @@ df <- results(deseq_modeled, contrast = c(group, group2, group1)) %>%
               glue("Log2fc_({group2})v({group1})"),
               glue("lfcSE_({group2})v({group1})"), 
               glue("Stat_({group2})v({group1})"), 
-              glue("P.value_({group2})v({group1})"),
-              glue("Adj.p.value_({group2})v({group1})") 
+              glue("P-value_({group2})v({group1})"),
+              glue("Adj-p-value_({group2})v({group1})") 
             ))
             
   merged_stats_df <<- merged_stats_df %>% 
@@ -582,8 +582,8 @@ group_means_df <- normalized_table[feature]
 walk(group_levels, function(group_level){
   
   
-  mean_col <- glue("Group.Mean_({group_level})")
-  std_col <- glue("Group.Stdev_({group_level})")
+  mean_col <- glue("Group-Mean_({group_level})")
+  std_col <- glue("Group-Stdev_({group_level})")
   
   # Samples that belong to the current group
   Samples <- metadata %>%
@@ -610,9 +610,9 @@ normalized_table <- normalized_table %>%
 
 All_mean_sd <- normalized_table %>%
   rowwise() %>%
-  mutate(All.mean=mean(c_across(where(is.numeric)), na.rm = TRUE),
-         All.stdev=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>% 
-  select(!!feature, All.mean, All.stdev)
+  mutate(`All-mean`=mean(c_across(where(is.numeric)), na.rm = TRUE),
+         `All-stdev`=sd(c_across(where(is.numeric)), na.rm = TRUE) ) %>% 
+  select(!!feature, `All-mean`, `All-stdev`)
 
 # Add taxonomy
 merged_df <- df  %>%
@@ -633,9 +633,10 @@ merged_df <- merged_df %>%
 
 output_file <- glue("{diff_abund_out_dir}{output_prefix}deseq2_differential_abundance{assay_suffix}.csv")
 message("Writing out results of differential abundance using DESeq2...")
-write_csv(merged_df %>%
-            select(-starts_with("baseMean_")),
-                   output_file)
+# Replace dots in column names with hyphens to sanitize sample names
+final_output <- merged_df %>% select(-starts_with("baseMean_"))
+colnames(final_output) <- gsub("\\.", "-", colnames(final_output))
+write_csv(final_output, output_file)
 
 
 
