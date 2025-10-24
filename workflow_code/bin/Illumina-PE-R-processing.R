@@ -4,15 +4,15 @@
 ## Developed by Michael D. Lee (Mike.Lee@nasa.gov)                              ##
 ##################################################################################
 
-# as called from the associated process, this expects to be run as: Rscript full-R-processing.R <left_trunc> <right_trunc> <left_maxEE> <right_maxEE> <TRUE/FALSE - GL trimmed primers or not> <unique-sample-IDs-file> <starting_reads_dir_for_R> <filtered_reads_dir> <input_file_R1_suffix> <input_file_R2_suffix> <filtered_filename_R1_suffix> <filtered_filename_R2_suffix> <final_outputs_directory> <output_prefix> <target_region> <concatenate_reads_only> <assay_suffix>
+# as called from the associated process, this expects to be run as: Rscript full-R-processing.R <left_trunc> <right_trunc> <left_maxEE> <right_maxEE> <TRUE/FALSE - GL trimmed primers or not> <unique-sample-IDs-file> <starting_reads_dir_for_R> <filtered_reads_dir> <input_file_R1_suffix> <input_file_R2_suffix> <filtered_filename_R1_suffix> <filtered_filename_R2_suffix> <final_outputs_directory> <output_prefix> <target_region> <concatenate_reads_only> <assay_suffix> <taxonomy_obj>
     # where <left_trim> and <right_trim> are the values to be passed to the truncLen parameter of dada2's filterAndTrim()
     # and <left_maxEE> and <right_maxEE> are the values to be passed to the maxEE parameter of dada2's filterAndTrim()
 
 # checking at least 8 arguments provided, first 4 are integers, and setting variables used within R:
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) < 17) {
-    stop("At least 17 positional arguments are required, see top of this R script for more info.", call.=FALSE)
+if (length(args) < 18) {
+    stop("At least 18 positional arguments are required, see top of this R script for more info.", call.=FALSE)
 } else {
     suppressWarnings(left_trunc <- as.integer(args[1]))
     suppressWarnings(right_trunc <- as.integer(args[2]))
@@ -32,6 +32,7 @@ if (length(args) < 17) {
     suppressWarnings(target_region <- args[15])
     suppressWarnings(concatenate_reads_only <- args[16])
     suppressWarnings(assay_suffix <- args[17])
+    suppressWarnings(taxonomy_obj <- args[18])
 
 }
 
@@ -265,41 +266,24 @@ write.table(count_summary_tab, paste0(final_outputs_dir, output_prefix, "read-co
     # creating a DNAStringSet object from the ASVs
 dna <- DNAStringSet(getSequences(seqtab.nochim))
 
-    # downloading reference R taxonomy object (at some point this will be stored somewhere on GeneLab's server and we won't download it, but should leave the code here, just commented out)
-cat("\n\n  Downloading reference database...\n\n")
+    # loading local reference taxonomy object
+cat("\n\n  Loading reference database...\n\n")
 if ( target_region == "16S" ) { 
-    download_retry(url = "https://figshare.com/ndownloader/files/52846199",
-                   destfile = "SILVA_SSU_r138_2_2024.RData")
-    # loading reference taxonomy object
-    load("SILVA_SSU_r138_2_2024.RData")
-    # removing downloaded file
-    #file.remove("SILVA_SSU_r138_2_2024.RData")
+    # loading reference taxonomy object (SILVA_SSU_r138_2_2024.RData)
+    load(taxonomy_obj)
     ranks <- c("domain", "phylum", "class", "order", "family", "genus", "species")
 
 } else if (target_region == "ITS" ) {
-
-    download_retry(url = "https://figshare.com/ndownloader/files/52846346",
-                   destfile = "UNITE_v2024_April2024.RData")    
-    # loading reference taxonomy object
-    load("UNITE_v2024_April2024.RData")
-    # removing downloaded file
-    #file.remove("UNITE_v2024_July2024.RData")
-
+    # loading reference taxonomy object (UNITE_v2024_April2024.RData)
+    load(taxonomy_obj)
     ranks <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
 
 } else if (target_region == "18S" ) {
-
-    download_retry(url = "https://figshare.com/ndownloader/files/46241917",
-                   destfile = "PR2_v4_13_March2021.RData")
-    # https://github.com/pr2database/pr2database/releases/download/v4.14.0/pr2_version_4.14.0_SSU.decipher.trained.rds 
-    # loading reference taxonomy object
-    load("PR2_v4_13_March2021.RData")
-    # removing downloaded file
-    #file.remove("PR2_v4_13_March2021.RData")
-
+    # loading reference taxonomy object (PR2_v4_13_March2021.RData)
+    load(taxonomy_obj)
     ranks <- c("kingdom", "division", "phylum", "class", "order", "family", "genus", "species")
 
-} else {
+} else { 
     cat("\n\n  The requested target_region of ", target_region, " is not accepted.\n\n")
     quit(status = 1)
 }

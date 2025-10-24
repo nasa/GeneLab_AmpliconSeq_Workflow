@@ -197,8 +197,6 @@ process GENERATE_CURATION_TABLE {
                     --filtered_suffix '${filtered_suffix}' \\
                     --filtered_R1_suffix '${filtered_R1_suffix}' \\
                     --filtered_R2_suffix '${filtered_R2_suffix}' \\
-                    --processing_zip_file '${processing_zip_file}' \\
-                    --readme '${readme}' \\
                     --raw_reads_dir '${raw_reads_dir}' \\
                     --fastqc_dir '${FastQC_Outputs}' \\
                     --filtered_reads_dir '${filtered_reads_dir}' \\
@@ -217,6 +215,7 @@ process GENERATE_MD5SUMS {
     input:
         path(processing_info)
         path(README)
+        path(software_versions)
         val(dirs)
 
     output:
@@ -224,14 +223,19 @@ process GENERATE_MD5SUMS {
     script:
         """
         mkdir processing/
-        cp -r ${dirs.join(" ")} ${processing_info} ${README} processing/
+        cp -r ${dirs.join(" ")} ${processing_info} ${README} ${software_versions} processing/
 
         # Generate md5sums
         find -L processing/ -type f \\( \
             ! -name "versions.txt" -a \
+            ! -path "*/*-trimmed-counts.tsv" -a \
+            ! -path "*/*-cutadapt.log" -a \
+            ! -path "*/*_fastqc.zip" -a \
+            ! -path "*/*_fastqc.html" -a \
             ! -path "*/alpha_diversity/*.png" -a \
             ! -path "*/taxonomy_plots/*.png" -a \
-            \\( ! -path "*/beta_diversity/*.png" -o -path "*/beta_diversity/vsd_validation_plot.png" \\) -a \
+            ! \\( -path "*/beta_diversity/*.png" -a ! -name "vsd_validation_plot*.png" \\) -a \
+            ! -path "*/*_diversity/rarefaction_depth*.txt" -a \
             ! -path "*/differential_abundance/*/*volcano*.png" \
         \\) -exec md5sum '{}' \\; |
         awk -v OFS='\\t' 'BEGIN{OFS="\\t"; printf "File Path\\tFile Name\\tmd5\\n"} \\

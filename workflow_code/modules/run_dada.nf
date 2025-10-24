@@ -14,6 +14,7 @@ process RUN_R_TRIM {
         tuple path(sample_IDs_file), val(isPaired)
         path(trimmed_reads)
         path(trimmed_read_counts)
+        path(database)
     output:
         path("Filtered_Sequence_Data/*${params.filtered_R1_suffix[-5..-1]}"), emit: reads
         path("Filtered_Sequence_Data/${params.cleaned_prefix}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
@@ -55,7 +56,8 @@ process RUN_R_TRIM {
                            "${params.cleaned_prefix}" \
                            "${params.target_region}" \
                            "${params.concatenate_reads_only}" \
-                           "${params.assay_suffix}"
+                           "${params.assay_suffix}" \
+                           "${database.name}"
         
         else
         
@@ -77,7 +79,8 @@ process RUN_R_TRIM {
                           "final_outputs/" \
                           "${params.cleaned_prefix}" \
                           "${params.target_region}" \
-                          "${params.assay_suffix}"
+                          "${params.assay_suffix}" \
+                          "${database.name}"
                           
         fi
         # Sort the taxonomy count by ASV id               
@@ -102,6 +105,7 @@ process RUN_R_NOTRIM {
         tuple path(sample_IDs_file), val(isPaired)
         path(raw_reads)
         val(raw_read_suffix) //[R1,R2] or [R1]
+        path(database)
     output:
         path("Filtered_Sequence_Data/*${params.filtered_R1_suffix[-5..-1]}"), emit: reads
         path("Filtered_Sequence_Data/${params.cleaned_prefix}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
@@ -139,7 +143,8 @@ process RUN_R_NOTRIM {
                             "${params.cleaned_prefix}" \
                             "${params.target_region}" \
                             "${params.concatenate_reads_only}" \
-                            "${params.assay_suffix}"
+                            "${params.assay_suffix}" \
+                            "${database.name}"
             
         else
         
@@ -159,7 +164,8 @@ process RUN_R_NOTRIM {
                            "final_outputs/" \
                            "${params.cleaned_prefix}" \
                            "${params.target_region}" \
-                           "${params.assay_suffix}"
+                           "${params.assay_suffix}" \
+                           "${database.name}"
 
         fi
         # Sort the taxonomy count by ASV id               

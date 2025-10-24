@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/NF_AmpIllumina_1.0.6)
+
+### Added
+
+- `dpt-isa-to-runsheet` now uses local plugin directories
+- Versions of "hexbin" and "vsn" are now in software_versions.txt
+
+### Changed
+
+- Moved reference taxonomy database download from DADA R script into a dedicated Nextflow process (DOWNLOAD_DATABASE)
+- Updated filtered FastQC/MultiQC steps to use filtered reads instead of trimmed reads
+- Removed `rarefaction_depth.txt` from README, processed_md5sum, and curation table
+- Excluded files not intended for OSDR from processed_md5sum
+- Revised curation table to match agreed-upon format with the curation team
+- Updated protocol text to remove unsupported characters
+- Updated differential abundance (ANCOMBC1, ANCOMBC2, DESEQ2) output table column headers to use hyphens instead of dots, sanitize sample names before saving output tables. 
+
+<br>
+
+---
+
 ## [1.0.5](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/NF_AmpIllumina_1.0.5)
 
 ### Added
