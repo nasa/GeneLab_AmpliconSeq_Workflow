@@ -302,7 +302,7 @@ ancombc2 <- function(data, ...) {
   )
 }
 
-taxize_options(ncbi_sleep = 0.8)
+taxize_options(ncbi_sleep = 2)
 # A function to retrieve the NCBI taxonomy id for a given taxonomy name
 get_ncbi_ids <- function(taxonomy, target_region){
   
