@@ -1,13 +1,13 @@
 process ZIP {
     tag "Zipping $label"
     label "zip"
-    publishDir "${target_dir}", mode: params.publishDir_mode
 
     input:
-    tuple val(label), path(files), val(target_dir)
+    tuple val(label), path(files)
 
     output:
-    path("${params.cleaned_prefix}${label}${params.assay_suffix}.zip")
+    path("${params.cleaned_prefix}${label}${params.assay_suffix}.zip"), emit: zip
+    path("versions.txt"), emit: version
 
     script:
     """

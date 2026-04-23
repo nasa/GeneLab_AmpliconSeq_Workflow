@@ -1,4 +1,3 @@
-#!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
 def prefix = params.output_prefix ?: ""
@@ -41,22 +40,19 @@ if (params.help) {
   println("                   The groups column contain group levels / treatments to be compared during diversity and differential abundance testing analysis. Default: null")
   println("     --target_region [STRING] What is the amplicon target region to be analyzed. Options are one of [16S, 18S, ITS]. Default: 16S.")
   println("     --trim_primers [STRING] Should primers be trimmed? TRUE or FALSE. Default: TRUE.") 
-  println("PLEASE NOTE: This workflow assumes that all your raw reads end with the same suffix. If they don't please modify your filenames to have the same suffix as shown below.")
-  println("     --raw_R1_suffix [STRING] Raw forward reads suffix (region following the unique part of the sample names). e.g. _R1_raw.fastq.gz.") 
-  println("     --raw_R2_suffix [STRING] Raw reverse reads suffix (region following the unique part of the sample names). e.g. _R2_raw.fastq.gz.") 
   println()
   println("Cutadapt (trimming) parameters:")
   println("	    --F_primer [STRING] Forward primer sequence e.g. AGAGTTTGATCCTGGCTCAG. Default: null.")
   println("	    --R_primer [STRING] Reverse primer sequence e.g. CTGCCTCCCGTAGGAGT. Default: null.")
   println("	    --min_cutadapt_len [INTEGER] What should be the minimum read length after quality trimming with cutadapt. Default: 130.")
   println("	    --primers_linked [STRING] Are the primers linked?. https://cutadapt.readthedocs.io/en/stable/recipes.html#trimming-amplicon-primers-from-paired-end-reads. Default: TRUE. ")
-  println("         --anchored_primers [STRING] Are the primers anchored? https://cutadapt.readthedocs.io/en/stable/recipes.html#trimming-amplicon-primers-from-paired-end-reads. Default: TRUE.")
+  println("     --anchored_primers [STRING] Are the primers anchored? https://cutadapt.readthedocs.io/en/stable/recipes.html#trimming-amplicon-primers-from-paired-end-reads. Default: TRUE.")
   println("	    --discard_untrimmed [STRING] Should untrimmed reads be discarded? Any supplied string except TRUE will not discard them. Default: TRUE.")
   println()	
   println("Optional arguments:")  
   println("  --help  Print this help message and exit.")
   println("  --debug [BOOLEAN] Set to true if you'd like to see the values of your set parameters printed to the terminal. Default: false.")
-  println("  --publishDir_mode [STRING]  How should nextflow publish file outputs. Options can be found here https://www.nextflow.io/docs/latest/process.html#publishdir. Default: link.")
+  println("  --publish_dir_mode [STRING]  How should nextflow publish file outputs. Options can be found here https://www.nextflow.io/docs/latest/process.html#publishdir. Default: link.")
   println("  --errorStrategy [STRING] How should nextflow handle errors. Options can be found here https://www.nextflow.io/docs/latest/process.html#errorstrategy. Default: terminate")
   println("  --multiqc_config [PATH] Path to a custom multiqc config file. Default: config/multiqc.config.")
   println()
@@ -79,21 +75,6 @@ if (params.help) {
   println("         --remove_rare [BOOLEAN] Should rare features be filtered out prior to analysis? If true, rare features will be removed. Options are true or false. Default: false.")
   println("         --prevalence_cutoff [FLOAT] If --remove_rare is true, a numerical fraction between 0 and 1. Taxa with prevalences(the proportion of samples in which the taxon is present) less than this will be excluded from diversity and differential abundance analysis. Default is 0 , i.e. do not exclude any taxa. For example, to exclude taxa that are not present in at least 15% of the samples set it to 0.15.")
   println("         --library_cutoff [INTEGER] If --remove-rare is true, a numerical threshold for filtering samples based on library sizes. Samples with library sizes less than this number will be excluded in the analysis. Default is 0 i.e do not remove any sample. For example, if you want to discard samples with library sizes less than 100, then set to 100.")
-  println()
-  println("File Suffixes:")
-  println("      --primer_trimmed_R1_suffix [STRING] Suffix to use for naming your primer trimmed forward reads. Default: _R1_trimmed.fastq.gz.")
-  println("      --primer_trimmed_R2_suffix [STRING] Suffix to use for naming your primer trimmed reverse reads. Default: _R2_trimmed.fastq.gz.")  
-  println("      --filtered_R1_suffix [STRING]  Suffix to use for naming your quality filtered forward reads. Default: _R1_filtered.fastq.gz.")
-  println("      --filtered_R2_suffix [STRING]  Suffix to use for naming your quality filtered reverse reads. Default: _R2_filtered.fastq.gz.")
-  println()
-  println("Output directories:")
-  println("      --raw_reads_dir [PATH] Where should the fastqc report of the raw reads be stored? Default: ../Raw_Sequence_Data/")
-  println("      --fastqc_out_dir [PATH] Where should multiqc outputs be stored? Default: ../workflow_output/FastQC_Outputs/")
-  println("      --trimmed_reads_dir [PATH] Where should your cutadapt trimmed reads be stored? Default: ../workflow_output/Trimmed_Sequence_Data/")
-  println("      --filtered_reads_dir [PATH] Where should your filtered reads be stored?  Default: ../workflow_output/Filtered_Sequence_Data/")
-  println("      --metadata_dir [PATH] This directory contains a file listing the software versions used by the pipeline. Default: ../Metadata/")
-  println("      --genelab_dir [PATH] This directory contains the runsheet, ISA zip file and params file used when an --accession is used to run the workflow. Default: ../GeneLab/")
-  println("      --final_outputs_dir [PATH] Where should most outputs and summary reports be stored.  Default: ../workflow_output/Final_Outputs/")
   println()
   println("Genelab specific arguements:")
   println("      --accession [STRING]  A Genelab accession number if the --input_file parameter is not set. If this parameter is set, it will ignore the --input_file parameter.")
@@ -122,18 +103,10 @@ log.info """${c_blue}
          Input csv file : ${params.input_file}
          GLDS or OSD accession : ${params.accession}
          Amplicon target region : ${params.target_region}
-         Nextflow Directory publishing mode: ${params.publishDir_mode}
+         Nextflow Directory publishing mode: ${params.publish_dir_mode}
          Trim Primers: ${params.trim_primers}
          Nextflow Error strategy: ${params.errorStrategy}
          MultiQC configuration file: ${params.multiqc_config}
-
-         File Suffixes:
-         Raw Forward Reads Suffix: ${params.raw_R1_suffix}
-         Raw Reverse Reads Suffix: ${params.raw_R2_suffix}
-         Trimmed Forward Reads Suffix: ${params.primer_trimmed_R1_suffix}
-         Trimmed Reverse Reads Suffix: ${params.primer_trimmed_R2_suffix}
-         Filtered Forward Reads Suffix: ${params.filtered_R1_suffix}
-         Filtered Reverse Reads Suffix: ${params.filtered_R2_suffix}
 
          Cutadapt Parameters:
          Forward Primer: ${params.F_primer}
@@ -162,14 +135,6 @@ log.info """${c_blue}
          Samples Column: ${params.samples_column}
          
  
-         Output Directories:
-         Raw reads: ${params.raw_reads_dir}
-         FastQC: ${params.fastqc_out_dir}
-         Trimmed Reads: ${params.trimmed_reads_dir}
-         Filtered Reads: ${params.filtered_reads_dir}
-         Software versions: ${params.metadata_dir}
-         Reports: ${params.final_outputs_dir}
-
          Genelab Assay Suffix: ${params.assay_suffix}
          Output Prefix: ${params.output_prefix}
 
@@ -196,19 +161,12 @@ include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quali
 include { ZIP_MULTIQC as ZIP_MULTIQC_RAW } from './modules/quality_assessment.nf'
 
 
-if (params.anchored_primers == "TRUE"){
- 
-    include { CUTADAPT_ANCHORED as CUTADAPT; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
-
-}else{
-
-    include { CUTADAPT_UNANCHORED as CUTADAPT; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
-
-}
+// Trim primers if requested
+include { CUTADAPT ; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
 
 // Cluster ASVs
 include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
-include { RUN_R_TRIM; RUN_R_NOTRIM } from './modules/run_dada.nf'
+include { RUN_DADA2 } from './modules/run_dada.nf'
 include { ZIP_BIOM } from './modules/zip_biom.nf'
 
 // Filtered quality check
@@ -235,8 +193,8 @@ def deleteWS(string){
 
 
 workflow {
+    main:
 
-        
     //  ---------------------  Sanity Checks ------------------------------------- //
     // Test input requirement
     if (!params.accession &&  !params.input_file){
@@ -262,11 +220,11 @@ workflow {
 
     
    // Capture software versions
-   software_versions_ch = Channel.empty()
+   software_versions_ch = channel.empty()
 
    if(params.accession){
 
-       values = Channel.of([params.accession, params.target_region])
+       values = channel.of([params.accession, params.target_region])
 
        GET_RUNSHEET(values)
        GET_RUNSHEET.out.input_file
@@ -291,7 +249,7 @@ workflow {
 
    }else{
 
-        Channel.fromPath(params.input_file, checkIfExists: true)
+        channel.fromPath(params.input_file, checkIfExists: true)
            .splitCsv(header:true)
            .set{file_ch}
            file_ch.map{
@@ -304,8 +262,12 @@ workflow {
     // Use original runsheet to preserve sample order
     if(params.accession){
         runsheet_ch = GET_RUNSHEET.out.runsheet
+        isa_archive_ch = GET_RUNSHEET.out.zip
+        gl_file_ch = GET_RUNSHEET.out.input_file
     }else{
-        runsheet_ch = Channel.fromPath(params.input_file, checkIfExists: true)
+        runsheet_ch = channel.fromPath(params.input_file, checkIfExists: true)
+        isa_archive_ch = channel.empty()
+        gl_file_ch = channel.empty()
     }
 
     // Stage raw reads with standard naming
@@ -321,7 +283,7 @@ workflow {
 
     // Read quality check and trimming
     RAW_FASTQC(staged_reads_ch)
-    raw_fastqc_files = RAW_FASTQC.out.html.flatten().collect()
+    raw_fastqc_files = RAW_FASTQC.out.fastqc.flatten().collect()
     
     RAW_MULTIQC("raw", params.multiqc_config,raw_fastqc_files)
     ZIP_MULTIQC_RAW("raw", RAW_MULTIQC.out.report_dir)
@@ -330,19 +292,25 @@ workflow {
     RAW_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
     ZIP_MULTIQC_RAW.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
-     
-    trim_primers = params.trim_primers == "TRUE" ? true : false
-    if(trim_primers){
+    // Download reference database for taxonomic classification
+    DOWNLOAD_DATABASE(params.target_region)
 
-        if(!params.accession) primers_ch = Channel.value([params.F_primer, params.R_primer])
+    trimmed_reads_ch = channel.empty()
+    trimmed_reads_counts = channel.empty()
+    cutadapt_logs = channel.empty()
+    if(params.trim_primers){
+
+        if(!params.accession) primers_ch = channel.value([params.F_primer, params.R_primer])
         CUTADAPT(staged_reads_ch, primers_ch)
         logs = CUTADAPT.out.logs.map{ sample_id, log -> file("${log}")}.collect()
         counts = CUTADAPT.out.trim_counts.map{ sample_id, count -> file("${count}")}.collect()
-        trimmed_reads = CUTADAPT.out.reads.map{ 
+        trimmed_reads_ch = CUTADAPT.out.reads.map{ 
                                               sample_id, reads, isPaired -> reads instanceof List ? reads.each{file("${it}")}: file("${reads}")
                                               }.flatten().collect()
 
         COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE(counts, logs, runsheet_ch)
+        trimmed_reads_counts = COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE.out.counts
+        cutadapt_logs = COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE.out.logs
 
         isPaired_ch = CUTADAPT.out.reads.map{ 
                                               sample_id, reads, isPaired -> isPaired
@@ -352,108 +320,60 @@ workflow {
                      .concat(isPaired_ch)
                      .collate(2)
         
-        // Download reference database for taxonomic classification
-        DOWNLOAD_DATABASE(params.target_region)
         
         // Run dada2
-        RUN_R_TRIM(samples_ch, trimmed_reads, COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE.out.counts, DOWNLOAD_DATABASE.out.database)
-
-        dada_counts = RUN_R_TRIM.out.counts
-        dada_taxonomy = RUN_R_TRIM.out.taxonomy
-        dada_biom = RUN_R_TRIM.out.biom
-        filtered_count = RUN_R_TRIM.out.filtered_count
-
-        filtered_reads_ch = RUN_R_TRIM.out.reads
-                .flatten()
-		        .map { file ->
-                        // derive sample_id from filename
-                        def sample_id
-                        if (file.name.endsWith(params.filtered_R1_suffix)) {
-                                sample_id = file.name.replace(params.filtered_R1_suffix, "")
-                        } else if (file.name.endsWith(params.filtered_R2_suffix)) {
-                                sample_id = file.name.replace(params.filtered_R2_suffix, "")
-                        }
-
-                        tuple(sample_id, file)
-                }
-                .groupTuple(by:0)  // group R1/R2 by sample_id
-                .map { sample_id, files ->
-                        def pathFiles = files.collect { it instanceof String ? file(it) : it }  // ensure Path objects
-                        def isPaired = pathFiles.size() > 1
-                        tuple(sample_id, pathFiles, isPaired)
-                }
-
-        FILTERED_FASTQC(filtered_reads_ch)
-        filtered_fastqc_files = FILTERED_FASTQC.out.html.flatten().collect()
-
-        FILTERED_MULTIQC("filtered", params.multiqc_config, filtered_fastqc_files)
-        ZIP_MULTIQC_FILTERED("filtered", FILTERED_MULTIQC.out.report_dir)
+        RUN_DADA2(samples_ch, trimmed_reads_ch, trimmed_reads_counts, DOWNLOAD_DATABASE.out.database)
 
         CUTADAPT.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        RUN_R_TRIM.out.version | mix(software_versions_ch) | set{software_versions_ch}
-	    FILTERED_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        FILTERED_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        ZIP_MULTIQC_FILTERED.out.version | mix(software_versions_ch) | set{software_versions_ch}
-        
     }else{
-
         raw_reads_ch = staged_reads_ch.map{
                           sample_id, reads, isPaired -> reads instanceof List ? reads.each{file("${it}")}: file("${reads}")
                           }.flatten().collect()
-
-        // Use static raw read suffixes from config
-        raw_read_suffix_ch = staged_reads_ch.map{
-                                sample_id, reads, isPaired -> isPaired == 'true' ? [params.raw_R1_suffix, params.raw_R2_suffix] : [params.raw_R1_suffix]
-                             }.first()
 
         isPaired_ch = staged_reads_ch.map{sample_id, reads, isPaired -> isPaired}.first()
         samples_ch = runsheet_ch.first()
                      .concat(isPaired_ch)
                      .collate(2)
         
-        // Download reference database for taxonomic classification
-        DOWNLOAD_DATABASE(params.target_region)
-        
-        RUN_R_NOTRIM(samples_ch, raw_reads_ch, raw_read_suffix_ch, DOWNLOAD_DATABASE.out.database)
-
-        dada_counts = RUN_R_NOTRIM.out.counts
-        dada_taxonomy = RUN_R_NOTRIM.out.taxonomy
-        dada_biom = RUN_R_NOTRIM.out.biom
-        filtered_count  = RUN_R_NOTRIM.out.filtered_count
-
-        filtered_reads_ch = RUN_R_NOTRIM.out.reads
-    		.flatten()
-		    .map { file ->
-        		// derive sample_id from filename
-        		def sample_id
-        		if (file.name.endsWith(params.filtered_R1_suffix)) {
-            			sample_id = file.name.replace(params.filtered_R1_suffix, "")
-        		} else if (file.name.endsWith(params.filtered_R2_suffix)) {
-            			sample_id = file.name.replace(params.filtered_R2_suffix, "")
-        		}
-
-        		tuple(sample_id, file)
-    		}
-    		.groupTuple(by:0)  // group R1/R2 by sample_id
-    		.map { sample_id, files ->
-        		def pathFiles = files.collect { it instanceof String ? file(it) : it }  // ensure Path objects
-        		def isPaired = pathFiles.size() > 1
-        		tuple(sample_id, pathFiles, isPaired)
-    		}
-
-	    FILTERED_FASTQC(filtered_reads_ch)
-    	filtered_fastqc_files = FILTERED_FASTQC.out.html.flatten().collect()
-
-    	FILTERED_MULTIQC("filtered", params.multiqc_config, filtered_fastqc_files)
-    	ZIP_MULTIQC_FILTERED("filtered", FILTERED_MULTIQC.out.report_dir)
-
-	    RUN_R_NOTRIM.out.version | mix(software_versions_ch) | set{software_versions_ch}
-	    FILTERED_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-    	FILTERED_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-	    ZIP_MULTIQC_FILTERED.out.version | mix(software_versions_ch) | set{software_versions_ch}
-
+        // Run dada2 without primer trimming
+        RUN_DADA2(samples_ch, raw_reads_ch, file("NO_FILE"), DOWNLOAD_DATABASE.out.database)
     }
 
+    dada_counts = RUN_DADA2.out.counts
+    dada_taxonomy = RUN_DADA2.out.taxonomy
+    dada_biom = RUN_DADA2.out.biom
+    filtered_count = RUN_DADA2.out.filtered_count
+
+    filtered_reads_ch = RUN_DADA2.out.reads
+            .flatten()
+            .map { file ->
+                    // derive sample_id from filename
+                    def sample_id
+                    if (file.name.endsWith("${params.assay_suffix}_R1_filtered.fastq.gz")) {
+                            sample_id = file.name.replace("${params.assay_suffix}_R1_filtered.fastq.gz", "")
+                    } else if (file.name.endsWith("${params.assay_suffix}_R2_filtered.fastq.gz")) {
+                            sample_id = file.name.replace("${params.assay_suffix}_R2_filtered.fastq.gz", "")
+                    }
+
+                    tuple(sample_id, file)
+            }
+            .groupTuple(by:0)  // group R1/R2 by sample_id
+            .map { sample_id, files ->
+                    def pathFiles = files.collect { it instanceof String ? file(it) : it }  // ensure Path objects
+                    def isPaired = pathFiles.size() > 1
+                    tuple(sample_id, pathFiles, isPaired)
+            }
+
+    FILTERED_FASTQC(filtered_reads_ch)
+    	filtered_fastqc_files = FILTERED_FASTQC.out.fastqc.flatten().collect()
+
+    FILTERED_MULTIQC("filtered", params.multiqc_config, filtered_fastqc_files)
+    ZIP_MULTIQC_FILTERED("filtered", FILTERED_MULTIQC.out.report_dir)
+
+    RUN_DADA2.out.version | mix(software_versions_ch) | set{software_versions_ch}
+    FILTERED_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
+    FILTERED_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
+    ZIP_MULTIQC_FILTERED.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
     // Zip biom file
     ZIP_BIOM(dada_biom)
@@ -477,7 +397,7 @@ workflow {
               "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
               ]
 
-    meta  = Channel.of(values)
+    meta  = channel.of(values)
     
     metadata  =  GET_RUNSHEET.out.runsheet
 
@@ -495,9 +415,9 @@ workflow {
               "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
              ]
 
-    meta  = Channel.of(values)
+    meta  = channel.of(values)
     
-    metadata  =  Channel.fromPath(params.input_file, checkIfExists: true)
+    metadata  =  channel.fromPath(params.input_file, checkIfExists: true)
 
     }
     
@@ -512,8 +432,7 @@ workflow {
 		    def pngs = file(dir).listFiles()?.findAll { it.name.endsWith('.png') }
         	pngs ? tuple(
             	"alpha_diversity_plots",
-            	pngs,
-            	"${params.final_outputs_dir}alpha_diversity"
+            	pngs
         	) : null
     	}
     	.filter { it != null }
@@ -525,8 +444,7 @@ workflow {
 		    def pngs = file(dir).listFiles()?.findAll { it.name.contains('euclidean') && it.name.endsWith('.png') }
         	pngs ? tuple(
             	"euclidean_distance_plots",
-            	pngs,
-            	"${params.final_outputs_dir}beta_diversity"
+            	pngs
         	) : null
     	}
 	    .filter { it != null }
@@ -538,8 +456,7 @@ workflow {
             def pngs = file(dir).listFiles()?.findAll { it.name.contains('bray') && it.name.endsWith('.png') }
             pngs ? tuple(
                 "bray_curtis_plots",
-                pngs,
-                "${params.final_outputs_dir}beta_diversity"
+                pngs
             ) : null
         }
         .filter { it != null }
@@ -555,8 +472,7 @@ workflow {
             def pngs = file(dir).listFiles()?.findAll { it.name.contains('samples') && it.name.endsWith('.png') }
             pngs ? tuple(
                 "sample_taxonomy_plots",
-                pngs,
-                "${params.final_outputs_dir}taxonomy_plots"
+                pngs
             ) : null
         }
         .filter { it != null }
@@ -568,8 +484,7 @@ workflow {
             def pngs = file(dir).listFiles()?.findAll { it.name.contains('groups') && it.name.endsWith('.png') }
             pngs ? tuple(
                 "group_taxonomy_plots",
-                pngs,
-                "${params.final_outputs_dir}taxonomy_plots"
+                pngs
             ) : null
         }
         .filter { it != null }
@@ -580,10 +495,22 @@ workflow {
     PLOT_TAXONOMY.out.version | mix(software_versions_ch) | set{software_versions_ch}
     
      // Differential abundance testing
-     method = Channel.of(params.diff_abund_method)
+     da_contrasts_ch = channel.empty()
+     da_sampleTable_ch = channel.empty()
+     ancombc1_ch = channel.empty()
+     zip_ancombc1_ch = channel.empty()
+     ancombc2_ch = channel.empty()
+     zip_ancombc2_ch = channel.empty()
+     deseq2_ch = channel.empty()
+     zip_deseq2_ch = channel.empty()
+
+     method = channel.of(params.diff_abund_method)
      if (params.diff_abund_method == "deseq2"){
     
         DESEQ(meta, dada_counts, dada_taxonomy, metadata, filtered_count)
+        deseq2_ch = DESEQ.out.output_dir
+        da_contrasts_ch = DESEQ.out.contrasts_file
+        da_sampleTable_ch = DESEQ.out.sample_table_file
         DESEQ.out.version | mix(software_versions_ch) | set{software_versions_ch}
         // Zipping DESeq2 plots
 	    DESEQ.out.output_dir
@@ -591,16 +518,19 @@ workflow {
                 def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
                 pngs ? tuple(
                     "deseq2_volcano_plots",
-                    pngs,
-                    "${params.final_outputs_dir}/differential_abundance/deseq2"
+                    pngs
                 ) : null
             }
             .filter { it != null }
   	        | ZIP_DESEQ2
+        zip_deseq2_ch = ZIP_DESEQ2.out.zip
     
     }else if (params.diff_abund_method == "ancombc1"){
     
         ANCOMBC1(method, meta, dada_counts, dada_taxonomy, metadata, filtered_count)
+        ancombc1_ch = ANCOMBC1.out.output_dir
+        da_contrasts_ch = ANCOMBC1.out.contrasts_file
+        da_sampleTable_ch = ANCOMBC1.out.sample_table_file
         ANCOMBC1.out.version | mix(software_versions_ch) | set{software_versions_ch}
         // Zipping ANCOMBC1 plots
 	    ANCOMBC1.out.output_dir
@@ -608,16 +538,19 @@ workflow {
                 def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
                 pngs ? tuple(
                     "ancombc1_volcano_plots",
-                    pngs,
-                    "${params.final_outputs_dir}/differential_abundance/ancombc1"
+                    pngs
                 ) : null
             }
             .filter { it != null }
             | ZIP_ANCOMBC1
+        zip_ancombc1_ch = ZIP_ANCOMBC1.out.zip
 
     }else if (params.diff_abund_method == "ancombc2"){
 
         ANCOMBC2(method, meta, dada_counts, dada_taxonomy, metadata, filtered_count)
+        ancombc2_ch = ANCOMBC2.out.output_dir
+        da_contrasts_ch = ANCOMBC2.out.contrasts_file
+        da_sampleTable_ch = ANCOMBC2.out.sample_table_file
         ANCOMBC2.out.version | mix(software_versions_ch) | set{software_versions_ch}
         // Zipping ANCOMBC2 plots
 	    ANCOMBC2.out.output_dir
@@ -625,22 +558,27 @@ workflow {
                 def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
                 pngs ? tuple(
                     "ancombc2_volcano_plots",
-                    pngs,
-                    "${params.final_outputs_dir}/differential_abundance/ancombc2"
+                    pngs
                 ) : null
             }
             .filter { it != null }
             | ZIP_ANCOMBC2
+        zip_ancombc2_ch = ZIP_ANCOMBC2.out.zip
 
     }else{
 
         ANCOMBC1("ancombc1", meta, dada_counts, dada_taxonomy, metadata, filtered_count)
+        ancombc1_ch = ANCOMBC1.out.output_dir
+        da_contrasts_ch = ANCOMBC1.out.contrasts_file
+        da_sampleTable_ch = ANCOMBC1.out.sample_table_file
         ANCOMBC1.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
         ANCOMBC2("ancombc2", meta, dada_counts, dada_taxonomy, metadata, ANCOMBC1.out.output_dir)
+        ancombc2_ch = ANCOMBC2.out.output_dir
         ANCOMBC2.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
         DESEQ(meta, dada_counts, dada_taxonomy, metadata, ANCOMBC2.out.output_dir)
+        deseq2_ch = DESEQ.out.output_dir
         DESEQ.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
         // Zipping DA plots
@@ -650,43 +588,42 @@ workflow {
                 def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
                 pngs ? tuple(
                     "ancombc1_volcano_plots",
-                    pngs,
-                    "${params.final_outputs_dir}/differential_abundance/ancombc1"
+                    pngs
                 ) : null
             }
             .filter { it != null }
             | ZIP_ANCOMBC1
+        zip_ancombc1_ch = ZIP_ANCOMBC1.out.zip
 	    //ANCOMBC2
 	    ANCOMBC2.out.output_dir
             .map { dir ->
                 def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
                 pngs ? tuple(
                     "ancombc2_volcano_plots",
-                    pngs,
-                    "${params.final_outputs_dir}/differential_abundance/ancombc2"
+                    pngs
                 ) : null
             }
             .filter { it != null }
             | ZIP_ANCOMBC2
+        zip_ancombc2_ch = ZIP_ANCOMBC2.out.zip
 	    // DESeq2
 	    DESEQ.out.output_dir
             .map { dir ->
                 def pngs = file(dir).listFiles()?.findAll { it.name.contains('volcano') && it.name.endsWith('.png') }
                 pngs ? tuple(
                     "deseq2_volcano_plots",
-                    pngs,
-                    "${params.final_outputs_dir}/differential_abundance/deseq2"
+                    pngs
                 ) : null
             }
             .filter { it != null }
             | ZIP_DESEQ2
-
+        zip_deseq2_ch = ZIP_DESEQ2.out.zip
     }
     
 
      // Software Version Capturing - combining all captured software versions
      nf_version = "Nextflow Version ".concat("${nextflow.version}")
-     nextflow_version_ch = Channel.value(nf_version)
+     nextflow_version_ch = channel.value(nf_version)
 
      //  Write software versions to file
      software_versions_ch | map { it.text.strip() }
@@ -695,24 +632,218 @@ workflow {
                           | collectFile({it -> it}, newLine: true, cache: false)
                           | SOFTWARE_VERSIONS
 
+    publish:
+    // Metadata
+    runsheet = runsheet_ch
+    isa_archive = isa_archive_ch
+    gl_file = gl_file_ch
+
+    // Raw reads
+    raw_reads = staged_reads_ch
+
+    // Trimmed reads
+    trimmed_reads = trimmed_reads_ch
+    trimmed_count = trimmed_reads_counts
+    cutadapt_logs = cutadapt_logs
+    
+    // Filtered reads
+    filtered_reads = filtered_reads_ch
+    filtered_count = filtered_count
+
+    // FastQC
+    raw_fastqc = RAW_FASTQC.out.fastqc
+    filtered_fastqc = FILTERED_FASTQC.out.fastqc
+
+    // MultiQC
+    zip_multiqc_raw = ZIP_MULTIQC_RAW.out.report
+    zip_multiqc_filtered = ZIP_MULTIQC_FILTERED.out.report
+
+    // Dada2 outputs
+    asv = RUN_DADA2.out.fasta
+    counts = RUN_DADA2.out.counts
+    taxonomy = RUN_DADA2.out.taxonomy
+    taxonomy_counts = RUN_DADA2.out.taxonomy_count
+    biom_zip = ZIP_BIOM.out.biom
+    read_count_tracking = RUN_DADA2.out.read_count
+
+    // Alpha and beta diversity outputs
+    alpha_diversity = ALPHA_DIVERSITY.out.output_dir
+    zip_alpha_plots = ZIP_ALPHA.out.zip
+    beta_diversity = BETA_DIVERSITY.out.output_dir
+    zip_beta_euclidean_plots = ZIP_BETA_EUCLIDEAN.out.zip
+    zip_beta_bray_plots = ZIP_BETA_BRAY.out.zip
+
+    // Taxonomy plots
+    taxonomy_plots = PLOT_TAXONOMY.out.output_dir
+    zip_taxonomy_samples = ZIP_TAXONOMY_SAMPLES.out.zip
+    zip_taxonomy_groups = ZIP_TAXONOMY_GROUPS.out.zip
+
+    // Differential abundance outputs
+    da_contrasts = da_contrasts_ch
+    da_sampleTable = da_sampleTable_ch
+    ancombc1 = ancombc1_ch
+    zip_ancombc1 = zip_ancombc1_ch
+    ancombc2 = ancombc2_ch
+    zip_ancombc2 = zip_ancombc2_ch
+    deseq2 = deseq2_ch
+    zip_deseq2 = zip_deseq2_ch
+
+    // GeneLab
+    software_versions = SOFTWARE_VERSIONS.out.software_versions_txt
 
 }
 
+output {
+    // Metadata
+    runsheet {
+        path "Metadata"
+    }
 
-workflow.onComplete {
-    println("${c_bright_green}Pipeline completed at: $workflow.complete")
-    println("""Execution status: ${ workflow.success ? 'OK' : "${c_back_bright_red}failed" }""")
-    log.info ( workflow.success ? "\nDone! Workflow completed without any error\n" : "Oops .. something went wrong${c_reset}" )
+    isa_archive {
+        path "Metadata"
+    }
 
-    if ( workflow.success ) {
+    gl_file {
+        path "Metadata"
+    }
 
-    println("Raw reads location: ${params.raw_reads_dir}")
-    println("FastQC outputs location: ${params.fastqc_out_dir}")
-    println("Trimmed Reads location: ${params.trimmed_reads_dir}")
-    println("Filtered Reads location: ${params.filtered_reads_dir}")
-    println("Software versions location: ${params.metadata_dir}")
-    println("Final results (i.e. ASV count and taxonomy tables, diversity, and differential abundance testing): ${params.final_outputs_dir}")
-    println("Pipeline tracing/visualization files location:  ../Resource_Usage${c_reset}")
-    println()
+    // Raw reads
+    raw_reads {
+        path "Raw_Sequence_Data"
+    }
+
+    // Trimmed reads
+    trimmed_reads {
+        path "Trimmed_Sequence_Data"
+    }
+
+    trimmed_count {
+        path "Trimmed_Sequence_Data"
+    }
+
+    cutadapt_logs {
+        path "Trimmed_Sequence_Data"
+    }
+    
+    // Filtered reads
+    filtered_reads {
+        path "Filtered_Sequence_Data"
+    }
+
+    filtered_count {
+        path "Filtered_Sequence_Data"
+    }
+
+    // FastQC
+    raw_fastqc {
+        path {html, zip -> "Raw_Sequence_Data/FastQC_Outputs" }
+    }
+
+    filtered_fastqc {
+        path {html, zip -> "Filtered_Sequence_Data/FastQC_Outputs" }
+    }
+
+    // MultiQC
+    zip_multiqc_raw {
+        path "FastQC_Outputs"
+    }
+
+    zip_multiqc_filtered {
+        path "FastQC_Outputs"
+    }
+
+    // Dada2 outputs
+    asv {
+        path "Final_Outputs"
+    }
+
+    counts {
+        path "Final_Outputs"
+    }
+
+    taxonomy {
+        path "Final_Outputs"
+    }
+
+    taxonomy_counts {
+        path "Final_Outputs"
+    }
+
+    biom_zip {
+        path "Final_Outputs"
+    }
+
+    read_count_tracking {
+        path "Final_Outputs"
+    }
+
+    // Alpha and beta diversity outputs
+    alpha_diversity {
+        path "Final_Outputs"
+    }
+
+    zip_alpha_plots {
+        path "Final_Outputs/alpha_diversity"
+    }
+
+    beta_diversity {
+        path "Final_Outputs"
+    }
+
+    zip_beta_euclidean_plots {
+        path "Final_Outputs/beta_diversity"
+    }
+
+    zip_beta_bray_plots {
+        path "Final_Outputs/beta_diversity"
+    }
+
+    // Taxonomy plots
+    taxonomy_plots {
+        path "Final_Outputs"
+    }
+    zip_taxonomy_samples {
+        path "Final_Outputs/taxonomy_plots"
+    }
+    zip_taxonomy_groups {
+        path "Final_Outputs/taxonomy_plots"
+    }
+
+    // Differential abundance outputs
+    da_contrasts {
+        path "Final_Outputs"
+    }
+
+    da_sampleTable {
+        path "Final_Outputs"
+    }
+
+    ancombc1 {
+        path "Final_Outputs"
+    }
+
+    zip_ancombc1 {
+        path "Final_Outputs/differential_abundance/ancombc1"
+    }
+
+    ancombc2 {
+        path "Final_Outputs"
+    }
+
+    zip_ancombc2 {
+        path "Final_Outputs/differential_abundance/ancombc2"
+    }
+
+    deseq2 {
+        path "Final_Outputs"
+    }
+
+    zip_deseq2 {
+        path "Final_Outputs/differential_abundance/deseq2"
+    }
+
+    // GeneLab
+    software_versions {
+        path "GeneLab"
     }
 }

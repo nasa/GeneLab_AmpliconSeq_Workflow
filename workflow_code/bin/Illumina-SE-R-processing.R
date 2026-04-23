@@ -5,15 +5,15 @@
 ## Developed by Michael D. Lee (Mike.Lee@nasa.gov)                              ##
 ##################################################################################
 
-# as called from the associated process, this expects to be run as: Rscript full-R-processing.R <left_trunc> <left_maxEE> <TRUE/FALSE - GL trimmed primers or not> <unique-sample-IDs-file> <starting_reads_dir_for_R> <filtered_reads_dir> <input_file_R1_suffix> <filtered_filename_R1_suffix> <final_outputs_directory> <output_prefix> <target_region> <assay_suffix> <taxonomy_obj>
+# as called from the associated process, this expects to be run as: Rscript full-R-processing.R <left_trunc> <left_maxEE> <TRUE/FALSE - GL trimmed primers or not> <unique-sample-IDs-file> <starting_reads_dir_for_R> <input_file_R1_suffix> <filtered_filename_R1_suffix> <output_prefix> <target_region> <assay_suffix> <taxonomy_obj>
     # where <left_trim> is the value to be passed to the truncLen parameter of dada2's filterAndTrim()
     # and <left_maxEE> is the value to be passed to the maxEE parameter of dada2's filterAndTrim()
 
 # checking arguments were provided, first 2 are integers, and setting variables used within R:
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) < 13) {
-    stop("At least 13 positional arguments are required, see top of this R script for more info.", call.=FALSE)
+if (length(args) < 11) {
+    stop("At least 11 positional arguments are required, see top of this R script for more info.", call.=FALSE)
 } else {
     suppressWarnings(left_trunc <- as.integer(args[1]))
     suppressWarnings(left_maxEE <- as.integer(args[2]))
@@ -21,15 +21,12 @@ if (length(args) < 13) {
     suppressWarnings(GL_trimmed_primers <- args[3])
     suppressWarnings(sample_IDs_file <- args[4])
     suppressWarnings(input_reads_dir <- args[5])
-    suppressWarnings(filtered_reads_dir <- args[6])
-    suppressWarnings(input_file_R1_suffix <- args[7])
-    suppressWarnings(filtered_filename_R1_suffix <- args[8])
-    suppressWarnings(final_outputs_dir <- args[9])
-    suppressWarnings(output_prefix <- args[10])
-    suppressWarnings(target_region <- args[11])
-    suppressWarnings(assay_suffix <- args[12])
-    suppressWarnings(taxonomy_obj <- args[13])
-
+    suppressWarnings(input_file_R1_suffix <- args[6])
+    suppressWarnings(filtered_filename_R1_suffix <- args[7])
+    suppressWarnings(output_prefix <- args[8])
+    suppressWarnings(target_region <- args[9])
+    suppressWarnings(assay_suffix <- args[10])
+    suppressWarnings(taxonomy_obj <- args[11])
 }
 
 if ( is.na(left_trunc) || is.na(left_maxEE) ) {
@@ -53,64 +50,6 @@ library(biomformat); packageVersion("biomformat")
 
 # Set default internet timeout to 1 hour
 options(timeout=3600)
-
-# attempt to download RData file with retries
-download_retry <- function(url,
-                           destfile = basename(url),
-                           mode = "wb",
-                           tries = 3,
-                           sleep_min = 2,
-                           sleep_max = 5,
-                           ...) {
-
-    tries <- as.integer(tries)
-    total_attempts <- tries
-
-    while (tries > 0) {
-
-        if (file.exists(destfile)) {
-            unlink(destfile)
-        }
-
-        attempt_number <- total_attempts - tries + 1
-        message(sprintf("  Download attempt %d of %d for %s", attempt_number, total_attempts, destfile))
-
-        result <- tryCatch(
-            utils::download.file(url = url,
-                                 destfile = destfile,
-                                 mode = mode,
-                                 method = "libcurl",
-                                 headers = c("User-Agent" = "Mozilla/5.0"),
-                                 quiet = TRUE,
-                                 ...),
-            warning = identity,
-            error = identity
-        )
-
-        if (!inherits(result, "condition")) {
-            ok <- tryCatch({
-                load(destfile, envir = new.env())
-                TRUE
-            }, error = function(e) FALSE)
-
-            if (ok) {
-                return(invisible(destfile))
-            } else {
-                message("  Download failed, retrying...")
-            }
-        } else {
-            message(sprintf("  Download error: %s", conditionMessage(result)))
-        }
-
-        tries <- tries - 1
-
-        if (tries > 0) {
-            Sys.sleep(runif(1, sleep_min, sleep_max))
-        }
-    }
-
-    stop(sprintf("download_retry() failed for %s", url))
-}
 
     ### general processing ###
     # Sample name reading function
@@ -155,7 +94,7 @@ sample.names <- read_sample_names(sample_IDs_file)
 forward_reads <- paste0(input_reads_dir, sample.names, input_file_R1_suffix)
 
     # setting variables holding what will be the output paths of all forward filtered reads
-forward_filtered_reads <- paste0(filtered_reads_dir, sample.names, filtered_filename_R1_suffix)
+forward_filtered_reads <- paste0(sample.names, filtered_filename_R1_suffix)
 
     # adding sample names to the vectors holding the filtered-reads' paths
 names(forward_filtered_reads) <- sample.names
@@ -175,7 +114,7 @@ if ( GL_trimmed_primers ) {
 
 }
 
-write.table(filtered_count_summary_tab, paste0(filtered_reads_dir, output_prefix, "filtered-read-counts", assay_suffix, ".tsv"), sep="\t", quote=F, row.names=F)
+write.table(filtered_count_summary_tab, paste0(output_prefix, "filtered-read-counts", assay_suffix, ".tsv"), sep="\t", quote=F, row.names=F)
 
     # learning errors step
 forward_errors <- learnErrors(forward_filtered_reads, multithread=10)
@@ -203,7 +142,7 @@ if ( GL_trimmed_primers ) {
     
     raw_and_trimmed_read_counts <- read.table(paste0(input_reads_dir, output_prefix, "trimmed-read-counts", assay_suffix, ".tsv"), header=T, sep="\t")
     # reading in filtered read counts
-    filtered_read_counts <- read.table(paste0(filtered_reads_dir, output_prefix, "filtered-read-counts", assay_suffix, ".tsv"), header=T, sep="\t")
+    filtered_read_counts <- read.table(paste0(output_prefix, "filtered-read-counts", assay_suffix, ".tsv"), header=T, sep="\t")
 
     # merge by sample name to ensure correct alignment
     merged_counts <- merge(raw_and_trimmed_read_counts, filtered_read_counts[,c("sample", "dada2_filtered")], by="sample")
@@ -229,7 +168,7 @@ if ( GL_trimmed_primers ) {
 
 }
 
-write.table(count_summary_tab, paste0(final_outputs_dir, output_prefix, "read-count-tracking", assay_suffix, ".tsv"), sep = "\t", quote=F, row.names=F)
+write.table(count_summary_tab, paste0(output_prefix, "read-count-tracking", assay_suffix, ".tsv"), sep = "\t", quote=F, row.names=F)
 
     ### assigning taxonomy ###
     # creating a DNAStringSet object from the ASVs
@@ -280,7 +219,7 @@ if ( output_prefix != "" ) {
 cat("\n\n  Making and writing outputs...\n\n")
     # making and writing out a fasta of our final ASV seqs:
 asv_fasta <- c(rbind(asv_headers, asv_seqs))
-write(asv_fasta, paste0(final_outputs_dir, output_prefix, "ASVs", assay_suffix, ".fasta"))
+write(asv_fasta, paste0(output_prefix, "ASVs", assay_suffix, ".fasta"))
 
     # making and writing out a count table:
 asv_tab <- t(seqtab.nochim)
@@ -292,7 +231,7 @@ asv_tab <- data.frame("ASV_ID"=asv_ids, asv_tab, check.names=FALSE)
 sample_cols_present <- intersect(sample.names, colnames(asv_tab))
 asv_tab <- asv_tab[, c("ASV_ID", sample_cols_present)]
 
-write.table(asv_tab, paste0(final_outputs_dir, output_prefix, "counts", assay_suffix, ".tsv"), sep="\t", quote=F, row.names=FALSE)
+write.table(asv_tab, paste0(output_prefix, "counts", assay_suffix, ".tsv"), sep="\t", quote=F, row.names=FALSE)
 
     # making and writing out a taxonomy table:
     # vector of desired ranks was created above in ITS/16S target_region if statement
@@ -327,15 +266,15 @@ if ( target_region == "18S" ) {
     colnames(tax_tab)[colnames(tax_tab) == "kingdom"] <- "domain"
 }
 
-write.table(tax_tab, paste0(final_outputs_dir, output_prefix, "taxonomy", assay_suffix, ".tsv"), sep = "\t", quote=F, row.names=FALSE)
+write.table(tax_tab, paste0(output_prefix, "taxonomy", assay_suffix, ".tsv"), sep = "\t", quote=F, row.names=FALSE)
 
     ### generating and writing out biom file format ###
 biom_object <- make_biom(data=asv_tab, observation_metadata=tax_tab)
-write_biom(biom_object, paste0(final_outputs_dir, output_prefix, "taxonomy-and-counts", assay_suffix, ".biom"))
+write_biom(biom_object, paste0(output_prefix, "taxonomy-and-counts", assay_suffix, ".biom"))
 
     # making a tsv of combined tax and counts
 tax_and_count_tab <- merge(tax_tab, asv_tab)
-write.table(tax_and_count_tab, paste0(final_outputs_dir, output_prefix, "taxonomy-and-counts", assay_suffix, ".tsv"), sep="\t", quote=FALSE, row.names=FALSE)
+write.table(tax_and_count_tab, paste0(output_prefix, "taxonomy-and-counts", assay_suffix, ".tsv"), sep="\t", quote=FALSE, row.names=FALSE)
 
 cat("\n\n  Session info:\n\n")
 sessionInfo()

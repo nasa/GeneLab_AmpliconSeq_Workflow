@@ -20,12 +20,14 @@ required.add_argument("-g", "--GLDS-ID", help = 'GLDS ID (e.g. "GLDS-276")', act
 required.add_argument("-r", "--runsheet", help = "A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. \
                         This is the value set to the parameter --csv_file when run the processing pipeline with a csv file as input \
                         otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input.", action = "store", required = True)
+required.add_argument("--outdir", 
+                      help="Directory of generated output files to be validated.", action="store", required=True)
 parser.add_argument("--output", 
                     help = 'Name of output log file (default: "<GLDS-ID>_<output_prefix>amplicon-validation.log", with appended prefix if one is provided)',
                     default = "", action = "store")
 parser.add_argument("-p", "--output-prefix", help = "Output additional file prefix if there is one", action = "store", default = "")
 parser.add_argument("-l", "--V_V_guidelines_link", help = "Validation and verification guidelines link", action = "store", 
-                    default = "https://genelab-tools.arc.nasa.gov/confluence/pages/viewpage.action?pageId=2428598")
+                    default = "https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/main/README.md")
 parser.add_argument("--zip_targets", help = "A comma separated list of target files and/or directories to check in processing_info.zip",
                      action = "store", default = "Snakefile,config.yaml,envs/,logs/,scripts/,unique-sample-IDs.txt")
 parser.add_argument("--assay_suffix", help = "Genelab assay suffix", action = "store", default = "_GLAmpSeq")
@@ -42,21 +44,13 @@ parser.add_argument("--processing_zip_file", help = "Specifies the location of p
                     action = "store", default = "processing_info.zip")
 parser.add_argument("--readme", help = "Specifies the location of README.txt", 
                     action = "store", default = "README.txt")
-parser.add_argument("--raw_reads_dir", help = "Specifies the location of the raw reads directory if they are to be included", action = "store", default = "")
-parser.add_argument("--fastqc_dir", help = "Specifies the location of fastqc and multiqc reports directory", 
-                    action = "store", default = "FastQC_Outputs/")
-parser.add_argument("--filtered_reads_dir", help = "Specifies the location of the filtered reads directory", 
-                    action = "store", default = "Filtered_Sequence_Data/")
-parser.add_argument("--trimmed_reads_dir", help = "Specifies the location of the trimmed reads directory", 
-                    action = "store", default = "Trimmed_Sequence_Data/")
-parser.add_argument("--final_outputs_dir", help = "Specifies the location of the final outputs directory.", 
-                    action = "store", default = "Final_Outputs/")
 parser.add_argument("--single-ended", help = "Add this flag if data are single-end sequencing.", action = "store_true")
 parser.add_argument("--primers-already-trimmed", help = "Add this flag if primers were trimmed prior to GeneLab processing, \
                     therefore there are no trimmed sequence data", action = "store_true")
 parser.add_argument("--R1-used-as-single-ended-data", help = "Provide this flag if processing only R1 reads as single-end (as the expected raw \
                     filename suffixes will have 'R1' in there)", 
                     action = "store_true")
+parser.add_argument("--include_raw_fastq", help="Add this flag if we should check existence of the raw fastq files.", action="store_true")
 
 if len(sys.argv)==1:
     parser.print_help(sys.stderr)
@@ -355,26 +349,26 @@ def get_read_count_stats(validation_log, prefix, multiqc_zip, multiqc_stats_file
 def main():
 
     ### Variable setup ###
-    output_prefix = str(args.output_prefix)
-    fastqc_dir = str(args.fastqc_dir)
-    filtered_reads_dir = str(args.filtered_reads_dir)
-    processing_zip_file = str(args.processing_zip_file)
-
-    # Just in case user only specified --R1-used-as-single-ended, but didn't specify --single-ended
-    if args.R1_used_as_single_ended_data:
-        args.single_ended = True
-
     V_V_guidelines_link = str(args.V_V_guidelines_link)
 
     assay_suffix = str(args.assay_suffix)
+    output_prefix = str(args.output_prefix)
 
-    trimmed_reads_dir = str(args.trimmed_reads_dir)
-    final_outputs_dir = str(args.final_outputs_dir)
+    fastqc_dir = f"{args.outdir}/Post_Processing/FastQC_Outputs"
+    raw_reads_dir = f"{args.outdir}/Raw_Sequence_Data"
+    trimmed_reads_dir = f"{args.outdir}/Trimmed_Sequence_Data"
+    filtered_reads_dir = f"{args.outdir}/Filtered_Sequence_Data"
+    final_outputs_dir = f"{args.outdir}/Final_Outputs"
 
+    processing_zip_file = str(args.processing_zip_file)
     raw_multiqc_zip = str(output_prefix) + f"raw_multiqc{assay_suffix}_report.zip"
     filtered_multiqc_zip = str(output_prefix) + f"filtered_multiqc{assay_suffix}_report.zip"
     raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
     filtered_multiqc_stats_file_path = "filtered_multiqc_report/filtered_multiqc_data/multiqc_general_stats.txt"
+
+    # Just in case user only specified --R1-used-as-single-ended, but didn't specify --single-ended
+    if args.R1_used_as_single_ended_data:
+        args.single_ended = True
 
     raw_suffix = str(args.raw_suffix)
     raw_R1_suffix = str(args.raw_R1_suffix)
@@ -398,9 +392,9 @@ def main():
 
     expected_dirs = [fastqc_dir, filtered_reads_dir, final_outputs_dir]
 
-    if args.raw_reads_dir != "":
+    if args.include_raw_fastq:
 
-        expected_dirs.append(args.raw_reads_dir)
+        expected_dirs.append(raw_reads_dir)
 
     if not args.primers_already_trimmed:
 
@@ -441,10 +435,10 @@ def main():
     append_message_to_log(validation_log, f"    - all expected samples were found in filtered multiqc files in {fastqc_dir}")
 
     # Raw reads
-    if args.raw_reads_dir != "":
-        check_fastq_files(validation_log, sample_names, args.raw_reads_dir, 
+    if args.include_raw_fastq:
+        check_fastq_files(validation_log, sample_names, raw_reads_dir, 
                           raw_suffix, raw_R1_suffix, raw_R2_suffix, args.single_ended)
-        append_message_to_log(validation_log, f"    - all expected fastq read files were found in {args.raw_reads_dir}")
+        append_message_to_log(validation_log, f"    - all expected fastq read files were found in {raw_reads_dir}")
 
     # Trimmed reads
     if not args.primers_already_trimmed:
