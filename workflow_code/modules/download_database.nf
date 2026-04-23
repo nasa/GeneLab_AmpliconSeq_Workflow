@@ -1,7 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
-
 process DOWNLOAD_DATABASE {
 
     tag "Downloading reference database for ${target_region}..."
@@ -14,9 +10,9 @@ process DOWNLOAD_DATABASE {
         
     script:
         def db_config = [
-            "16S": ["SILVA_SSU_r138_2_2024.RData", "https://figshare.com/ndownloader/files/52846199"],
-            "ITS": ["UNITE_v2024_April2024.RData", "https://figshare.com/ndownloader/files/52846346"],
-            "18S": ["PR2_v4_13_March2021.RData", "https://figshare.com/ndownloader/files/46241917"]
+            "16S": ["SILVA_SSU_r138_2_2024.RData", "https://api.figshare.com/v2/file/download/52846199"],
+            "ITS": ["UNITE_v2024_April2024.RData", "https://api.figshare.com/v2/file/download/52846346"],
+            "18S": ["PR2_v4_13_March2021.RData", "https://api.figshare.com/v2/file/download/46241917"]
         ]
         
         def db_name = db_config[target_region][0]
