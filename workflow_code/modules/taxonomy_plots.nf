@@ -1,6 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
 //params.assay_suffix = "_GLAmpSeq"
 //params.group  = "groups"
 //params.samples_column = "Sample Name"
