@@ -1,7 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
-
 process DESEQ  {
 
     tag "Runnning differential abundance using DESEQ2..."

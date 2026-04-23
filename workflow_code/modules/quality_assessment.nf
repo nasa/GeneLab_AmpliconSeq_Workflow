@@ -1,6 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
 /**************************************************************************************** 
 *********************  Sequence quality assessment and control processes ****************
 ****************************************************************************************/
@@ -20,7 +17,7 @@ process FASTQC {
     input:
         tuple val(sample_id), path(reads), val(isPaired)
     output:
-        tuple path("*.html"), path("*.zip"), emit: html
+        tuple path("*.html"), path("*.zip"), emit: fastqc
         path("versions.txt"), emit: version
     script:
         """

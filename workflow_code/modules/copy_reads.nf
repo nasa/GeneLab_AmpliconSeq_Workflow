@@ -18,8 +18,6 @@
  * - Single-end: [sample_id, [sample_R1_raw.fastq.gz], "false"]
  */
 process COPY_READS {
-    publishDir "${params.raw_reads_dir}",
-        mode: params.publishDir_mode
     tag "${ sample_id }"
 
     input:
@@ -31,20 +29,18 @@ process COPY_READS {
     script:
         if ( paired == 'true' ) {
         """
-        cp -P 1.gz ${sample_id}${params.raw_R1_suffix}
-        cp -P 2.gz ${sample_id}${params.raw_R2_suffix}
+        cp -P 1.gz ${sample_id}${params.assay_suffix}_R1_raw.fastq.gz
+        cp -P 2.gz ${sample_id}${params.assay_suffix}_R2_raw.fastq.gz
         """
         } else {
         """
-        cp -P 1.gz ${sample_id}${params.raw_R1_suffix}
+        cp -P 1.gz ${sample_id}${params.assay_suffix}_raw.fastq.gz
         """
         }
 }
 
 
 process COPY_REMOTE_READS {
-    publishDir "${params.raw_reads_dir}",
-        mode: params.publishDir_mode
     tag "${ sample_id }"
 
     input:
@@ -56,12 +52,12 @@ process COPY_REMOTE_READS {
     script:
         if ( paired == 'true' ) {
         """
-        wget -O ${sample_id}${params.raw_R1_suffix} '${paths[0]}'
-        wget -O ${sample_id}${params.raw_R2_suffix} '${paths[1]}'
+        wget -O ${sample_id}${params.assay_suffix}_R1_raw.fastq.gz '${paths[0]}'
+        wget -O ${sample_id}${params.assay_suffix}_R2_raw.fastq.gz '${paths[1]}'
         """
         } else {
         """
-        wget -O ${sample_id}${params.raw_R1_suffix} '${paths[0]}'
+        wget -O ${sample_id}${params.assay_suffix}_raw.fastq.gz '${paths[0]}'
         """
         }
 
