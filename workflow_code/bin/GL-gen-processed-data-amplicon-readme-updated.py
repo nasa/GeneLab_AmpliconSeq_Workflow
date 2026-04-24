@@ -220,7 +220,7 @@ def write_amplicon_body(output):
             add_level("*_R1_trimmed.fastq.gz", "read1 trimmed fastq files", pad, output, continues=[True, True])
             add_level("*_R2_trimmed.fastq.gz", "read2 trimmed fastq files", pad, output, continues=[True, False], is_last=True)
 
-    add_spacer(output)
+        add_spacer(output)
 
     # quality-filtered reads
     add_level(filtered_reads_dir, "quality-filtered fastq files", pad, output, continues=[True])
