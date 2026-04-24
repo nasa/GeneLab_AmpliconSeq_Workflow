@@ -49,7 +49,7 @@ nextflow run main.nf -resume -profile slurm,singularity --accession GLDS-487 --t
 
 #python3 run_workflow.py --run --target-region 16S --accession GLDS-487 --profile slurm,singularity --singularity-cacheDir /path/to/singularity_images/ --extra 'with-tower' --R-memory '20 GB'
 
-#nextflow -C post_processing.config run post_processing.nf -resume -profile mamba -with-tower
+#nextflow run post_processing.nf -c post_processing.config  -resume -profile mamba -with-tower
 
 ## Add a time-stamp at the end of the job then calculate how long the job took to run in seconds, minutes, and hours ##
 echo ""
