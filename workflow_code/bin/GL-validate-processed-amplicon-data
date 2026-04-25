@@ -265,6 +265,84 @@ def check_amplicon_final_outputs(validation_log, final_outputs_dir, expected_fin
         check_general_fasta_format(validation_log, os.path.join(final_outputs_dir, fasta_file))
 
 
+def check_for_failure_file(validation_log, directory, failure_filename):
+    """
+    Check if a failure file exists in the given directory.
+    If it does, log the reason and return True to signal the caller to skip checks.
+    """
+    failure_path = os.path.join(directory, failure_filename)
+    if os.path.exists(failure_path):
+        with open(failure_path) as f:
+            reason = f.read().strip()
+        append_message_to_log(
+            validation_log,
+            f"    - WARNING: Analysis was skipped in {directory}. Reason:\n      {reason}"
+        )
+        return True
+    return False
+
+
+def check_rarefaction_depth_consistency(validation_log, alpha_diversity_dir, beta_diversity_dir, output_prefix, assay_suffix):
+    """ Check that rarefaction depth is consistent between alpha and beta diversity outputs """
+    
+    alpha_depth_file = os.path.join(alpha_diversity_dir, f"{output_prefix}rarefaction_depth{assay_suffix}.txt")
+    beta_depth_file = os.path.join(beta_diversity_dir, f"{output_prefix}rarefaction_depth{assay_suffix}.txt")
+
+    # Only check if both files exist (rarefaction ran in both)
+    if not os.path.exists(alpha_depth_file) or not os.path.exists(beta_depth_file):
+        append_message_to_log(validation_log, "    - Skipping rarefaction depth consistency check: depth file missing in one or both directories")
+        return
+
+    with open(alpha_depth_file) as f:
+        alpha_depth = f.read().strip()
+    with open(beta_depth_file) as f:
+        beta_depth = f.read().strip()
+
+    if alpha_depth != beta_depth:
+        report_failure(
+            validation_log,
+            f"Rarefaction depth mismatch: alpha diversity used {alpha_depth} "
+            f"but beta diversity used {beta_depth}."
+        )
+    
+    append_message_to_log(
+        validation_log,
+        f"    - Rarefaction depth is consistent between alpha and beta diversity: {alpha_depth}"
+    )
+
+
+def get_num_contrasts(validation_log, contrasts_file):
+    """ Parse number of contrasts from contrasts.csv header row """
+    try:
+        with open(contrasts_file) as f:
+            header = f.readline().strip()
+            # First column is empty/index, rest are contrast names
+            contrasts = [c for c in header.split(",") if c]
+            return len(contrasts)
+    except FileNotFoundError:
+        report_failure(validation_log, f"Contrasts file '{contrasts_file}' not found.")
+
+
+def check_volcano_plots(validation_log, da_dir, num_contrasts):
+    """ Check that the number of volcano plot pngs in the DA subdir matches number of contrasts """
+
+    plots = [
+        f for f in os.listdir(da_dir)
+        if f.endswith(".png") and "volcano" in f
+    ]
+
+    if len(plots) != num_contrasts:
+        report_failure(
+            validation_log,
+            f"Expected {num_contrasts} volcano plots in '{da_dir}' "
+            f"but found {len(plots)}."
+        )
+    append_message_to_log(
+        validation_log,
+        f"    - {len(plots)}/{num_contrasts} expected volcano plots found in {da_dir}"
+    )
+
+
 def check_amplicon_processing_zip(validation_log, processing_zip_file, expected_zip_contents):
     """ This just makes sure a processing zip exists along with its expected content """
 
@@ -354,17 +432,29 @@ def main():
     assay_suffix = str(args.assay_suffix)
     output_prefix = str(args.output_prefix)
 
-    fastqc_dir = f"{args.outdir}/Post_Processing/FastQC_Outputs"
+    # top level folders
+    fastqc_dir = f"{args.outdir}/FastQC_Outputs"
     raw_reads_dir = f"{args.outdir}/Raw_Sequence_Data"
     trimmed_reads_dir = f"{args.outdir}/Trimmed_Sequence_Data"
     filtered_reads_dir = f"{args.outdir}/Filtered_Sequence_Data"
     final_outputs_dir = f"{args.outdir}/Final_Outputs"
 
+    # Final_Outputs/ subfolders
+    alpha_diversity_dir = f"{final_outputs_dir}/alpha_diversity"
+    beta_diversity_dir = f"{final_outputs_dir}/beta_diversity"
+    taxonomy_plots_dir = f"{final_outputs_dir}/taxonomy_plots"
+    differential_abundance_dir = f"{final_outputs_dir}/differential_abundance"
+    ancombc1_dir = f"{differential_abundance_dir}/ancombc1"
+    ancombc2_dir = f"{differential_abundance_dir}/ancombc2"
+    deseq2_dir = f"{differential_abundance_dir}/deseq2"    
+    
+    # filename definitions and paths
     processing_zip_file = str(args.processing_zip_file)
-    raw_multiqc_zip = str(output_prefix) + f"raw_multiqc{assay_suffix}_report.zip"
-    filtered_multiqc_zip = str(output_prefix) + f"filtered_multiqc{assay_suffix}_report.zip"
-    raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
-    filtered_multiqc_stats_file_path = "filtered_multiqc_report/filtered_multiqc_data/multiqc_general_stats.txt"
+    raw_multiqc_zip = str(output_prefix) + f"raw_multiqc{assay_suffix}_data.zip"
+    filtered_multiqc_zip = str(output_prefix) + f"filtered_multiqc{assay_suffix}_data.zip"
+    raw_multiqc_stats_file_path = f"raw_multiqc{assay_suffix}_data/multiqc_general_stats.txt"
+    filtered_multiqc_stats_file_path = f"filtered_multiqc{assay_suffix}_data/multiqc_general_stats.txt"
+    contrasts_file = f"{differential_abundance_dir}/" + str(output_prefix) + f"contrasts{assay_suffix}.csv"
 
     # Just in case user only specified --R1-used-as-single-ended, but didn't specify --single-ended
     if args.R1_used_as_single_ended_data:
@@ -381,6 +471,7 @@ def main():
     filtered_R1_suffix = str(args.filtered_R1_suffix)
     filtered_R2_suffix = str(args.filtered_R2_suffix)
 
+    # expected file types in each folder and subfolder
     expected_trimmed_outputs_or_suffixes = [output_prefix + f"cutadapt{assay_suffix}.log",
                                              output_prefix + f"trimmed-read-counts{assay_suffix}.tsv"]
     expected_filtered_outputs_or_suffixes = [f"filtered-read-counts{assay_suffix}.tsv"]
@@ -389,8 +480,63 @@ def main():
                                            ".biom.zip", 
                                            output_prefix + f"taxonomy-and-counts{assay_suffix}.tsv",
                                            output_prefix + f"read-count-tracking{assay_suffix}.tsv"]
+    expected_alpha_diversity_outputs_or_suffixes = [output_prefix + f"alpha_diversity_plots{assay_suffix}.zip",
+                                                    output_prefix + f"statistics_table{assay_suffix}.csv",
+                                                    output_prefix + f"summary_table{assay_suffix}.csv",
+                                                    output_prefix + f"rarefaction_curves{assay_suffix}.png",
+                                                    output_prefix + f"richness_and_diversity_estimates_by_group{assay_suffix}.png",
+                                                    output_prefix + f"richness_and_diversity_estimates_by_sample{assay_suffix}.png",
+                                                    output_prefix + f"rarefaction_depth{assay_suffix}.txt"]
 
-    expected_dirs = [fastqc_dir, filtered_reads_dir, final_outputs_dir]
+    expected_beta_diversity_outputs_or_suffixes = [output_prefix + f"bray_curtis_plots{assay_suffix}.zip",
+                                                   output_prefix + f"bray_adonis_table{assay_suffix}.csv",
+                                                   output_prefix + f"bray_variance_table{assay_suffix}.csv",
+                                                   output_prefix + f"bray_dendrogram{assay_suffix}.png",
+                                                   output_prefix + f"bray_PCoA_w_labels{assay_suffix}.png",
+                                                   output_prefix + f"bray_PCoA_without_labels{assay_suffix}.png",
+                                                   output_prefix + f"euclidean_distance_plots{assay_suffix}.zip",
+                                                   output_prefix + f"euclidean_adonis_table{assay_suffix}.csv",
+                                                   output_prefix + f"euclidean_variance_table{assay_suffix}.csv",
+                                                   output_prefix + f"euclidean_dendrogram{assay_suffix}.png",
+                                                   output_prefix + f"euclidean_PCoA_w_labels{assay_suffix}.png",
+                                                   output_prefix + f"euclidean_PCoA_without_labels{assay_suffix}.png",
+                                                   output_prefix + f"vsd_validation_plot{assay_suffix}.png",
+                                                   output_prefix + f"rarefaction_depth{assay_suffix}.txt"]
+
+    expected_taxonomy_plots_outputs_or_suffixes = [output_prefix + f"group_taxonomy_plots{assay_suffix}.zip",
+                                                   output_prefix + f"groups_class{assay_suffix}.png",
+                                                   output_prefix + f"groups_family{assay_suffix}.png",
+                                                   output_prefix + f"groups_genus{assay_suffix}.png",
+                                                   output_prefix + f"groups_order{assay_suffix}.png",
+                                                   output_prefix + f"groups_phylum{assay_suffix}.png",
+                                                   output_prefix + f"groups_species{assay_suffix}.png",
+                                                   output_prefix + f"sample_taxonomy_plots{assay_suffix}.zip",
+                                                   output_prefix + f"samples_class{assay_suffix}.png",
+                                                   output_prefix + f"samples_family{assay_suffix}.png",
+                                                   output_prefix + f"samples_genus{assay_suffix}.png",
+                                                   output_prefix + f"samples_order{assay_suffix}.png",
+                                                   output_prefix + f"samples_phylum{assay_suffix}.png",
+                                                   output_prefix + f"samples_species{assay_suffix}.png"]
+
+    expected_differential_abundance_outputs_or_suffixes = [output_prefix + f"contrasts{assay_suffix}.csv",
+                                                           output_prefix + f"SampleTable{assay_suffix}.csv"]
+
+    # For DA methods, number of volcano plots can vary based on number of contrasts, so just checking for the existence of the zip file containing them
+    # Number of individual volcano plots will be check against number of contrasts in the contrasts file
+    expected_ancombc1_outputs_or_suffixes = [output_prefix + f"ancombc1_differential_abundance{assay_suffix}.csv",
+                                             output_prefix + f"ancombc1_volcano_plots{assay_suffix}.zip"]
+
+    expected_ancombc2_outputs_or_suffixes = [output_prefix + f"ancombc2_differential_abundance{assay_suffix}.csv",
+                                             output_prefix + f"ancombc2_volcano_plots{assay_suffix}.zip"]
+
+    expected_deseq2_outputs_or_suffixes = [output_prefix + f"deseq2_differential_abundance{assay_suffix}.csv",
+                                           output_prefix + f"deseq2_volcano_plots{assay_suffix}.zip",
+                                           output_prefix + f"asv_sparsity_plot{assay_suffix}.png"]
+
+    # expected directories to check
+    expected_dirs = [fastqc_dir, filtered_reads_dir, final_outputs_dir,
+                     alpha_diversity_dir, beta_diversity_dir, taxonomy_plots_dir, 
+                     differential_abundance_dir, ancombc1_dir, ancombc2_dir, deseq2_dir]
 
     if args.include_raw_fastq:
 
@@ -463,7 +609,7 @@ def main():
         append_message_to_log(validation_log, f"    - {file} was found in {filtered_reads_dir}")
     append_message_to_log(validation_log, f"    - all expected files were found in the {filtered_reads_dir} directory")
 
-    # Check that all expected outputs exists in the final outputs directory and that the fasta files are rightly formatted 
+    # Check that all expected individual files exist in the final outputs directory and that the fasta files are rightly formatted 
     # i.e., the number of sequence headers equals the number of sequences in the fasta file.
     check_amplicon_final_outputs(validation_log, final_outputs_dir, expected_final_outputs_or_suffixes)
     for file in expected_final_outputs_or_suffixes:
@@ -471,9 +617,73 @@ def main():
             append_message_to_log(validation_log, f"    - *{file} was found in {final_outputs_dir}")
         else: 
             append_message_to_log(validation_log, f"    - {file} was found in {final_outputs_dir}") 
-    append_message_to_log(validation_log, f"    - all expected files were found in the {final_outputs_dir} directory")
+    append_message_to_log(validation_log, f"    - all expected individual files were found in the {final_outputs_dir} directory")
 
-     # Checking for processing_info.zip
+    # Alpha diversity outputs
+    alpha_failure_file = f"{alpha_diversity_dir}/" + str(output_prefix) + f"alpha_diversity_failure{assay_suffix}.txt"
+    if check_for_failure_file(validation_log, alpha_diversity_dir, alpha_failure_file):
+        append_message_to_log(validation_log, f"    - Skipping alpha diversity validation due to failure file")
+    else:
+        check_amplicon_final_outputs(validation_log, alpha_diversity_dir, expected_alpha_diversity_outputs_or_suffixes)
+        append_message_to_log(validation_log, f"    - all expected files were found in {alpha_diversity_dir}")
+
+    # Beta diversity outputs
+    beta_failure_file = f"{beta_diversity_dir}/" + str(output_prefix) + f"beta_diversity_failure{assay_suffix}.txt"
+    beta_failed = check_for_failure_file(validation_log, beta_diversity_dir, beta_failure_file)
+    if beta_failed:
+        # VST outputs may still exist even if rarefaction failed
+        vsd_plot = f"{output_prefix}vsd_validation_plot{assay_suffix}.png"
+        vsd_path = os.path.join(beta_diversity_out_dir, vsd_plot)
+        if os.path.exists(vsd_path):
+            append_message_to_log(validation_log, "    - Rarefaction failed but VST outputs detected, validating VST outputs only")
+            vst_only_outputs = [
+                f"{output_prefix}euclidean_adonis_table{assay_suffix}.csv",
+                f"{output_prefix}euclidean_variance_table{assay_suffix}.csv",
+                f"{output_prefix}euclidean_dendogram{assay_suffix}.png",
+                f"{output_prefix}euclidean_PCoA_w_labels{assay_suffix}.png",
+                f"{output_prefix}euclidean_PCoA_without_labels{assay_suffix}.png",
+                vsd_plot
+            ]
+            check_amplicon_final_outputs(validation_log, beta_diversity_dir, vst_only_outputs)
+            append_message_to_log(validation_log, f"    - expected VST outputs were found in {beta_diversity_dir}")
+        else:
+            append_message_to_log(validation_log, "    - Skipping beta diversity validation, both rarefaction and VST failed")
+    else:
+        # Full validation of beta diversity outputs if no failure file is present
+        check_amplicon_final_outputs(validation_log, beta_diversity_dir, expected_beta_diversity_outputs_or_suffixes)
+        append_message_to_log(validation_log, f"    - all expected files were found in {beta_diversity_dir}")
+
+    # If both alpha and beta diversity outputs are present, check that rarefaction depth is consistent between them
+    if not beta_failed and not os.path.exists(alpha_failure_file):
+        check_rarefaction_depth_consistency(validation_log, alpha_diversity_dir, beta_diversity_dir, output_prefix, assay_suffix)
+
+    # Taxonomy plots outputs
+    check_amplicon_final_outputs(validation_log, taxonomy_plots_dir, expected_taxonomy_plots_outputs_or_suffixes)
+    append_message_to_log(validation_log, f"    - all expected files were found in {taxonomy_plots_dir}")
+
+    # Differential abundance outputs
+    check_amplicon_final_outputs(validation_log, differential_abundance_dir, expected_differential_abundance_outputs_or_suffixes)
+    append_message_to_log(validation_log, f"    - all expected individual files were found in {differential_abundance_dir}")
+
+    # Get number of contrasts from contrasts file to check against number of volcano plots in DA method subdirs
+    num_contrasts = get_num_contrasts(validation_log, contrasts_file)
+    
+    # ANCOMBC1 outputs
+    check_amplicon_final_outputs(validation_log, ancombc1_dir, expected_ancombc1_outputs_or_suffixes)
+    check_volcano_plots(validation_log, ancombc1_dir, num_contrasts)
+    append_message_to_log(validation_log, f"    - all expected files were found in {ancombc1_dir}")
+
+    # ANCOMBC2 outputs
+    check_amplicon_final_outputs(validation_log, ancombc2_dir, expected_ancombc2_outputs_or_suffixes)
+    check_volcano_plots(validation_log, ancombc2_dir, num_contrasts)
+    append_message_to_log(validation_log, f"    - all expected files were found in {ancombc2_dir}")
+
+    # DESeq2 outputs
+    check_amplicon_final_outputs(validation_log, deseq2_dir, expected_deseq2_outputs_or_suffixes)
+    check_volcano_plots(validation_log, deseq2_dir, num_contrasts)
+    append_message_to_log(validation_log, f"    - all expected files were found in {deseq2_dir}")
+
+    # Checking for processing_info.zip
     check_for_file_and_contents(validation_log, processing_zip_file)
     append_message_to_log(validation_log, f"    - populated {processing_zip_file} detected")
 

@@ -158,8 +158,6 @@ include { COPY_REMOTE_READS } from './modules/copy_reads.nf'
 
 // Read quality check and filtering
 include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
-include { ZIP_MULTIQC as ZIP_MULTIQC_RAW } from './modules/quality_assessment.nf'
-
 
 // Trim primers if requested
 include { CUTADAPT ; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
@@ -167,16 +165,14 @@ include { CUTADAPT ; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutad
 // Cluster ASVs
 include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
 include { RUN_DADA2 } from './modules/run_dada.nf'
-include { ZIP_BIOM } from './modules/zip_biom.nf'
 
 // Filtered quality check
 include { FASTQC as FILTERED_FASTQC ; MULTIQC as FILTERED_MULTIQC  } from './modules/quality_assessment.nf'
-include { ZIP_MULTIQC as ZIP_MULTIQC_FILTERED } from './modules/quality_assessment.nf'
 
 // Diversity, differential abundance and visualizations
 include { ALPHA_DIVERSITY; BETA_DIVERSITY } from './modules/diversity.nf'
 include { PLOT_TAXONOMY } from './modules/taxonomy_plots.nf'
-include { ZIP as ZIP_ALPHA; ZIP as ZIP_BETA_EUCLIDEAN; ZIP as ZIP_BETA_BRAY; ZIP as ZIP_TAXONOMY_SAMPLES; ZIP as ZIP_TAXONOMY_GROUPS } from './modules/zip.nf'
+include { ZIP as ZIP_BIOM; ZIP as ZIP_ALPHA; ZIP as ZIP_BETA_EUCLIDEAN; ZIP as ZIP_BETA_BRAY; ZIP as ZIP_TAXONOMY_SAMPLES; ZIP as ZIP_TAXONOMY_GROUPS } from './modules/zip.nf'
 include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
 include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
 include { DESEQ } from './modules/deseq.nf'
@@ -286,11 +282,9 @@ workflow {
     raw_fastqc_files = RAW_FASTQC.out.fastqc.flatten().collect()
     
     RAW_MULTIQC("raw", params.multiqc_config,raw_fastqc_files)
-    ZIP_MULTIQC_RAW("raw", RAW_MULTIQC.out.report_dir)
 
     RAW_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
     RAW_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-    ZIP_MULTIQC_RAW.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
     // Download reference database for taxonomic classification
     DOWNLOAD_DATABASE(params.target_region)
@@ -368,15 +362,15 @@ workflow {
     	filtered_fastqc_files = FILTERED_FASTQC.out.fastqc.flatten().collect()
 
     FILTERED_MULTIQC("filtered", params.multiqc_config, filtered_fastqc_files)
-    ZIP_MULTIQC_FILTERED("filtered", FILTERED_MULTIQC.out.report_dir)
 
     RUN_DADA2.out.version | mix(software_versions_ch) | set{software_versions_ch}
     FILTERED_FASTQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
     FILTERED_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
-    ZIP_MULTIQC_FILTERED.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
     // Zip biom file
-    ZIP_BIOM(dada_biom)
+    dada_biom
+        .map { biom -> tuple("taxonomy-and-counts", biom) }
+        | ZIP_BIOM
 
     ZIP_BIOM.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
@@ -655,15 +649,17 @@ workflow {
     filtered_fastqc = FILTERED_FASTQC.out.fastqc
 
     // MultiQC
-    zip_multiqc_raw = ZIP_MULTIQC_RAW.out.report
-    zip_multiqc_filtered = ZIP_MULTIQC_FILTERED.out.report
+    zip_multiqc_raw = RAW_MULTIQC.out.zipped_data
+    html_multiqc_raw = RAW_MULTIQC.out.html
+    zip_multiqc_filtered = FILTERED_MULTIQC.out.zipped_data
+    html_multiqc_filtered = FILTERED_MULTIQC.out.html
 
     // Dada2 outputs
     asv = RUN_DADA2.out.fasta
     counts = RUN_DADA2.out.counts
     taxonomy = RUN_DADA2.out.taxonomy
     taxonomy_counts = RUN_DADA2.out.taxonomy_count
-    biom_zip = ZIP_BIOM.out.biom
+    biom_zip = ZIP_BIOM.out.zip
     read_count_tracking = RUN_DADA2.out.read_count
 
     // Alpha and beta diversity outputs
@@ -748,7 +744,15 @@ output {
         path "FastQC_Outputs"
     }
 
+    html_multiqc_raw {
+        path "FastQC_Outputs"
+    }
+
     zip_multiqc_filtered {
+        path "FastQC_Outputs"
+    }
+
+    html_multiqc_filtered {
         path "FastQC_Outputs"
     }
 
