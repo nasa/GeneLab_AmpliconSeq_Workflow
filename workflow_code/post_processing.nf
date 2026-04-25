@@ -88,7 +88,7 @@ log.info """${c_blue}
 }
 
 
-include { CLEAN_MULTIQC_PATHS; PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
+include { PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
            GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
 
 
@@ -133,18 +133,14 @@ workflow {
 
         GENERATE_README()
 
-        CLEAN_MULTIQC_PATHS(fastqc_outputs_dir)
-
-       // Automatic verification and validation
+        // Automatic verification and validation
         VALIDATE_PROCESSING(channel.value(processed_dir), params.target_files, runsheet_ch, 
                             GENERATE_README.out.readme,
-                            PACKAGE_PROCESSING_INFO.out.zip, 
-                            CLEAN_MULTIQC_PATHS.out.clean_dir) 
+                            PACKAGE_PROCESSING_INFO.out.zip) 
         
         // Generate md5sums  
           // Make sure md5sums are generated after the following processes are done since they are included in the md5sum generation:
           ch_ready = GENERATE_README.out.readme                 
-                .combine( CLEAN_MULTIQC_PATHS.out.clean_dir )
                 .combine(PACKAGE_PROCESSING_INFO.out.zip) 
                 .map { true }
           
@@ -159,7 +155,6 @@ workflow {
       publish:
       processing_info_ch = PACKAGE_PROCESSING_INFO.out.zip
       readme_ch = GENERATE_README.out.readme
-      purged_fastqc_ch = CLEAN_MULTIQC_PATHS.out.clean_dir
       log_ch = VALIDATE_PROCESSING.out.log
       raw_md5sum_ch = GENERATE_MD5SUMS.out.raw_md5sum
       processed_md5sum_ch = GENERATE_MD5SUMS.out.processed_md5sum
@@ -175,10 +170,6 @@ output {
     }
 
     readme_ch {
-        path "Post_Processing"
-    }
-
-    purged_fastqc_ch {
         path "Post_Processing"
     }
 

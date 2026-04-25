@@ -51,10 +51,6 @@ def should_include(filepath, allowed_dirs):
     # Skip any files with 'fastqc' in the path or filename (case-sensitive to make sure Post_Processing/FastQC_Outputs/ is still included) 
     if 'fastqc' in filepath:
         return False
-    
-    # Skip unpurged MultiQC reports in ./FastQC_Outputs/ and keep purged ones in ./Post_Processing/FastQC_Outputs/
-    if "FastQC_Outputs" in filepath and "Post_Processing/FastQC_Outputs" not in filepath:
-        return False
 
     # Skip all .png files in alpha diversity and taxonomy plot outputs
     if ("/alpha_diversity/" in filepath or "/taxonomy_plots/" in filepath) and filepath.endswith(".png"):
@@ -76,8 +72,8 @@ def should_include(filepath, allowed_dirs):
     if filepath.endswith("ISA.zip") or filepath.endswith("GLfile.csv"):
         return False
 
-    # Skip files in Post_Processing except for README, processing_info.zip, and purged MultiQC reports
-    if "/Post_Processing/" in filepath and not (filepath.endswith("README" + args.assay_suffix + ".txt") or filepath.endswith("processing_info" + args.assay_suffix + ".zip") or filepath.endswith("multiqc" + args.assay_suffix + "_report.zip")):
+    # Skip files in Post_Processing except for README and processing_info.zip
+    if "/Post_Processing/" in filepath and not (filepath.endswith("README" + args.assay_suffix + ".txt") or filepath.endswith("processing_info" + args.assay_suffix + ".zip")):
         return False
     
     return True
@@ -126,7 +122,8 @@ def main():
             "/Metadata/", 
             "/GeneLab/", 
             "/Raw_Sequence_Data/", 
-            "/Filtered_Sequence_Data/", 
+            "/Filtered_Sequence_Data/",
+            "/FastQC_Outputs/",
             "/Final_Outputs/",  
             "/Post_Processing/"]
     else:
@@ -136,6 +133,7 @@ def main():
             "/Raw_Sequence_Data/", 
             "/Trimmed_Sequence_Data/", 
             "/Filtered_Sequence_Data/", 
+            "/FastQC_Outputs/",
             "/Final_Outputs/",  
             "/Post_Processing/"]
     

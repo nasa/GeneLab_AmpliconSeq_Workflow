@@ -506,10 +506,10 @@ def main():
     # This one is only used for the raw data files
     raw_file_prefix = f"{args.GLDS_ID}_Amplicon_" if args.raw_file_prefix == "" else  str(args.raw_file_prefix)
     file_prefix = f"{args.GLDS_ID}_GAmplicon_" if args.file_prefix == "" else  str(args.file_prefix)
-    raw_multiqc_zip = f"raw_multiqc{assay_suffix}_report.zip"
-    filtered_multiqc_zip = f"filtered_multiqc{assay_suffix}_report.zip"
+    raw_multiqc_zip = f"raw_multiqc{assay_suffix}_data.zip"
+    filtered_multiqc_zip = f"filtered_multiqc{assay_suffix}_data.zip"
+    raw_multiqc_stats_file_path = f"raw_multiqc{assay_suffix}_data/multiqc_general_stats.txt"
     output_prefix = str(args.output_prefix)
-    raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
 
     if args.map:
         map_tab = pd.read_csv(args.map, sep = "\t", names = ["sample", "prefix"])
@@ -554,11 +554,13 @@ def main():
     ###################################  Write file association table ##########################################
     header = write_colnames(include_raw_multiqc_in_output)
     
+    filtered_multiqc_html = f"filtered_multiqc{assay_suffix}.html"
     if include_raw_multiqc_in_output:
-        multiqc = [file_prefix + output_prefix + raw_multiqc_zip, 
-                  file_prefix + output_prefix + filtered_multiqc_zip]
+        raw_multiqc_html = f"raw_multiqc{assay_suffix}.html"
+        multiqc = [file_prefix + output_prefix + raw_multiqc_html + "," + file_prefix + output_prefix + raw_multiqc_zip, 
+                  file_prefix + output_prefix + filtered_multiqc_html + "," + file_prefix + output_prefix + filtered_multiqc_zip]
     else:
-        multiqc = [file_prefix + output_prefix + filtered_multiqc_zip]
+        multiqc = [file_prefix + output_prefix + filtered_multiqc_html + "," + file_prefix + output_prefix + filtered_multiqc_zip]
     
     # Retrieve a dictionary with sample names as keys and raw fastqfile prefix as values 
     sample_raw_prefix_dict = runsheet_to_dict(args.runsheet) if args.runsheet != "" else ""

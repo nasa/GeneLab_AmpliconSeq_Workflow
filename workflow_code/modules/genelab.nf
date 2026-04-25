@@ -1,59 +1,3 @@
-process CLEAN_MULTIQC_PATHS {
-    tag "Purging genelab paths from MultiQC zip files in FastQC_Outputs..."
-
-     input:
-        path fastqc_outputs_dir, stageAs: "FastQC_Outputs_dir"
-    output:
-        path("FastQC_Outputs"), emit: clean_dir
-    script:
-        OUT_DIR = "FastQC_Outputs"
-        """
-        WORKDIR=`pwd`
-
-        [ -d ${OUT_DIR}/ ] || mkdir  ${OUT_DIR}/ && \\
-        cp -r FastQC_Outputs_dir/*  ${OUT_DIR}/
-        
-        [ -f ${OUT_DIR}/versions.txt ] && rm -rf ${OUT_DIR}/versions.txt
-
-        cat `which clean-paths.sh` > \${WORKDIR}/clean-paths.sh
-        chmod +x \${WORKDIR}/clean-paths.sh
-
-        echo "Purging paths from multiqc outputs"
-        cd \${WORKDIR}/${OUT_DIR}/
-        echo "Cleaning raw multiqc files with path info"
-        unzip ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip && rm ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip
-        cd raw_multiqc_report/raw_multiqc_data/
-
-        # No reason not to just run it on all
-        echo "Purging paths in all raw QC files..."
-        find . -type f -exec bash \${WORKDIR}/clean-paths.sh '{}' ${params.baseDir} \\;
-        cd \${WORKDIR}/${OUT_DIR}/
-
-        echo "Re-zipping up raw multiqc"
-        zip -r ${params.cleaned_prefix}raw_multiqc${params.assay_suffix}_report.zip raw_multiqc_report/ && rm -rf raw_multiqc_report/
-
-        echo "Cleaning filtered multiqc files with path info..."
-        unzip ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip && rm ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip
-        cd filtered_multiqc_report/filtered_multiqc_data/
-
-
-        # No reason not to just run it on all
-        echo "Purging paths in all filtered QC files..."
-        find . -type f -exec bash \${WORKDIR}/clean-paths.sh '{}' ${params.baseDir} \\;
-        cd \${WORKDIR}/${OUT_DIR}/
-
-
-        echo "Re-zipping up filtered multiqc..."
-        zip -r ${params.cleaned_prefix}filtered_multiqc${params.assay_suffix}_report.zip filtered_multiqc_report/ && rm -rf filtered_multiqc_report/
-        cd \${WORKDIR}
-
-        echo "Purging paths from multiqc outputs completed successfully..."
-
-        echo "Done! Paths purged successfully."
-        """
-
-}
-
 process PACKAGE_PROCESSING_INFO {
 
     tag "Purging file paths and zipping processing info"
@@ -115,7 +59,7 @@ process VALIDATE_PROCESSING {
         path(runsheet)
         path(README)
         path(processing_info)
-        path(cleaned_multiqc_dir) // passed as done token only, script needs to check for the existence of the cleaned multiqc files in the published directory (Post_processing/FastQC_Outputs/)
+
     output:
         path("${params.GLDS_accession}_${params.cleaned_prefix}amplicon-validation${params.assay_suffix}.log"), emit: log
 
