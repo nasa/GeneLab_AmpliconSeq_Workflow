@@ -1,6 +1,3 @@
-#!/usr/bin/env nextflow
-
-nextflow.enable.dsl = 2
 //params.diff_abund_method = "ancombc2"
 //params.assay_suffix = "_GLAmpSeq"
 //params.output_prefix = ""

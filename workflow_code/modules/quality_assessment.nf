@@ -1,6 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
 /**************************************************************************************** 
 *********************  Sequence quality assessment and control processes ****************
 ****************************************************************************************/
@@ -20,12 +17,16 @@ process FASTQC {
     input:
         tuple val(sample_id), path(reads), val(isPaired)
     output:
-        tuple path("*.html"), path("*.zip"), emit: html
+        tuple path("*.html"), path("*.zip"), emit: fastqc
         path("versions.txt"), emit: version
     script:
+        // Calculate memory per thread (100MB minimum, 10000MB maximum), adapted from https://github.com/nf-core/modules/blob/master/modules/nf-core/fastqc/main.nf
+        def memory_in_mb = MemoryUnit.of("${task.memory}").toUnit('MB') / task.cpus
+        def fastqc_memory = memory_in_mb > 10000 ? 10000 : (memory_in_mb < 100 ? 100 : memory_in_mb)
         """
         fastqc -o . \\
         -t ${task.cpus} \\
+        --memory ${fastqc_memory} \\
         ${reads}
 
         fastqc --version > versions.txt
@@ -42,37 +43,24 @@ process MULTIQC {
         path(multiqc_config)
         path(files)
     output:
-        path("${prefix}_multiqc_report"), emit: report_dir
+        path("${prefix}_multiqc${params.assay_suffix}_data.zip"), emit: zipped_data
+        path("${prefix}_multiqc${params.assay_suffix}.html"), emit: html
+        path("${prefix}_multiqc${params.assay_suffix}_data"), emit: data
         path("versions.txt"), emit: version
     script:
         """
-        multiqc -q --filename ${prefix}_multiqc \\
-                --force --cl-config 'max_table_rows: 99999999' \\
-                --interactive --config ${multiqc_config} \\
-                --outdir ${prefix}_multiqc_report  ${files} > /dev/null 2>&1
+        multiqc \\
+            --force \\
+            --interactive \\
+            -o . \\
+            -n ${prefix}_multiqc${params.assay_suffix} \\
+            --cl-config 'max_table_rows: 99999999' \\
+            --config ${multiqc_config} \\
+            ${files} > /dev/null 2>&1
+
+        # Clean paths and create zip
+        clean_multiqc_paths.py ${ prefix }_multiqc${ params.assay_suffix }_data .
 
         multiqc --version > versions.txt
-        """
-  }
-
-
-process ZIP_MULTIQC {
-
-    tag "Zipping ${prefix} multiqc.."
-    label "zip"
- 
-    input:
-        val(prefix)
-        path(multiqc_dir)
-
-    output:
-        path("${params.cleaned_prefix}${prefix}_multiqc${params.assay_suffix}_report.zip"), emit: report
-        path("versions.txt"), emit: version
-
-    script:
-        """
-        # Zipping
-        zip -q -r ${params.cleaned_prefix}${prefix}_multiqc${params.assay_suffix}_report.zip ${multiqc_dir}
-        zip -h | grep "Zip" | sed -E 's/(Zip.+\\)).+/\\1/' > versions.txt
         """
 }

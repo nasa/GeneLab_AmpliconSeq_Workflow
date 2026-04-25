@@ -1,6 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
 //params.accession = "GLDS-487"
 //params.target_region = "16S"
 

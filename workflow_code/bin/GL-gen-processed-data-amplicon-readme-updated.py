@@ -32,9 +32,8 @@ parser.add_argument("--primers_already_trimmed", help = "Add this flag if primer
 parser.add_argument("--single-end", action="store_true", help="Is the data single-end?")
 parser.add_argument("--date", action="store", default=datetime.date.today(), type=datetime.date.fromisoformat,
                     help="Date the processed data was generated in ISO format (YYYY-MM-DD). (default: today's date)")
-
-parser.add_argument("--include-raw-reads", action="store_true", #???
-                    help="Include the raw read data (Merged sequence data)?")
+parser.add_argument("--include-raw-reads", action="store_true",
+                    help="Passed only when raw read data (Merged sequence data) should be included")
 
 if len(sys.argv) == 1:
     parser.print_help(sys.stderr)
@@ -196,6 +195,18 @@ def write_amplicon_body(output):
 
     add_spacer(output)
 
+    # raw data
+    if args.include_raw_reads:
+        add_level(raw_reads_dir, "raw fastq files", pad, output, continues=[True])
+        # Raw Sequence Data
+        if args.single_end:
+            add_level("*_raw.fastq.gz", "raw fastq files", pad, output, continues=[True, False], is_last=True)
+        else:
+            add_level("*_R1_raw.fastq.gz", "read1 raw fastq files", pad, output, continues=[True, True])
+            add_level("*_R2_raw.fastq.gz", "read2 raw fastq files", pad, output, continues=[True, False], is_last=True)
+
+        add_spacer(output)
+
     # trimmed reads
     if not args.primers_already_trimmed:
         
@@ -209,7 +220,7 @@ def write_amplicon_body(output):
             add_level("*_R1_trimmed.fastq.gz", "read1 trimmed fastq files", pad, output, continues=[True, True])
             add_level("*_R2_trimmed.fastq.gz", "read2 trimmed fastq files", pad, output, continues=[True, False], is_last=True)
 
-    add_spacer(output)
+        add_spacer(output)
 
     # quality-filtered reads
     add_level(filtered_reads_dir, "quality-filtered fastq files", pad, output, continues=[True])
@@ -292,8 +303,7 @@ assay_suffix = args.assay_suffix
 
 processing_zip_file = f"processing_info{assay_suffix}.zip"
 
-merged_reads_dir = "Merged Sequence Data/"
-#multiqc_dir = "MultiQC Reports/" ###Change FastQC Outputs to MultiQC Outputs?###
+raw_reads_dir = "Raw Sequence Data/"
 fastqc_outputs_dir = "FastQC Outputs/"
 trimmed_reads_dir = "Trimmed Sequence Data/"
 filtered_reads_dir = "Filtered Sequence Data/"
