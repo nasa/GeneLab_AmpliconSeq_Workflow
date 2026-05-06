@@ -433,11 +433,14 @@ def main():
     output_prefix = str(args.output_prefix)
 
     # top level folders
-    fastqc_dir = f"{args.outdir}/FastQC_Outputs"
     raw_reads_dir = f"{args.outdir}/Raw_Sequence_Data"
     trimmed_reads_dir = f"{args.outdir}/Trimmed_Sequence_Data"
     filtered_reads_dir = f"{args.outdir}/Filtered_Sequence_Data"
     final_outputs_dir = f"{args.outdir}/Final_Outputs"
+
+    # MultiQC_Reports subfolders
+    raw_multiqc_dir = f"{raw_reads_dir}/MultiQC_Reports"
+    filtered_multiqc_dir = f"{filtered_reads_dir}/MultiQC_Reports"
 
     # Final_Outputs/ subfolders
     alpha_diversity_dir = f"{final_outputs_dir}/alpha_diversity"
@@ -534,16 +537,15 @@ def main():
                                            output_prefix + f"asv_sparsity_plot{assay_suffix}.png"]
 
     # expected directories to check
-    expected_dirs = [fastqc_dir, filtered_reads_dir, final_outputs_dir,
+    expected_dirs = [filtered_reads_dir, filtered_multiqc_dir, final_outputs_dir,
                      alpha_diversity_dir, beta_diversity_dir, taxonomy_plots_dir, 
                      differential_abundance_dir, ancombc1_dir, ancombc2_dir, deseq2_dir]
 
     if args.include_raw_fastq:
-
         expected_dirs.append(raw_reads_dir)
+        expected_dirs.append(raw_multiqc_dir)
 
     if not args.primers_already_trimmed:
-
         expected_dirs.append(trimmed_reads_dir)
 
     if args.output == "":
@@ -565,20 +567,20 @@ def main():
     sample_names = read_samples(args.runsheet)
 
     # Check raw multiqc outputs
-    raw_multiqc_zip = os.path.join(fastqc_dir, raw_multiqc_zip)
+    raw_multiqc_zip = os.path.join(raw_multiqc_dir, raw_multiqc_zip)
     raw_prefix = "raw"
     check_multiqc_outputs(validation_log, sample_names, raw_multiqc_zip, 
                           raw_multiqc_stats_file_path, raw_R1_suffix,
                           raw_R2_suffix, raw_suffix, raw_prefix, args.single_ended)
-    append_message_to_log(validation_log, f"    - all expected samples were found in raw multiqc files in {fastqc_dir}")
+    append_message_to_log(validation_log, f"    - all expected samples were found in raw multiqc files in {raw_multiqc_dir}")
 
     # Check filtered multiqc outputs
-    filtered_multiqc_zip = os.path.join(fastqc_dir, filtered_multiqc_zip)
+    filtered_multiqc_zip = os.path.join(filtered_multiqc_dir, filtered_multiqc_zip)
     filtered_prefix = "filtered"   
     check_multiqc_outputs(validation_log, sample_names, filtered_multiqc_zip,
                           filtered_multiqc_stats_file_path, filtered_R1_suffix, 
                           filtered_R2_suffix, filtered_suffix, filtered_prefix, args.single_ended)
-    append_message_to_log(validation_log, f"    - all expected samples were found in filtered multiqc files in {fastqc_dir}")
+    append_message_to_log(validation_log, f"    - all expected samples were found in filtered multiqc files in {filtered_multiqc_dir}")
 
     # Raw reads
     if args.include_raw_fastq:

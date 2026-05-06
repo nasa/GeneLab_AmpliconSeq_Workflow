@@ -1,25 +1,19 @@
 process DOWNLOAD_DATABASE {
 
     tag "Downloading reference database for ${target_region}..."
+    storeDir "${params.database_store_path}"
     
     input:
-        val(target_region)
+        tuple val(target_region), val(db_name), val(url)
         
     output:
-        path("*.RData"), emit: database
+        path("${db_name}"), emit: database
         
-    script:
-        def db_config = [
-            "16S": ["SILVA_SSU_r138_2_2024.RData", "https://api.figshare.com/v2/file/download/52846199"],
-            "ITS": ["UNITE_v2024_April2024.RData", "https://api.figshare.com/v2/file/download/52846346"],
-            "18S": ["PR2_v4_13_March2021.RData", "https://api.figshare.com/v2/file/download/46241917"]
-        ]
-        
-        def db_name = db_config[target_region][0]
-        def url = db_config[target_region][1]
-        
+    script:        
         """
         wget --user-agent="Mozilla/5.0" ${url} -O ${db_name} || exit 1
+        chmod 664 ${db_name}
+
         ls -la ${db_name}
         """
 }

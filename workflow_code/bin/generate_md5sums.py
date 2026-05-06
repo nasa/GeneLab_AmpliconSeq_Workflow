@@ -48,7 +48,7 @@ def should_include(filepath, allowed_dirs):
     if not args.primers_already_trimmed and (filepath.endswith("-cutadapt.log") or filepath.endswith("-trimmed-counts.tsv")):
         return False
     
-    # Skip any files with 'fastqc' in the path or filename (case-sensitive to make sure Post_Processing/FastQC_Outputs/ is still included) 
+    # Skip any files with 'fastqc' in the path or filename 
     if 'fastqc' in filepath:
         return False
 
@@ -72,8 +72,8 @@ def should_include(filepath, allowed_dirs):
     if filepath.endswith("ISA.zip") or filepath.endswith("GLfile.csv"):
         return False
 
-    # Skip files in Post_Processing except for README and processing_info.zip
-    if "/Post_Processing/" in filepath and not (filepath.endswith("README" + args.assay_suffix + ".txt") or filepath.endswith("processing_info" + args.assay_suffix + ".zip")):
+    # Skip files in GeneLab/ except for software_versions, README, processing_info.zip
+    if "/GeneLab/" in filepath and not (filepath.endswith("software_versions" + args.assay_suffix + ".txt") or filepath.endswith("README" + args.assay_suffix + ".txt") or filepath.endswith("processing_info" + args.assay_suffix + ".zip")):
         return False
     
     return True
@@ -81,7 +81,7 @@ def should_include(filepath, allowed_dirs):
 def trim_to_allowed_dir(filepath, allowed_dirs):
     """Trim filepath to start from the first matching allowed_dir segment."""
     for allowed_dir in allowed_dirs:
-        # Strip leading slash for the match so the output starts like: FastQC_Outputs/...
+        # Strip leading slash for the match so the output starts like: Final_Outputs/...
         marker = allowed_dir.strip("/")
         if marker in filepath:
             idx = filepath.index(marker)
@@ -123,9 +123,7 @@ def main():
             "/GeneLab/", 
             "/Raw_Sequence_Data/", 
             "/Filtered_Sequence_Data/",
-            "/FastQC_Outputs/",
-            "/Final_Outputs/",  
-            "/Post_Processing/"]
+            "/Final_Outputs/"]
     else:
         allowed_dirs = [
             "/Metadata/", 
@@ -133,9 +131,7 @@ def main():
             "/Raw_Sequence_Data/", 
             "/Trimmed_Sequence_Data/", 
             "/Filtered_Sequence_Data/", 
-            "/FastQC_Outputs/",
-            "/Final_Outputs/",  
-            "/Post_Processing/"]
+            "/Final_Outputs/"]
     
     # Walk through all files recursively
     print(f"Scanning directory: {outdir}")

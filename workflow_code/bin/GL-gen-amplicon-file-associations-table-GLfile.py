@@ -188,7 +188,7 @@ def get_sample_names_and_unique_filenames(assay_table,  raw_file_prefix, raw_R1_
 
 
 def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
-                                      fastqc_dir, output_prefix,  raw_multiqc_zip):
+                                      raw_multiqc_dir, output_prefix,  raw_multiqc_zip):
 
     # These are in multiple files if there was a mapping input table
     if isinstance(mapping_tab, pd.DataFrame):
@@ -200,7 +200,7 @@ def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
         # Working through each one
         for prefix in unique_prefixes:
 
-            curr_file_path = os.path.join(fastqc_dir, output_prefix + prefix + raw_multiqc_zip)
+            curr_file_path = os.path.join(raw_multiqc_dir, output_prefix + prefix + raw_multiqc_zip)
 
             # Making sure there are multiqc files for each unique prefix given in the mapping table
             check_for_file_and_contents(curr_file_path)
@@ -229,7 +229,7 @@ def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
         return(df)
 
     else:
-        input_zip = os.path.join(fastqc_dir, output_prefix + raw_multiqc_zip)
+        input_zip = os.path.join(raw_multiqc_dir, output_prefix + raw_multiqc_zip)
         zip_file = zipfile.ZipFile(input_zip)
         #df = pd.read_csv(zip_file.open(raw_multiqc_stats_file_path), sep = "\t", usecols = [0,6])
         df = pd.read_csv(zip_file.open(raw_multiqc_stats_file_path), sep = "\t")
@@ -392,7 +392,7 @@ def runsheet_to_dict(runsheet):
 
 
 
-def create_association_table(header_colnames, fastqc,
+def create_association_table(header_colnames, multiqc,
                              unique_filename_prefixes, read_count_tab, 
                              sample_file_dict, file_prefix,  output_prefix,
                              assay_suffix,  raw_file_prefix, 
@@ -441,16 +441,16 @@ def create_association_table(header_colnames, fastqc,
                             curr_read_count, 
                             read_count_unit]
         
-        # Divide fastqc into raw and filtered multiqc
+        # Divide multiqc into raw and filtered multiqc
         if include_raw_multiqc_in_output:
-            raw_fastqc, filtered_fastqc = fastqc
-            curr_row_as_list.append(raw_fastqc)  # Add only if flag is True
+            raw_multiqc, filtered_multiqc = multiqc
+            curr_row_as_list.append(raw_multiqc)  # Add only if flag is True
         else:
-            filtered_fastqc = fastqc
+            filtered_multiqc = multiqc
 
         curr_row_as_list.extend([", ".join(curr_trimmed_data),
                                  ", ".join(curr_filt_data),
-                                 filtered_fastqc,
+                                 filtered_multiqc,
                                  final_outputs_dict["Taxonomy and ASV Counts Data"],
                                  final_outputs_dict["Alpha Diversity Data"],
                                  final_outputs_dict["Beta Diversity Data"],
@@ -483,7 +483,7 @@ def main():
     ### Set variables  ###
     
     # Directories
-    fastqc_dir = "FastQC_Outputs"
+    raw_multiqc_dir = "MultiQC_Reports"
     final_outputs_dir = "Final_Outputs"
 
     # Suffixes
@@ -549,7 +549,7 @@ def main():
     sample_file_dict = dict(zip(unique_filename_prefixes, sample_names))
 
     read_counts_df = get_read_counts_from_raw_multiqc(map_tab, raw_multiqc_stats_file_path,
-                                                      fastqc_dir, output_prefix,  raw_multiqc_zip)
+                                                      raw_multiqc_dir, output_prefix,  raw_multiqc_zip)
     
     ###################################  Write file association table ##########################################
     header = write_colnames(include_raw_multiqc_in_output)

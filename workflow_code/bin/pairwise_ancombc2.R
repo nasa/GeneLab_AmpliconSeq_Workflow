@@ -158,16 +158,17 @@ if(opt[["samples-column"]] == "Sample Name") {
 
 
 library(ANCOMBC)
-library(DescTools)
 library(taxize)
 library(glue)
 library(phyloseq)
-library(utils)
-library(tools)
-library(patchwork)
 library(ggrepel)
-library(tidyverse)
-library(scales)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(tibble)
+library(tidyr)
 
 # ---------------------------- Functions ------------------------------------- #
 

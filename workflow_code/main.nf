@@ -287,7 +287,15 @@ workflow {
     RAW_MULTIQC.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
     // Download reference database for taxonomic classification
-    DOWNLOAD_DATABASE(params.target_region)
+    def db_config = [
+            "16S": ["SILVA_SSU_r138_2_v2.RData", "https://api.figshare.com/v2/file/download/64078939"],
+            "ITS": ["UNITE_v2025.RData", "https://api.figshare.com/v2/file/download/64079011"],
+            "18S": ["PR2_v4_13_March2021.RData", "https://api.figshare.com/v2/file/download/46241917"]
+        ]
+    target_region_ch = Channel.value(params.target_region)
+        .map { region -> tuple(region, db_config[region][0], db_config[region][1]) }
+    
+    DOWNLOAD_DATABASE(target_region_ch)
 
     trimmed_reads_ch = channel.empty()
     trimmed_reads_counts = channel.empty()
@@ -741,19 +749,19 @@ output {
 
     // MultiQC
     zip_multiqc_raw {
-        path "FastQC_Outputs"
+        path "Raw_Sequence_Data/MultiQC_Reports"
     }
 
     html_multiqc_raw {
-        path "FastQC_Outputs"
+        path "Raw_Sequence_Data/MultiQC_Reports"
     }
 
     zip_multiqc_filtered {
-        path "FastQC_Outputs"
+        path "Filtered_Sequence_Data/MultiQC_Reports"
     }
 
     html_multiqc_filtered {
-        path "FastQC_Outputs"
+        path "Filtered_Sequence_Data/MultiQC_Reports"
     }
 
     // Dada2 outputs

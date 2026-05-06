@@ -101,7 +101,7 @@ process GENERATE_CURATION_TABLE {
 
     input:
         path(input_table)
-        path(fastqc_outputs_dir) // passed so the process has access to raw_multiqc to get read counts from
+        path(raw_multiqc_report_dir) // passed so the process has access to raw_multiqc to get read counts from
         path(final_outputs_dir) // passed so the process has access to final outputs to get alpha/beta diversity, taxonomy plots, and DA outputs
 
     output:

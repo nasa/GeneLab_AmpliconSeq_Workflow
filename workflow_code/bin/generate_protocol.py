@@ -8,7 +8,7 @@ import sys
 REFERENCE_DB = {
     "16S": "SILVA SSU r138_2",
     "18S": "PR2 v4.13",
-    "ITS": "UNITE v2024",
+    "ITS": "UNITE v2025",
 }
 
 def parse_versions(versions_file):
@@ -86,6 +86,8 @@ def generate_protocol(args, versions, rarefaction_depth):
     qc_parts = []
     if args.trim_primers:
         qc_parts.append(f"Primers were removed from raw reads using cutadapt v{v['cutadapt']}.")
+    else:
+        qc_parts.append(f"Primers were already removed from the submitted raw data.")
     qc_parts.append(
         f"Quality assessment of filtered reads was performed "
         f"with FastQC v{v['fastqc']} and reports were summarized with MultiQC v{v['multiqc']}."

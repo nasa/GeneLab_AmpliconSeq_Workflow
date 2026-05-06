@@ -151,10 +151,15 @@ library(DESeq2)
 library(ggdendro)
 library(RColorBrewer)
 library(broom)
-library(ggrepel)
-library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(tibble)
+library(tidyr)
 library(vsn)
-library(hexbin)
+library(hexbin) # optional dependency of vsn::meanSdPlot() for hexagonal binning
 
 
 
@@ -221,6 +226,7 @@ Beta diversity results may be unreliable."))
     }
     
     #----- Rarefy sample counts to even depth per sample
+    set.seed(NULL) # # Initialize RNG so rarefy_even_depth() can save/restore '.Random.seed' internally
     ps <- rarefy_even_depth(physeq = ASV_physeq, 
                             sample.size = depth,
                             rngseed = 1, 

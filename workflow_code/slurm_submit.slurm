@@ -45,10 +45,6 @@ export TOWER_WORKSPACE_ID=<WORKSPACE ID>
 
 nextflow run main.nf -resume -profile slurm,singularity --accession GLDS-487 --target_region 16S -with-tower 
 
-#python3 run_workflow.py --run --target-region 16S --input-file PE_file.csv --F-primer GTGCCAGCMGCCGCGGTAA --R-primer GGACTACHVGGGTWTCTAAT --profile slurm,singularity --singularity-cacheDir /path/to/singularity_images/ --extra 'with-tower' --R-memory '20 GB'
-
-#python3 run_workflow.py --run --target-region 16S --accession GLDS-487 --profile slurm,singularity --singularity-cacheDir /path/to/singularity_images/ --extra 'with-tower' --R-memory '20 GB'
-
 #nextflow run post_processing.nf -c post_processing.config  -resume -profile mamba -with-tower
 
 ## Add a time-stamp at the end of the job then calculate how long the job took to run in seconds, minutes, and hours ##

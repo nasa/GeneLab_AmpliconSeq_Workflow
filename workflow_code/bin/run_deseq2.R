@@ -144,8 +144,13 @@ library(phyloseq)
 library(DESeq2)
 library(taxize)
 library(ggrepel)
-library(tidyverse)
-library(scales)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(tibble)
+library(tidyr)
 
 # --------------------------- Functions -------------------------------------#
 

@@ -30,36 +30,19 @@ process DESEQ  {
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
         
-        Rscript -e "VERSIONS=sprintf('DESeq2 %s\\n', packageVersion('DESeq2')); \\
-                    write(x=VERSIONS, file='versions.txt', append=TRUE)"     
+        Rscript -e "VERSIONS=sprintf('DESeq2 %s\\ntaxize %s\\nglue %s\\nphyloseq %s\\nggrepel %s\\nggplot2 %s\\ndplyr %s\\npurrr %s\\nreadr %s\\nstringr %s\\ntibble %s\\ntidyr %s\\n', \\
+                            packageVersion('DESeq2'), \\
+                            packageVersion('taxize'), \\
+                            packageVersion('glue'), \\
+                            packageVersion('phyloseq'), \\
+                            packageVersion('ggrepel'), \\
+                            packageVersion('ggplot2'), \\
+                            packageVersion('dplyr'), \\
+                            packageVersion('purrr'), \\
+                            packageVersion('readr'), \\
+                            packageVersion('stringr'), \\
+                            packageVersion('tibble'), \\
+                            packageVersion('tidyr')); \\
+            write(x=VERSIONS, file='versions.txt', append=TRUE)"   
         """
-}
-
-
-workflow {
-
-    
-    meta  = Channel.of(["samples": params.samples_column,
-                        "group" : params.group,
-                        "depth" : params.rarefaction_depth,
-                        "assay_suffix" : params.assay_suffix,
-                        "output_prefix" : params.cleaned_prefix,
-                        "target_region" : params.target_region,
-                        "library_cutoff" : params.library_cutoff,
-                        "prevalence_cutoff" : params.prevalence_cutoff,
-                        "rare" : params.remove_rare ? "--remove-rare" : ""
-                        ])
-                            
-                            
-    metadata  = Channel.fromPath(params.metadata, checkIfExists: true)
-    asv_table = Channel.fromPath(params.asv_table, checkIfExists: true) 
-    taxonomy  =  Channel.fromPath(params.taxonomy, checkIfExists: true)
-    // Dummy file
-    dummy  =  Channel.fromPath(params.taxonomy, checkIfExists: true)
-
-    DESEQ(meta, metadata, asv_table, taxonomy, dummy)
-
-    emit:
-        version = DESEQ.out.version
-
 }

@@ -114,7 +114,7 @@ workflow {
 
        processing_scripts_dir = Channel.fromPath("${processed_dir}/processing_scripts", type: 'dir')
        
-       fastqc_outputs_dir = channel.fromPath("${processed_dir}/FastQC_Outputs", type: 'dir')
+       raw_multiqc_report_dir = channel.fromPath("${processed_dir}/Raw_Sequence_Data/MultiQC_Reports", type: 'dir')
        final_outputs_dir = channel.fromPath("${processed_dir}/Final_Outputs", type: 'dir')
      
        software_versions_ch   =  channel.fromPath("${processed_dir}/GeneLab/software_versions_*.txt")
@@ -147,7 +147,7 @@ workflow {
           GENERATE_MD5SUMS(channel.value(processed_dir), ch_ready)
 
         // Generate file association table for curation
-        GENERATE_CURATION_TABLE(runsheet_ch, fastqc_outputs_dir, final_outputs_dir)
+        GENERATE_CURATION_TABLE(runsheet_ch, raw_multiqc_report_dir, final_outputs_dir)
 
         // Write methods
         GENERATE_PROTOCOL(software_versions_ch, params.protocol_id, rarefaction_depth_ch)
@@ -166,30 +166,30 @@ workflow {
 output {
     // Post-processing outputs
     processing_info_ch {
-        path "Post_Processing"
+        path "GeneLab"
     }
 
     readme_ch {
-        path "Post_Processing"
+        path "GeneLab"
     }
 
     log_ch {
-        path "Post_Processing"
+        path "GeneLab"
     }
 
     raw_md5sum_ch {
-        path "Post_Processing"
+        path "GeneLab"
     }
 
     processed_md5sum_ch {
-        path "Post_Processing"
+        path "GeneLab"
     }
 
     curation_table_ch {
-        path "Post_Processing"
+        path "GeneLab"
     }
 
     protocol_ch {
-        path "Post_Processing"
+        path "GeneLab"
     }
 }

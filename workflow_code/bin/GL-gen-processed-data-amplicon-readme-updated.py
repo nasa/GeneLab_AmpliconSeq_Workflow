@@ -200,10 +200,15 @@ def write_amplicon_body(output):
         add_level(raw_reads_dir, "raw fastq files", pad, output, continues=[True])
         # Raw Sequence Data
         if args.single_end:
-            add_level("*_raw.fastq.gz", "raw fastq files", pad, output, continues=[True, False], is_last=True)
+            add_level("*_raw.fastq.gz", "raw fastq files", pad, output, continues=[True, True])
         else:
             add_level("*_R1_raw.fastq.gz", "read1 raw fastq files", pad, output, continues=[True, True])
-            add_level("*_R2_raw.fastq.gz", "read2 raw fastq files", pad, output, continues=[True, False], is_last=True)
+            add_level("*_R2_raw.fastq.gz", "read2 raw fastq files", pad, output, continues=[True, True])
+        
+        # Raw Sequence Data/MultiQC Reports
+        add_level(multiqc_dir, "multiQC summary reports of raw FastQC runs", pad, output, continues=[True, False], is_last=True)
+        add_level(f"raw_multiqc{args.assay_suffix}.html", "multiQC FastQC summary report", pad, output, continues=[True, False, True])
+        add_level(f"raw_multiqc{args.assay_suffix}_data.zip", "multiQC FastQC summary report data", pad, output, continues=[True, False, True], is_last=True)
 
         add_spacer(output)
 
@@ -227,15 +232,15 @@ def write_amplicon_body(output):
     add_level(f"filtered-read-counts{assay_suffix}.tsv", "per sample read counts before and after quality-filtering", pad, output, continues=[True, True])
     # Filtered Sequence Data
     if args.single_end:
-        add_level("*_filtered.fastq.gz", "filtered fastq files", pad, output, continues=[True, False], is_last=True)
+        add_level("*_filtered.fastq.gz", "filtered fastq files", pad, output, continues=[True, True])
     else:
         add_level("*_R1_filtered.fastq.gz", "read1 filtered fastq files", pad, output, continues=[True, True])
-        add_level("*_R2_filtered.fastq.gz", "read2 filtered fastq files", pad, output, continues=[True, False], is_last=True)
+        add_level("*_R2_filtered.fastq.gz", "read2 filtered fastq files", pad, output, continues=[True, True])
 
-    add_spacer(output)
-
-    #fastqc outputs
-    add_level(fastqc_outputs_dir, "multiQC summary reports of FastQC runs", pad, output, continues=[True])
+    # Raw Sequence Data/MultiQC Reports
+    add_level(multiqc_dir, "multiQC summary reports of filtered FastQC runs", pad, output, continues=[True, False], is_last=True)
+    add_level(f"filtered_multiqc{args.assay_suffix}.html", "multiQC FastQC summary report", pad, output, continues=[True, False, True])
+    add_level(f"filtered_multiqc{args.assay_suffix}_data.zip", "multiQC FastQC summary report data", pad, output, continues=[True, False, True], is_last=True)    
 
     add_spacer(output)
 
@@ -304,9 +309,9 @@ assay_suffix = args.assay_suffix
 processing_zip_file = f"processing_info{assay_suffix}.zip"
 
 raw_reads_dir = "Raw Sequence Data/"
-fastqc_outputs_dir = "FastQC Outputs/"
 trimmed_reads_dir = "Trimmed Sequence Data/"
 filtered_reads_dir = "Filtered Sequence Data/"
+multiqc_dir = "MultiQC Reports/"
 tax_asv_outputs_dir = "Taxonomy and ASV Counts Data/"
 a_diversity_dir = "Alpha Diversity Data/"
 b_diversity_dir = "Beta Diversity Data/"
