@@ -1,60 +1,17 @@
 nextflow.enable.dsl=2
 
+include { validateParameters } from 'plugin/nf-schema'
+
 def prefix = params.output_prefix ?: ""
 params.cleaned_prefix = (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
+
+validateParameters()
 
 // Terminal text color definitions
 c_back_bright_red = "\u001b[41;1m"
 c_bright_green    = "\u001b[32;1m"
 c_blue            = "\033[0;34m"
 c_reset           = "\033[0m"
-
-params.help = false
-
-
-/**************************************************
-* HELP MENU  **************************************
-**************************************************/
-if(params.help){
-
-  println()
-  println("GeneLab Post Processing Pipeline: $workflow.manifest.version")
-  println("USAGE:")
-  println("Example: Submit and run jobs with slurm in singularity containers.")
-  println("   > nextflow -C post_processing.config run post_processing.nf -resume -profile slurm,singularity")
-  println()
-  println("Required Parameters:")
-  println("""-profile [STRING] Specifies the profile to be used to run the workflow. Options are [slurm, singularity, docker, and  conda].
-	                 singularity, docker and conda will run the workflow locally using singularity, docker, and conda, respectively.
-                      To combine profiles, separate two or more profiles with a comma. 
-                      For example, to combine slurm and singularity profiles, pass 'slurm,singularity' as argument. """)	
-  println("  --publish_dir_mode [STRING]  Specifies how nextflow handles output file publishing. Options can be found here https://www.nextflow.io/docs/latest/process.html#publishdir Default: link.")
-  println("  --GLDS_accession [STRING]  A Genelab GLDS accession number. Example GLDS-487. Default: null")
-  println("  --OSD_accession [STRING]  A Genelab OSD accession number. Example OSD-487. Default: null")
-  println("  --name [STRING] The analyst's full name. E.g. 'FirstName A. LastName'.  Default: FirstName A. LastName")
-  println("  --email [STRING] The analyst's email address. E.g. 'mail@nasa.gov'.  Default: mail@nasa.gov")
-  println("  --assay_suffix [STRING]  Genelab's assay suffix. Default: _GLAmpSeq.")
-  println("  --output_prefix [STRING] Unique name to tag onto output files. Adds a "_" separator to the string if it is not empty and does not end with '_' or '-'. Default: empty string.")
-  println("  --V_V_guidelines_link [URL] Genelab metagenomics data validation and verification guidelines link. Default: https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/main/README.md.")
-  println("  --target_files [STRING] A comma separated list of target files to find in processing_info.zip. Default: command.txt,nextflow_processing_info_GLAmpSeq.txt.")
-  println()
-  println("Extra parameters to scripts:")
-  println("      --readme_extra [STRING] Extra parameters and arguments to GL-gen-processed-amplicon-data-readme command. Run 'GL-gen-processed-amplicon-readme --help' for extra parameters that can be set. Example '--raw-reads-dir  ./Raw_Sequence_Data/'. Default: empty string")
-  println("      --validation_extra [STRING] Extra parameters and arguments to GL-validate-processed-amplicon-data command. Run 'GL-validate-processed-amplicon-data --help' for extra parameters that can be set. Example '--single-ended --R1-used-as-single-ended-data --skip_raw_multiqc'. Default: empty string ")
-  println("      --file_association_extra [STRING] Extra parameters and arguments to GL-gen-amplicon-file-associations-table command. Run 'GL-gen-amplicon-file-associations-table --help' for extra parameters that can be set. Example '--single-ended --R1-used-as-single-ended-data'. Default: empty string ")
-  println()
-  println("Files:")
-  println("    --runsheet  [PATH] A 3-column (single-end) or 4-column (paired-end) input file (sample_id, forward, [reverse,] paired) used to run the processing pipeline. This is the value set to the parameter --csv_file when run the processing pipeline with a csv file as input otherwise it is the GLfile.csv in the GeneLab directory if --GLDS_accession was used as input. Example './GeneLab/GLfile.csv'.  Default: null")
-  println()
-  println("Optional arguments:")  
-  println("    --help  Print this help message and exit")
-  println("    --debug [BOOLEAN] Set to true if you'd like to see the values of your set parameters printed to the terminal. Default: false.")
-  println()
-  println("Paths to existing conda environments to use otherwise a new one will be created using the yaml file in envs/.")
-  println("      --conda_dp_tools [PATH] Path to a conda environment containing dp_tools. Default: null.")
-  exit 0
-}
-
 
 /************************************************
 *********** Show pipeline parameters ************
@@ -65,24 +22,32 @@ log.info """${c_blue}
          GeneLab Post Processing Pipeline: $workflow.manifest.version
          
          You have set the following parameters:
-         Profile: ${workflow.profile} 
-         Analyst's Name : ${params.name}
-         Analyst's Email : ${params.email}
+
+         Input/Output Options:
          GLDS Accession : ${params.GLDS_accession}
          OSD Accession : ${params.OSD_accession}
+         Input Runsheet: ${params.runsheet}
+         Output Directory: ${params.outdir}
          Assay Suffix: ${params.assay_suffix}
          Output Prefix: ${params.output_prefix}
-         V & V Link: ${params.V_V_guidelines_link}
          Target Files: ${params.target_files}
-         Nextflow Directory publishing mode: ${params.publish_dir_mode}
-         
-         Extra scripts parameters:
-         Readme Script Extra: ${params.readme_extra}
-         Validation Script Extra : ${params.validation_extra}
-         File Association Script Extra: ${params.file_association_extra}
 
-         Files:
-         Input Runsheet: ${params.runsheet}
+         Analyst Options:
+         Analyst's Name : ${params.name}
+         Analyst's Email : ${params.email}
+         Protocol ID: ${params.protocol_id}
+         V & V Link: ${params.V_V_guidelines_link}
+
+         Processing Flags:
+         Include Raw Data: ${params.include_raw_data}
+         Trim Primers: ${params.trim_primers}
+         Single End: ${params.single_end}
+         Used R1 as Single End: ${params.used_R1_as_SE}
+         Include Raw MultiQC: ${params.include_raw_multiqc}
+
+         General Pipeline Settings:
+         Profile: ${workflow.profile}
+         Nextflow Directory Publishing Mode: ${params.publish_dir_mode}
          ${c_reset}"""
 
 }
