@@ -18,8 +18,14 @@ process CUTADAPT {
 
     script:
     def discard_untrimmed_flag = params.discard_untrimmed ? "--discard-untrimmed" : ""
+    
     def primer_trimmed_R1_suffix = "${params.assay_suffix}_R1_trimmed.fastq.gz"
-    def primer_trimmed_R2_suffix = "${params.assay_suffix}_R2_trimmed.fastq.gz"
+    def primer_trimmed_R2_suffix = "${params.assay_suffix}_R2_trimmed.fastq.gz"    
+    def single_end_suffix = isPaired == "false" ? (
+        params.force_single_end == "R1" ? primer_trimmed_R1_suffix :
+        params.force_single_end == "R2" ? primer_trimmed_R2_suffix :
+        "${params.assay_suffix}_trimmed.fastq.gz"
+    ) : ""
     """
     R_primer_comp=`echo ${R_primer} |tr ATGCRYSWKMBVDHN  TACGYRSWMKVBHDN |rev`
     F_primer_comp=`echo ${F_primer} |tr ATGCRYSWKMBVDHN  TACGYRSWMKVBHDN |rev`
@@ -54,7 +60,7 @@ process CUTADAPT {
     else
 
         cutadapt ${params.primers_linked ? '-a \${F_linked_primer}' : '-g \${F_primer}' } \\
-                 -o ${sample_id}${primer_trimmed_R1_suffix} \\
+                 -o ${sample_id}${single_end_suffix} \\
                  ${discard_untrimmed_flag} \\
                  -m ${params.min_cutadapt_len} \\
                  ${reads[0]} > ${sample_id}-cutadapt.log 2>&1

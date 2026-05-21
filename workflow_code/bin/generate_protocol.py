@@ -6,7 +6,7 @@ import sys
 
 # Reference database mapping by target region
 REFERENCE_DB = {
-    "16S": "SILVA SSU r138_2",
+    "16S": "SILVA SSU r138.2",
     "18S": "PR2 v4.13",
     "ITS": "UNITE v2025",
 }
@@ -145,19 +145,30 @@ def generate_protocol(args, versions, rarefaction_depth):
         f"Only ASVs with an adjusted p-value less than or equal to 0.1 were considered significant."
     )
 
-    return "\n\n".join([overview, qc, asv, diversity, stats, diff_abund])
+    # --- Paragraph 7: Note ---
+    if args.force_single_end:
+        chosen_reads = "forward" if args.force_single_end == "R1" else "reverse"
+        dropped_reads = "reverse" if args.force_single_end == "R1" else "forward"
+        note = (
+            f"Note: Although the submitted raw data were paired-end, the quality of the {dropped_reads} reads was poor, so only {chosen_reads} reads were used for processing and analysis."
+        )
+    else:
+        note = ""
+
+    return "\n\n".join([overview, qc, asv, diversity, stats, diff_abund, note])
 
 
 def main():
     parser = argparse.ArgumentParser(description="Generate amplicon processing protocol text.")
     parser.add_argument('versions_file', help='Path to versions.txt')
     parser.add_argument('protocol_id', help='Protocol ID (e.g. GL-DPPD-7104-C)')
-    parser.add_argument('--workflow_version', default='1.0.7', help='Workflow version (default: 1.0.7)')
+    parser.add_argument('--workflow_version', default='1.0.9', help='Workflow version (default: 1.0.9)')
     parser.add_argument('--rarefaction_depth_file', default=None, help='File containing rarefaction depth value')
     parser.add_argument('--target_region', required=True, choices=list(REFERENCE_DB.keys()), help='Target region (e.g. 16S, 18S, ITS)')
     parser.add_argument('--trunc_len', required=True, help='truncLen values as "left,right" (e.g. "230,190")')
     parser.add_argument('--max_ee', required=True, help='maxEE values as "left,right" (e.g. "2,2")')
     parser.add_argument('--trim_primers', action='store_true', help='Include cutadapt primer trimming sentence')
+    parser.add_argument('--force_single_end', default=None, help='If the data is paired-end but was processed as single-end, specify which read was used as single-end (R1 or R2)')
 
     args = parser.parse_args()
 

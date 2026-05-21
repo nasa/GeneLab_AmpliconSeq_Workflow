@@ -45,7 +45,7 @@ export TOWER_WORKSPACE_ID=<WORKSPACE ID>
 
 nextflow run main.nf -resume -profile slurm,singularity --accession GLDS-487 --target_region 16S -with-tower 
 
-#nextflow run post_processing.nf -c post_processing.config  -resume -profile mamba -with-tower
+#nextflow -C post_processing.config run post_processing.nf -resume -profile mamba -with-tower
 
 ## Add a time-stamp at the end of the job then calculate how long the job took to run in seconds, minutes, and hours ##
 echo ""

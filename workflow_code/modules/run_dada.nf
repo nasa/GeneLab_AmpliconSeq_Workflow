@@ -24,16 +24,29 @@ process RUN_DADA2 {
     script:
         def input_dir     = params.trim_primers ? "Trimmed_Sequence_Data/" : "raw_reads/"
         def trimmed_count = params.trim_primers ? "${trimmed_read_counts}" : ""
-        def R1_suffix     = params.trim_primers ? "${params.assay_suffix}_R1_trimmed.fastq.gz" : "${params.assay_suffix}_R1_raw.fastq.gz"
-        def R2_suffix     = (isPaired ? (params.trim_primers ? "${params.assay_suffix}_R2_trimmed.fastq.gz" : "${params.assay_suffix}_R2_raw.fastq.gz") : "")
-        def filtered_R1   = "${params.assay_suffix}_R1_filtered.fastq.gz"
-        def filtered_R2   = "${params.assay_suffix}_R2_filtered.fastq.gz"
+        
+        def starting_reads_suffix = params.trim_primers ? "trimmed" : "raw"
+        def R1_suffix     = "${params.assay_suffix}_R1_${starting_reads_suffix}.fastq.gz"   
+        def R2_suffix     = "${params.assay_suffix}_R2_${starting_reads_suffix}.fastq.gz"
+        def single_end_suffix = isPaired == "false" ? (
+            params.force_single_end == "R1" ? R1_suffix :
+            params.force_single_end == "R2" ? R2_suffix :
+            "${params.assay_suffix}_${starting_reads_suffix}.fastq.gz"
+        ) : ""
+        
+        def filtered_R1_suffix   = "${params.assay_suffix}_R1_filtered.fastq.gz"
+        def filtered_R2_suffix   = "${params.assay_suffix}_R2_filtered.fastq.gz"
+        def filtered_single_end_suffix = isPaired == "false" ? (
+            params.force_single_end == "R1" ? filtered_R1_suffix :
+            params.force_single_end == "R2" ? filtered_R2_suffix :
+            "${params.assay_suffix}_filtered.fastq.gz"
+        ) : ""
         """
         mkdir -p ${input_dir}
         if [ ${isPaired} == true ]; then
             mv *${R1_suffix} *${R2_suffix} ${trimmed_count} ${input_dir}
         else
-            mv *${R1_suffix} ${trimmed_count} ${input_dir}
+            mv *${single_end_suffix} ${trimmed_count} ${input_dir}
         fi
 
         if [ ${isPaired} == true ]; then
@@ -47,8 +60,8 @@ process RUN_DADA2 {
                 "${input_dir}" \\
                 "${R1_suffix}" \\
                 "${R2_suffix}" \\
-                "${filtered_R1}" \\
-                "${filtered_R2}" \\
+                "${filtered_R1_suffix}" \\
+                "${filtered_R2_suffix}" \\
                 "${params.cleaned_prefix}" \\
                 "${params.target_region}" \\
                 "${params.concatenate_reads_only}" \\
@@ -61,8 +74,8 @@ process RUN_DADA2 {
                 "${params.trim_primers ? 'TRUE' : 'FALSE'}" \\
                 ${sample_IDs_file} \\
                 "${input_dir}" \\
-                "${R1_suffix}" \\
-                "${filtered_R1}" \\
+                "${single_end_suffix}" \\
+                "${filtered_single_end_suffix}" \\
                 "${params.cleaned_prefix}" \\
                 "${params.target_region}" \\
                 "${params.assay_suffix}" \\

@@ -47,10 +47,9 @@ parser.add_argument("--readme", help = "Specifies the location of README.txt",
 parser.add_argument("--single-ended", help = "Add this flag if data are single-end sequencing.", action = "store_true")
 parser.add_argument("--primers-already-trimmed", help = "Add this flag if primers were trimmed prior to GeneLab processing, \
                     therefore there are no trimmed sequence data", action = "store_true")
-parser.add_argument("--R1-used-as-single-ended-data", help = "Provide this flag if processing only R1 reads as single-end (as the expected raw \
-                    filename suffixes will have 'R1' in there)", 
-                    action = "store_true")
-parser.add_argument("--include_raw_fastq", help="Add this flag if we should check existence of the raw fastq files.", action="store_true")
+parser.add_argument("--force-single-end", default=None,
+                    help="If the data is paired-end but was processed as single-end, specify which read was used as single-end (R1 or R2)")
+parser.add_argument("--include-raw-fastq", help="Add this flag if we should check existence of the raw fastq files, should not be set if force_single_end is used", action="store_true")
 
 if len(sys.argv)==1:
     parser.print_help(sys.stderr)
@@ -147,7 +146,7 @@ def read_samples(file_path):
 
 def check_multiqc_outputs(validation_log, sample_names, multiqc_zip, 
                           multiqc_stats_file_path, R1_suffix,
-                          R2_suffix, unpaired_suffix, prefix, isSingle_ended):
+                          R2_suffix, unpaired_suffix, prefix, isSingle_ended, force_single_end):
     """ Makes sure all samples' read files are in the multiqc outputs """
 
     # Checking raw
@@ -157,8 +156,22 @@ def check_multiqc_outputs(validation_log, sample_names, multiqc_zip,
 
     file_prefixes_in_multiqc = df["Sample"].tolist()
     
+    # If single-end
+    if isSingle_ended:
+
+        if force_single_end == "R1":
+            suffix = R1_suffix.split(".")[0].replace(f"_{prefix}", "")
+        elif force_single_end == "R2":
+            suffix = R2_suffix.split(".")[0].replace(f"_{prefix}", "")
+        else:
+            suffix = unpaired_suffix.split(".")[0].replace(f"_{prefix}", "")
+
+        for sample in sample_names:
+            if not sample + suffix in file_prefixes_in_multiqc and not sample in file_prefixes_in_multiqc:
+                report_failure(validation_log, f"The {prefix} multiqc output is missing the expected '" + \
+                               sample + suffix + "' entry.")
     # If paired-end
-    if not isSingle_ended:
+    else:
 
         R1_suffix = R1_suffix.split(".")[0].replace(f"_{prefix}", "")
         R2_suffix = R2_suffix.split(".")[0].replace(f"_{prefix}", "")
@@ -170,29 +183,25 @@ def check_multiqc_outputs(validation_log, sample_names, multiqc_zip,
             if not sample + R2_suffix in file_prefixes_in_multiqc:
                 report_failure(validation_log, f"The {prefix} multiqc output is missing the expected '" + \
                                sample + R2_suffix + "' entry.")
-    # If single-end
-    else:
-
-        suffix = unpaired_suffix.split(".")[0].replace(f"_{prefix}", "")
-
-        for sample in sample_names:
-            if not sample + suffix in file_prefixes_in_multiqc and not sample in file_prefixes_in_multiqc:
-                report_failure(validation_log, f"The {prefix} multiqc output is missing the expected '" + \
-                               sample + suffix + "' entry.")
 
                 
 def check_fastq_files(validation_log, sample_names, reads_dir, 
-                      unpaired_suffix, R1_suffix, R2_suffix, isSingle_ended):
+                      unpaired_suffix, R1_suffix, R2_suffix, isSingle_ended, force_single_end):
     """ Makes sure all expected read fastq files exist and hold something """
 
     for sample in sample_names:
+        ## If single-end
+        if isSingle_ended:
+            if force_single_end == "R1":
+                check_for_file_and_contents(validation_log, os.path.join(reads_dir, sample + R1_suffix))
+            elif force_single_end == "R2":
+                check_for_file_and_contents(validation_log, os.path.join(reads_dir, sample + R2_suffix))
+            else:
+                check_for_file_and_contents(validation_log, os.path.join(reads_dir, sample + unpaired_suffix))
         ## If paired-end
-        if not isSingle_ended:
+        else:
             check_for_file_and_contents(validation_log, os.path.join(reads_dir, sample + R1_suffix))
             check_for_file_and_contents(validation_log, os.path.join(reads_dir, sample + R2_suffix))
-        ## If single-end
-        else:
-            check_for_file_and_contents(validation_log, os.path.join(reads_dir, sample + unpaired_suffix))
 
 
 def get_files_in_dir(dir_path):
@@ -459,9 +468,11 @@ def main():
     filtered_multiqc_stats_file_path = f"filtered_multiqc{assay_suffix}_data/multiqc_general_stats.txt"
     contrasts_file = f"{differential_abundance_dir}/" + str(output_prefix) + f"contrasts{assay_suffix}.csv"
 
-    # Just in case user only specified --R1-used-as-single-ended, but didn't specify --single-ended
-    if args.R1_used_as_single_ended_data:
+    if args.force_single_end:
         args.single_ended = True
+        if args.include_raw_fastq:
+            print("Warning: --include-raw-fastq should not be set when --force-single-end is used. Ignoring --include-raw-fastq flag.")
+            args.include_raw_fastq = False
 
     raw_suffix = str(args.raw_suffix)
     raw_R1_suffix = str(args.raw_R1_suffix)
@@ -566,33 +577,26 @@ def main():
     # Retrieve unique sample names from the sample IDs file
     sample_names = read_samples(args.runsheet)
 
-    # Check raw multiqc outputs
+    # Raw reads
+    # Initialize raw_multiqc_zip path and raw_prefix here because it used in raw counts stats generation even when --include_raw_fastq is not set
+    # since we still want to check the raw multiqc outputs and get read count stats from it even if we aren't checking for the raw fastq files themselves.
     raw_multiqc_zip = os.path.join(raw_multiqc_dir, raw_multiqc_zip)
     raw_prefix = "raw"
-    check_multiqc_outputs(validation_log, sample_names, raw_multiqc_zip, 
-                          raw_multiqc_stats_file_path, raw_R1_suffix,
-                          raw_R2_suffix, raw_suffix, raw_prefix, args.single_ended)
-    append_message_to_log(validation_log, f"    - all expected samples were found in raw multiqc files in {raw_multiqc_dir}")
-
-    # Check filtered multiqc outputs
-    filtered_multiqc_zip = os.path.join(filtered_multiqc_dir, filtered_multiqc_zip)
-    filtered_prefix = "filtered"   
-    check_multiqc_outputs(validation_log, sample_names, filtered_multiqc_zip,
-                          filtered_multiqc_stats_file_path, filtered_R1_suffix, 
-                          filtered_R2_suffix, filtered_suffix, filtered_prefix, args.single_ended)
-    append_message_to_log(validation_log, f"    - all expected samples were found in filtered multiqc files in {filtered_multiqc_dir}")
-
-    # Raw reads
     if args.include_raw_fastq:
         check_fastq_files(validation_log, sample_names, raw_reads_dir, 
-                          raw_suffix, raw_R1_suffix, raw_R2_suffix, args.single_ended)
+                          raw_suffix, raw_R1_suffix, raw_R2_suffix, args.single_ended, args.force_single_end)
         append_message_to_log(validation_log, f"    - all expected fastq read files were found in {raw_reads_dir}")
+        # Check raw multiqc outputs
+        check_multiqc_outputs(validation_log, sample_names, raw_multiqc_zip, 
+                            raw_multiqc_stats_file_path, raw_R1_suffix,
+                            raw_R2_suffix, raw_suffix, raw_prefix, args.single_ended, args.force_single_end)
+        append_message_to_log(validation_log, f"    - all expected samples were found in raw multiqc files in {raw_multiqc_dir}")
 
     # Trimmed reads
     if not args.primers_already_trimmed:
         check_fastq_files(validation_log, sample_names, trimmed_reads_dir, 
                           primer_trimmed_suffix, primer_trimmed_R1_suffix,
-                          primer_trimmed_R2_suffix, args.single_ended)
+                          primer_trimmed_R2_suffix, args.single_ended, args.force_single_end)
         append_message_to_log(validation_log, f"    - all expected fastq read files were found in {trimmed_reads_dir}")
         check_amplicon_intermediate_log_files(validation_log, trimmed_reads_dir,
                                                expected_trimmed_outputs_or_suffixes)
@@ -603,13 +607,20 @@ def main():
     # Filtered reads
     check_fastq_files(validation_log, sample_names, filtered_reads_dir, 
                       filtered_suffix, filtered_R1_suffix, 
-                      filtered_R2_suffix, args.single_ended)
+                      filtered_R2_suffix, args.single_ended, args.force_single_end)
     append_message_to_log(validation_log, f"    - all expected fastq read files were found in {filtered_reads_dir}")
     check_amplicon_intermediate_log_files(validation_log, filtered_reads_dir,
                                            expected_filtered_outputs_or_suffixes)
     for file in expected_filtered_outputs_or_suffixes:
         append_message_to_log(validation_log, f"    - {file} was found in {filtered_reads_dir}")
     append_message_to_log(validation_log, f"    - all expected files were found in the {filtered_reads_dir} directory")
+    # Check filtered multiqc outputs
+    filtered_multiqc_zip = os.path.join(filtered_multiqc_dir, filtered_multiqc_zip)
+    filtered_prefix = "filtered"   
+    check_multiqc_outputs(validation_log, sample_names, filtered_multiqc_zip,
+                          filtered_multiqc_stats_file_path, filtered_R1_suffix, 
+                          filtered_R2_suffix, filtered_suffix, filtered_prefix, args.single_ended, args.force_single_end)
+    append_message_to_log(validation_log, f"    - all expected samples were found in filtered multiqc files in {filtered_multiqc_dir}")
 
     # Check that all expected individual files exist in the final outputs directory and that the fasta files are rightly formatted 
     # i.e., the number of sequence headers equals the number of sequences in the fasta file.
@@ -635,7 +646,7 @@ def main():
     if beta_failed:
         # VST outputs may still exist even if rarefaction failed
         vsd_plot = f"{output_prefix}vsd_validation_plot{assay_suffix}.png"
-        vsd_path = os.path.join(beta_diversity_out_dir, vsd_plot)
+        vsd_path = os.path.join(beta_diversity_dir, vsd_plot)
         if os.path.exists(vsd_path):
             append_message_to_log(validation_log, "    - Rarefaction failed but VST outputs detected, validating VST outputs only")
             vst_only_outputs = [

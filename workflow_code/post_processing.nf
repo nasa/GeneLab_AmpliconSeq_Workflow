@@ -42,7 +42,7 @@ log.info """${c_blue}
          Include Raw Data: ${params.include_raw_data}
          Trim Primers: ${params.trim_primers}
          Single End: ${params.single_end}
-         Used R1 as Single End: ${params.used_R1_as_SE}
+         Force Processing Single-End: ${params.force_single_end}
          Include Raw MultiQC: ${params.include_raw_multiqc}
 
          General Pipeline Settings:
@@ -65,6 +65,11 @@ workflow {
                     Please supply both --GLDS_accession and --OSD_accession.
                     They can be any string you choose but they must be set.
                  ${c_reset}""")
+        }
+
+        // If force_single_end is set, ignore include_raw_data and include_raw_multiqc as they should reflect paired-end data which is assumed to have been already included
+        if (params.force_single_end && (params.include_raw_data || params.include_raw_multiqc)) {
+            log.warn "force_single_end is set — --include_raw_data and --include_raw_multiqc will both be ignored."
         }
 
        // ---------------------- Input channels -------------------------------- //
@@ -130,31 +135,17 @@ workflow {
 
 output {
     // Post-processing outputs
-    processing_info_ch {
-        path "GeneLab"
-    }
+    processing_info_ch { path "GeneLab" }
 
-    readme_ch {
-        path "GeneLab"
-    }
+    readme_ch { path "GeneLab" }
 
-    log_ch {
-        path "GeneLab"
-    }
+    log_ch { path "GeneLab" }
 
-    raw_md5sum_ch {
-        path "GeneLab"
-    }
+    raw_md5sum_ch { path "GeneLab" }
 
-    processed_md5sum_ch {
-        path "GeneLab"
-    }
+    processed_md5sum_ch { path "GeneLab" }
 
-    curation_table_ch {
-        path "GeneLab"
-    }
+    curation_table_ch { path "GeneLab" }
 
-    protocol_ch {
-        path "GeneLab"
-    }
+    protocol_ch { path "GeneLab" }
 }

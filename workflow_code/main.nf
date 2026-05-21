@@ -57,6 +57,10 @@ log.info """${c_blue}
          Groups to Comapre Column: ${params.group}
          Samples Column: ${params.samples_column}
 
+         Debugging Options:
+         Limit Samples for Testing: ${params.limit_samples_to}
+         Force Processing Single-End: ${params.force_single_end}
+
          General Pipeline Settings:
          Nextflow Directory publishing mode: ${params.publish_dir_mode}
          MultiQC configuration file: ${params.multiqc_config}
@@ -74,12 +78,8 @@ log.info """${c_blue}
          ${c_reset}"""
 }
 
-// Create GLDS runsheet
-include { GET_RUNSHEET } from "./modules/create_runsheet.nf"
-
-// Stage raw reads
-include { COPY_READS } from './modules/copy_reads.nf'
-include { COPY_REMOTE_READS } from './modules/copy_reads.nf'
+// Stage analysis setup (inputs, and raw reads)
+include { STAGE_ANALYSIS } from './subworkflows/stage_analysis.nf'
 
 // Read quality check and filtering
 include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
@@ -104,6 +104,10 @@ include { DESEQ } from './modules/deseq.nf'
 include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
 include { SOFTWARE_VERSIONS } from './modules/utils.nf'
 
+ch_dp_tools_plugin = params.dp_tools_plugin ? channel.value(file(params.dp_tools_plugin)) : channel.value(file("$projectDir/bin/dp_tools__NF_AmpIllumina_${params.target_region}"))
+
+ch_input_file = params.input_file ? channel.fromPath(params.input_file) : null
+ch_isa_archive = params.isa_archive ? channel.fromPath(params.isa_archive) : null
 
 // A function to delete white spaces from an input string and covert it to lower case
 def deleteWS(string){
@@ -137,69 +141,35 @@ workflow {
                   and --R_primer parameters, respectively.
                   ${c_reset}""")
          }
-     }
-
-    
-   // Capture software versions
-   software_versions_ch = channel.empty()
-
-   if(params.accession){
-
-       values = channel.of([params.accession, params.target_region])
-
-       GET_RUNSHEET(values)
-       GET_RUNSHEET.out.input_file
-           .splitCsv(header:true)
-           .set{file_ch}
-
-       target_region = GET_RUNSHEET.out.runsheet
-                           .splitCsv(header:true)
-                           .map{row -> "${row.'Parameter Value[Library Selection]'}"}.first()
-       primers_ch = GET_RUNSHEET.out.runsheet
-                           .splitCsv(header:true)
-                           .map{row -> ["${row.F_Primer}", "${row.R_Primer}"]}
-                           .first()                 
-
-      GET_RUNSHEET.out.version | mix(software_versions_ch) | set{software_versions_ch}
-
-      file_ch.map{
-            row -> deleteWS(row.paired)  == 'true' ? tuple( "${row.sample_id}", ["${row.forward}","${row.reverse}"], deleteWS(row.paired)) : 
-                                tuple( "${row.sample_id}", [("${row.forward}")], deleteWS(row.paired))
-            }.set{reads_ch} 
-
-
-   }else{
-
-        channel.fromPath(params.input_file, checkIfExists: true)
-           .splitCsv(header:true)
-           .set{file_ch}
-           file_ch.map{
-                row -> deleteWS(row.paired)  == 'true' ? tuple( "${row.sample_id}", [file("${row.forward}"), file("${row.reverse}")], deleteWS(row.paired)) : 
-                                    tuple( "${row.sample_id}", [file("${row.forward}")], deleteWS(row.paired))
-                }.set{reads_ch} 
-   }
-    
-
-    // Use original runsheet to preserve sample order
-    if(params.accession){
-        runsheet_ch = GET_RUNSHEET.out.runsheet
-        isa_archive_ch = GET_RUNSHEET.out.zip
-        gl_file_ch = GET_RUNSHEET.out.input_file
-    }else{
-        runsheet_ch = channel.fromPath(params.input_file, checkIfExists: true)
-        isa_archive_ch = channel.empty()
-        gl_file_ch = channel.empty()
     }
 
-    // Stage raw reads with standard naming
-    if(params.accession){
-        COPY_REMOTE_READS(reads_ch)
-        staged_reads_ch = COPY_REMOTE_READS.out.raw_reads
+    // Test ISA archive and accession
+    if (params.isa_archive && !params.accession) {
+        error """${c_back_bright_red}INPUT ERROR!
+            --isa_archive requires --accession to resolve OSD/GLDS accessions
+            for the ISA-to-runsheet conversion.${c_reset}"""
+    }
+
+    software_versions_ch = channel.empty()
         
-    }else{
-        COPY_READS(reads_ch)
-        staged_reads_ch = COPY_READS.out.raw_reads
-    }
+    // Stage analysis setup (inputs, and raw reads)
+    STAGE_ANALYSIS(
+        params.accession,
+        params.target_region,
+        ch_input_file,
+        ch_isa_archive,
+        params.api_url,
+        ch_dp_tools_plugin
+    )
+    staged_reads_ch = STAGE_ANALYSIS.out.staged_reads
+    runsheet_ch = STAGE_ANALYSIS.out.runsheet
+    isa_archive_ch = STAGE_ANALYSIS.out.isa_archive
+    gl_file_ch = STAGE_ANALYSIS.out.gl_file
+    primers_ch = STAGE_ANALYSIS.out.primers
+    
+    STAGE_ANALYSIS.out.software_versions
+        | mix(software_versions_ch)
+        | set { software_versions_ch }
 
 
     // Read quality check and trimming
@@ -227,7 +197,7 @@ workflow {
     cutadapt_logs = channel.empty()
     if(params.trim_primers){
 
-        if(!params.accession) primers_ch = channel.value([params.F_primer, params.R_primer])
+        //if(!params.accession) primers_ch = channel.value([params.F_primer, params.R_primer]) // to be removed once stage analysis workflow is implemented
         CUTADAPT(staged_reads_ch, primers_ch)
         logs = CUTADAPT.out.logs.map{ sample_id, log -> file("${log}")}.collect()
         counts = CUTADAPT.out.trim_counts.map{ sample_id, count -> file("${count}")}.collect()
@@ -312,41 +282,38 @@ workflow {
     // Diversity, differential abundance testing and their corresponding visualizations
     if(params.accession){
 
-    values = ["samples": "Sample Name",
-              "group" : "groups",
-              "depth" : params.rarefaction_depth,
-              "assay_suffix" : params.assay_suffix,
-              "output_prefix" : params.cleaned_prefix,
-              "target_region" : params.target_region,
-              "library_cutoff" : params.library_cutoff,
-              "prevalence_cutoff" : params.prevalence_cutoff,
-              "rare" : params.remove_rare ? "--remove-rare" : "",
-              "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
-              ]
-
-    meta  = channel.of(values)
-    
-    metadata  =  GET_RUNSHEET.out.runsheet
+        values = ["samples": "Sample Name",
+                "group" : "groups",
+                "depth" : params.rarefaction_depth,
+                "assay_suffix" : params.assay_suffix,
+                "output_prefix" : params.cleaned_prefix,
+                "target_region" : params.target_region,
+                "library_cutoff" : params.library_cutoff,
+                "prevalence_cutoff" : params.prevalence_cutoff,
+                "rare" : params.remove_rare ? "--remove-rare" : "",
+                "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
+                ]
+        
+        metadata  =  runsheet_ch
 
     }else{
 
-    values = ["samples": params.samples_column,
-              "group" : params.group,
-              "depth" : params.rarefaction_depth,
-              "assay_suffix" : params.assay_suffix,
-              "output_prefix" : params.cleaned_prefix,
-              "target_region" : params.target_region,
-              "library_cutoff" : params.library_cutoff,
-              "prevalence_cutoff" : params.prevalence_cutoff,
-              "rare" :  params.remove_rare ? "--remove-rare" : "",
-              "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
-             ]
-
-    meta  = channel.of(values)
-    
-    metadata  =  channel.fromPath(params.input_file, checkIfExists: true)
+        values = ["samples": params.samples_column,
+                "group" : params.group,
+                "depth" : params.rarefaction_depth,
+                "assay_suffix" : params.assay_suffix,
+                "output_prefix" : params.cleaned_prefix,
+                "target_region" : params.target_region,
+                "library_cutoff" : params.library_cutoff,
+                "prevalence_cutoff" : params.prevalence_cutoff,
+                "rare" :  params.remove_rare ? "--remove-rare" : "",
+                "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
+                ]
+        
+        metadata  =  ch_input_file
 
     }
+    meta  = channel.of(values)
     
     // Diversity analysis
     ALPHA_DIVERSITY(meta, dada_counts, dada_taxonomy, metadata)
@@ -624,163 +591,67 @@ workflow {
 
 output {
     // Metadata
-    runsheet {
-        path "Metadata"
-    }
-
-    isa_archive {
-        path "Metadata"
-    }
-
-    gl_file {
-        path "Metadata"
-    }
+    runsheet { path "Metadata" }
+    isa_archive { path "Metadata" }
+    gl_file { path "Metadata" }
 
     // Raw reads
-    raw_reads {
-        path "Raw_Sequence_Data"
-    }
+    raw_reads { path "Raw_Sequence_Data" }
 
     // Trimmed reads
-    trimmed_reads {
-        path "Trimmed_Sequence_Data"
-    }
-
-    trimmed_count {
-        path "Trimmed_Sequence_Data"
-    }
-
-    cutadapt_logs {
-        path "Trimmed_Sequence_Data"
-    }
+    trimmed_reads { path "Trimmed_Sequence_Data" }
+    trimmed_count { path "Trimmed_Sequence_Data" }
+    cutadapt_logs { path "Trimmed_Sequence_Data" }
     
     // Filtered reads
-    filtered_reads {
-        path "Filtered_Sequence_Data"
-    }
-
-    filtered_count {
-        path "Filtered_Sequence_Data"
-    }
+    filtered_reads { path "Filtered_Sequence_Data" }
+    filtered_count { path "Filtered_Sequence_Data" }
 
     // FastQC
-    raw_fastqc {
-        path {html, zip -> "Raw_Sequence_Data/FastQC_Outputs" }
-    }
-
-    filtered_fastqc {
-        path {html, zip -> "Filtered_Sequence_Data/FastQC_Outputs" }
-    }
+    raw_fastqc { path {html, zip -> "Raw_Sequence_Data/FastQC_Outputs" } }
+    filtered_fastqc { path {html, zip -> "Filtered_Sequence_Data/FastQC_Outputs" } }
 
     // MultiQC
-    zip_multiqc_raw {
-        path "Raw_Sequence_Data/MultiQC_Reports"
-    }
+    zip_multiqc_raw { path "Raw_Sequence_Data/MultiQC_Reports" }
+    html_multiqc_raw { path "Raw_Sequence_Data/MultiQC_Reports" }
 
-    html_multiqc_raw {
-        path "Raw_Sequence_Data/MultiQC_Reports"
-    }
-
-    zip_multiqc_filtered {
-        path "Filtered_Sequence_Data/MultiQC_Reports"
-    }
-
-    html_multiqc_filtered {
-        path "Filtered_Sequence_Data/MultiQC_Reports"
-    }
+    zip_multiqc_filtered { path "Filtered_Sequence_Data/MultiQC_Reports" }
+    html_multiqc_filtered { path "Filtered_Sequence_Data/MultiQC_Reports" }
 
     // Dada2 outputs
-    asv {
-        path "Final_Outputs"
-    }
-
-    counts {
-        path "Final_Outputs"
-    }
-
-    taxonomy {
-        path "Final_Outputs"
-    }
-
-    taxonomy_counts {
-        path "Final_Outputs"
-    }
-
-    biom_zip {
-        path "Final_Outputs"
-    }
-
-    read_count_tracking {
-        path "Final_Outputs"
-    }
+    asv { path "Final_Outputs" }
+    counts { path "Final_Outputs" }
+    taxonomy { path "Final_Outputs" }
+    taxonomy_counts { path "Final_Outputs" }
+    biom_zip { path "Final_Outputs" }
+    read_count_tracking { path "Final_Outputs" }
 
     // Alpha and beta diversity outputs
-    alpha_diversity {
-        path "Final_Outputs"
-    }
+    alpha_diversity { path "Final_Outputs" }
+    zip_alpha_plots { path "Final_Outputs/alpha_diversity" }
 
-    zip_alpha_plots {
-        path "Final_Outputs/alpha_diversity"
-    }
-
-    beta_diversity {
-        path "Final_Outputs"
-    }
-
-    zip_beta_euclidean_plots {
-        path "Final_Outputs/beta_diversity"
-    }
-
-    zip_beta_bray_plots {
-        path "Final_Outputs/beta_diversity"
-    }
+    beta_diversity { path "Final_Outputs" }
+    zip_beta_euclidean_plots { path "Final_Outputs/beta_diversity" }
+    zip_beta_bray_plots { path "Final_Outputs/beta_diversity" }
 
     // Taxonomy plots
-    taxonomy_plots {
-        path "Final_Outputs"
-    }
-    zip_taxonomy_samples {
-        path "Final_Outputs/taxonomy_plots"
-    }
-    zip_taxonomy_groups {
-        path "Final_Outputs/taxonomy_plots"
-    }
+    taxonomy_plots { path "Final_Outputs" }
+    zip_taxonomy_samples { path "Final_Outputs/taxonomy_plots" }
+    zip_taxonomy_groups { path "Final_Outputs/taxonomy_plots" }
 
     // Differential abundance outputs
-    da_contrasts {
-        path "Final_Outputs"
-    }
+    da_contrasts { path "Final_Outputs" }
+    da_sampleTable { path "Final_Outputs" }
 
-    da_sampleTable {
-        path "Final_Outputs"
-    }
+    ancombc1 { path "Final_Outputs" }
+    zip_ancombc1 { path "Final_Outputs/differential_abundance/ancombc1" }
 
-    ancombc1 {
-        path "Final_Outputs"
-    }
+    ancombc2 { path "Final_Outputs" }
+    zip_ancombc2 { path "Final_Outputs/differential_abundance/ancombc2" }
 
-    zip_ancombc1 {
-        path "Final_Outputs/differential_abundance/ancombc1"
-    }
-
-    ancombc2 {
-        path "Final_Outputs"
-    }
-
-    zip_ancombc2 {
-        path "Final_Outputs/differential_abundance/ancombc2"
-    }
-
-    deseq2 {
-        path "Final_Outputs"
-    }
-
-    zip_deseq2 {
-        path "Final_Outputs/differential_abundance/deseq2"
-    }
+    deseq2 { path "Final_Outputs" }
+    zip_deseq2 { path "Final_Outputs/differential_abundance/deseq2" }
 
     // GeneLab
-    software_versions {
-        path "GeneLab"
-    }
+    software_versions { path "GeneLab" }
 }

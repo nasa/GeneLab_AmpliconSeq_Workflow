@@ -28,7 +28,18 @@
                 },
                 "input_file": {
                     "type": "string",
-                    "description": "Path to a 4-column (single-end) or 5-column (paired-end) input CSV file with columns: sample_id, forward, [reverse,] paired, groups. Required if a GLDS or OSD accession number is not provided. --F_primer and --R_primer must be supplied when using this parameter. See SE_file.csv and PE_file.csv for examples."
+                    "description": "Path to a 4-column (single-end) or 5-column (paired-end) input CSV file with columns: sample_id, forward, [reverse,] paired, groups. Required if a GLDS or OSD accession number is not provided. --F_primer and --R_primer must be supplied when using this parameter. See SE_file.csv and PE_file.csv for examples.",
+                    "format": "file-path"
+                },
+                "isa_archive": {
+                    "type": "string",
+                    "description": "Path to the ISA.zip for an OSDR dataset. '--accession' must also be used.",
+                    "format": "file-path"
+                },
+                "specify_runsheet": {
+                    "type": "string",
+                    "description": "Path to a specific runsheet when multiple runsheets match the same target region. '--accession' must also be used, and the specified runsheet must match the target region defined by --target_region.",
+                    "format": "file-path"
                 },
                 "outdir": {
                     "type": "string",
@@ -67,11 +78,15 @@
                 },
                 "F_primer": {
                     "type": "string",
-                    "description": "Forward primer sequence e.g. AGAGTTTGATCCTGGCTCAG. Required when --trim_primers is true and --input_file is used. Automatically sourced from the GeneLab runsheet when --accession is supplied."
+                    "description": "Forward primer sequence e.g. AGAGTTTGATCCTGGCTCAG. Required when --trim_primers is true and --input_file is used. Automatically sourced from the GeneLab runsheet when --accession is supplied.",
+                    "pattern": "^[A-Za-z]+$",
+                    "errorMessage": "Forward primer sequence must contain letters only (no spaces, numbers, or special characters)"
                 },
                 "R_primer": {
                     "type": "string",
-                    "description": "Reverse primer sequence e.g. CTGCCTCCCGTAGGAGT. Required when --trim_primers is true and --input_file is used. Automatically sourced from the GeneLab runsheet when --accession is supplied."
+                    "description": "Reverse primer sequence e.g. CTGCCTCCCGTAGGAGT. Required when --trim_primers is true and --input_file is used. Automatically sourced from the GeneLab runsheet when --accession is supplied.",
+                    "pattern": "^[A-Za-z]+$",
+                    "errorMessage": "Reverse primer sequence must contain letters only (no spaces, numbers, or special characters)"
                 },
                 "min_cutadapt_len": {
                     "type": "integer",
@@ -93,10 +108,7 @@
                     "default": true,
                     "description": "Set to true to discard reads in which no primer was detected. Set to false to retain untrimmed reads, for example when sequencing quality is low and some reads may lack detectable primers."
                 }
-            },
-            "required": [
-                "trim_primers"
-            ]
+            }
         },
         "filtering_options": {
             "title": "Filtering Options",
@@ -183,6 +195,28 @@
                 }
             }
         },
+        "debugging_options": {
+            "title": "Debugging options",
+            "type": "object",
+            "description": "Parameters used to reduce the size of inputs or reference data",
+            "default": "",
+            "properties": {
+                "limit_samples_to": {
+                    "type": "integer",
+                    "description": "Only use the first n samples for the analysis"
+                },
+                "force_single_end": {
+                    "type": "string",
+                    "description": "Force single-end mode by specifying which read to use",
+                    "enum": ["R1", "R2"],
+                    "errorMessage": "force_single_end must be either 'R1' or 'R2'"
+                },
+                "dp_tools_plugin": {
+                    "type": "string",
+                    "description": "Alternative dp_tools plugin."
+                }
+            }
+        },
         "general_pipeline_settings": {
             "title": "General Pipeline Settings",
             "type": "object",
@@ -207,6 +241,11 @@
                     "type": "string",
                     "default": "${projectDir}/config/multiqc.config",
                     "description": "Path to a custom MultiQC configuration file. Applied to both the raw-read and filtered-read MultiQC reports. Defaults to the config/multiqc.config file bundled with the pipeline."
+                },
+                "api_url": {
+                    "type": "string",
+                    "default": "https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/*/",
+                    "hidden": true
                 },
                 "errorStrategy": {
                     "type": "string",
@@ -283,6 +322,9 @@
         },
         {
             "$ref": "#/$defs/taxonomy_and_differential_abundance_options"
+        },
+        {
+            "$ref": "#/$defs/debugging_options"
         },
         {
             "$ref": "#/$defs/general_pipeline_settings"

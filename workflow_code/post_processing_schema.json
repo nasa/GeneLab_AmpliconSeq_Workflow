@@ -19,7 +19,7 @@
         },
         "runsheet": {
           "type": "string",
-          "description": "Path to the runsheet CSV used to execute the main processing workflow. For accession-based runs this is the GLfile.csv found in the GeneLab/ output directory. For local input runs this is the CSV file passed to --input_file in the main workflow."
+          "description": "Path to the runsheet CSV used to execute the main processing workflow. For accession-based runs this is the GLfile.csv found in the Metadata/ output directory. For local input runs this is the CSV file passed to --input_file in the main workflow."
         },
         "GLDS_accession": {
           "type": "string",
@@ -81,6 +81,44 @@
         }
       }
     },
+    "shared_processing_params": {
+      "title": "Shared Processing Parameters",
+      "type": "object",
+      "description": "Parameters carried over from the main processing workflow. These must match the values used during the processing run as they are used by GENERATE_PROTOCOL to accurately populate the methods and protocol text.",
+      "default": "",
+      "properties": {
+        "target_region": {
+          "type": "string",
+          "default": "16S",
+          "description": "The amplicon target region analyzed during the main processing workflow.",
+          "enum": [
+            "16S",
+            "18S",
+            "ITS"
+          ]
+        },
+        "left_trunc": {
+          "type": "integer",
+          "default": 0,
+          "description": "Forward read truncation length used during DADA2 filterAndTrim() in the main processing workflow."
+        },
+        "right_trunc": {
+          "type": "integer",
+          "default": 0,
+          "description": "Reverse read truncation length used during DADA2 filterAndTrim() in the main processing workflow."
+        },
+        "left_maxEE": {
+          "type": "integer",
+          "default": 1,
+          "description": "Maximum expected errors allowed in forward reads during DADA2 filterAndTrim() in the main processing workflow."
+        },
+        "right_maxEE": {
+          "type": "integer",
+          "default": 1,
+          "description": "Maximum expected errors allowed in reverse reads during DADA2 filterAndTrim() in the main processing workflow."
+        }
+      }
+    },
     "processing_flags": {
       "title": "Processing Flags",
       "type": "object",
@@ -97,20 +135,21 @@
           "default": false,
           "description": "Set to true if the dataset was processed as single-end reads. When true, passes --single-end to the README generator and --single-ended to the file associations table and validation processes."
         },
-        "used_R1_as_SE": {
-          "type": "boolean",
-          "default": false,
-          "description": "Set to true if the forward (R1) reads were used as single-end data during processing. When true, passes --R1-used-as-single-ended-data to the file associations table and validation processes."
+        "force_single_end": {
+          "type": "string",
+          "description": "Force single-end mode by specifying which read was used during processing. Passes --force-single-end followed by the specified read to the README and protocol generators, and file associations table and validation processes. When set, --include_raw_data and --include_raw_multiqc are ignored regardless of their values.",
+          "enum": ["R1", "R2"],
+          "errorMessage": "force_single_end must be either 'R1' or 'R2'"
         },
         "include_raw_data": {
           "type": "boolean",
           "default": false,
-          "description": "Set to true to include Raw_Sequence_Data in the README and validation processes, and to generate raw read md5sums via GENERATE_MD5SUMS. Set to false (default) if raw data is not part of the submission."
+          "description": "Set to true to include Raw_Sequence_Data in the README, associations table, and validation processes, and to generate raw read md5sums via GENERATE_MD5SUMS. Set to true if raw data should be part of the submission. Ignored if --force_single_end is set."
         },
         "include_raw_multiqc": {
           "type": "boolean",
-          "default": true,
-          "description": "Set to true to pass --include-raw-multiqc-in-output to the file associations table generator, indicating that the raw MultiQC report is included in the processed data submission."
+          "default": false,
+          "description": "Set to true to pass --include-raw-multiqc-in-output to the file associations table generator, indicating that the raw MultiQC report is included in the processed data submission. Set to true if raw data should be part of the submission. Ignored if --force_single_end is set."
         }
       }
     },
@@ -144,6 +183,12 @@
           "type": "boolean",
           "default": false,
           "description": "Set to true to print a summary of all resolved parameter values to the terminal at pipeline startup."
+        },
+        "baseDir": {
+          "type": "string",
+          "default": "${launchDir}",
+          "hidden": true,
+          "description": "Base directory used internally to construct clean file paths. Set automatically to the launch directory. Do not set this manually."
         }
       }
     },
@@ -171,6 +216,9 @@
     },
     {
       "$ref": "#/$defs/analyst_options"
+    },
+    {
+      "$ref": "#/$defs/shared_processing_params"
     },
     {
       "$ref": "#/$defs/processing_flags"

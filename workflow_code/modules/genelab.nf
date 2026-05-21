@@ -35,6 +35,7 @@ process GENERATE_README {
         def raw_reads = params.include_raw_data ? "--include-raw-reads" : ""
         def trimmed_reads = params.trim_primers ? "" : "--primers_already_trimmed"
         def single_end = params.single_end ? "--single-end" : ""
+        def force_single_end = params.force_single_end ? "--force-single-end ${params.force_single_end}" : ""
         """    
         GL-gen-processed-data-amplicon-readme-updated.py \\
              --output '${params.cleaned_prefix}README${params.assay_suffix}.txt' \\
@@ -43,6 +44,7 @@ process GENERATE_README {
              --email '${params.email}' \\
              --protocol-ID '${params.protocol_id}' \\
              --assay_suffix '${params.assay_suffix}' \\
+             ${force_single_end} \\
              ${raw_reads} ${trimmed_reads} ${single_end}
         """
 
@@ -64,10 +66,10 @@ process VALIDATE_PROCESSING {
         path("${params.GLDS_accession}_${params.cleaned_prefix}amplicon-validation${params.assay_suffix}.log"), emit: log
 
     script:
-        def raw_fastq = params.include_raw_data ? "--include_raw_fastq" : ""
+        def raw_fastq = params.include_raw_data ? "--include-raw-fastq" : ""
         def primers_flag = params.trim_primers ? "" : "--primers-already-trimmed"
         def single_end_flag = params.single_end ? "--single-ended" : ""
-        def used_R1_as_SE_flag = params.used_R1_as_SE ? "--R1-used-as-single-ended-data" : ""
+        def force_single_end = params.force_single_end ? "--force-single-end ${params.force_single_end}" : ""
         """
         GL-validate-processed-amplicon-data \\
              --output '${params.GLDS_accession}_${params.cleaned_prefix}amplicon-validation${params.assay_suffix}.log' \\
@@ -89,7 +91,7 @@ process VALIDATE_PROCESSING {
              --filtered_R2_suffix "${params.assay_suffix}_R2_filtered.fastq.gz" \\
              --processing_zip_file '${processing_info}' \\
              --readme '${README}' \\
-             ${raw_fastq} ${primers_flag} ${single_end_flag} ${used_R1_as_SE_flag}
+             ${raw_fastq} ${primers_flag} ${single_end_flag} ${force_single_end}
         """
 }
 
@@ -110,7 +112,8 @@ process GENERATE_CURATION_TABLE {
     script:
         def primers_flag = params.trim_primers ? "" : "--primers-already-trimmed"
         def single_end_flag = params.single_end ? "--single-ended" : ""
-        def used_R1_as_SE_flag = params.used_R1_as_SE ? "--R1-used-as-single-ended-data" : ""
+        def force_single_end = params.force_single_end ? "--force-single-end ${params.force_single_end}" : ""
+        def include_raw_fastq_flag = params.include_raw_data ? "--include-raw-fastq" : ""
         def include_raw_multiqc_flag = params.include_raw_multiqc ? "--include-raw-multiqc-in-output" : ""        
         """
 
@@ -128,7 +131,7 @@ process GENERATE_CURATION_TABLE {
                     --filtered_suffix '${params.assay_suffix}_filtered.fastq.gz' \\
                     --filtered_R1_suffix '${params.assay_suffix}_R1_filtered.fastq.gz' \\
                     --filtered_R2_suffix '${params.assay_suffix}_R2_filtered.fastq.gz' \\
-                    ${primers_flag} ${single_end_flag} ${used_R1_as_SE_flag} ${include_raw_multiqc_flag}
+                    ${primers_flag} ${single_end_flag} ${force_single_end} ${include_raw_fastq_flag} ${include_raw_multiqc_flag}
 
         """
 }
@@ -147,7 +150,7 @@ process GENERATE_MD5SUMS {
         path("${params.cleaned_prefix}raw_md5sum${params.assay_suffix}.tsv"), emit: raw_md5sum, optional: true
         path("${params.cleaned_prefix}processed_md5sum${params.assay_suffix}.tsv"), emit: processed_md5sum
     script:
-        def raw_md5_flag = params.include_raw_data ? "--generate_raw_md5sums" : ""
+        def raw_md5_flag = (!params.force_single_end && params.include_raw_data) ? "--generate_raw_md5sums" : ""
         def primers_flag = params.trim_primers ? "" : "--primers_already_trimmed"
         """
         generate_md5sums.py --outdir ${processed_dir} --assay_suffix '${params.assay_suffix}' --output_prefix '${params.cleaned_prefix}' ${raw_md5_flag} ${primers_flag}
@@ -168,6 +171,7 @@ process GENERATE_PROTOCOL {
         path("protocol.txt"), emit: protocol
     script:
         def trim_flag = params.trim_primers ? "--trim_primers" : ""
+        def force_single_end_flag = params.force_single_end ? "--force_single_end ${params.force_single_end}" : ""
         """
         generate_protocol.py ${software_versions} ${protocol_id} \\
             --rarefaction_depth_file ${rarefaction_depth} \\
@@ -175,6 +179,6 @@ process GENERATE_PROTOCOL {
             --trunc_len "${params.left_trunc},${params.right_trunc}" \\
             --max_ee "${params.left_maxEE},${params.right_maxEE}" \\
             --workflow_version ${workflow.manifest.version} \\
-            ${trim_flag}
+            ${force_single_end_flag} ${trim_flag}
         """
 }
