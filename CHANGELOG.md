@@ -5,15 +5,73 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/NF_AmpIllumina_1.0.10)
+
+### Added
+
+- Caching support for reference databases to avoid redundant downloads on repeated runs of the main workflow
+- A Bioconductor package (microbiome 1.32.0) that is required by ANCOMBC >= 2.12
+- Support for `--primers-already-trimmed` behavior in the post-processing workflow by adding `trim_primers` parameter to control inclusion of trimmed-data-related information across its processes
+- Validation for alpha/beta diversity outputs, including failure files and rarefaction depth consistency across both analyses, for taxonomy plots, and for outputs of the three differential abundance methods, including per-method volcano plot counts against number of contrasts
+- `post_processing_schema.json` for parameter validation and automated help menu generation
+
+
+### Changed
+- Migrated output handling to Nextflow `workflow output {}` block in both main and post-processing workflows; removed deprecated suffix and directory parameters from `nextflow.config` and `post_processing.config`
+- Switched output files under `Metadata/` and `GeneLab/` to comply with other GeneLab workflows
+- Replaced `GET_RUNSHEET` process and associated workflow logic with a new staging analysis subworkflow supporting both accession-based and input-file-based execution modes
+- Consolidated `CUTADAPT_ANCHORED` and `CUTADAPT_UNANCHORED` into a single `CUTADAPT` process
+- Consolidated `RUN_R_TRIM` and `RUN_R_NOTRIM` into a single `RUN_DADA2` process
+- Updated `CUTADAPT` and `RUN_DADA2` to accurately support both true single-end datasets and forced single-end processing in addition to the existing paired-end processing
+- Updated `GENERATE_README`, `GENERATE_MD5SUMS`, `VALIDATE_PROCESSING`, and `GENERATE_CURATION_TABLE` to account for the `force_single_end` parameter
+- Consolidated `ZIP_BIOM` into the general `ZIP` process using file extension detection for biom-specific flags
+- Split MultiQC zip output into separate `data.zip` and `report.html` outputs
+- Moved MultiQC path cleaning into the `MULTIQC` process via `clean_multiqc_paths.py`; removed standalone `MULTIQC_ZIP` process in main workflow and `CLEAN_MULTIQC_PATHS` process in post-processing workflow
+- Moved `MultiQC_Reports/` from under `FastQC_Outputs/` to under their respective folders (`Raw_Sequence_Data` or `Filtered_Sequence_Data`); removed `FastQC_Outputs/`
+- Converted `generate_protocol.sh` to a Python script for automated handling of reference/filtering parameters and special cases (primers already trimmed, processing only forward or reverse reads)
+- Replaced bash code that generates md5sums file with `generate_md5sums.py` that provides md5sums for files published on OSDR only and optionally generates md5sums for raw data (FASTQ and MultiQC files)
+- Moved post-processing output files from under `Post_Processing/` to under `GeneLab/`; removed `Post_Processing/`
+- Modified `nextflow_schema.json` to reflect updated pipeline parameters with improved parameter descriptions and group definitions 
+- Wired up `nf-schema` plugin to `nextflow_schema.json` for parameter validation and automated help menu generation
+- Updated `post_processing.config` to support running the post-processing workflow with `-C` instead of `-c` (i.e., disregards the default `nextflow.config` and uses only `post_processing.config` ); modified launch scripts (`launch.sh` and `slurm_submit.slurm`) accordingly 
+
+- Updated database versions:
+  - SILVA_SSU_r138.2_v2, downloaded from DECIPHER and uploaded to Figshare (https://doi.org/10.6084/m9.figshare.32118616) in April 2026 
+  - UNITE_v2025, downloaded from DECIPHER and uploaded to Figshare (https://doi.org/10.6084/m9.figshare.32118652) in April 2026
+
+- Updated versions of Cutadapt and certain R/Bioconductor packages to match GeneLab Amplicon Pipeline version [GL-DPPD-7104-D](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-D.md)
+- Replaced tidyverse package with its individually-used component packages across R scripts to ensure specific versions of these packages are being used:
+  - ggplot2 4.0.2
+  - dplyr 1.2.1
+  - readr 2.2.0
+  - stringr 1.6.0
+  - purrr 1.2.1
+  - tibble 3.3.1
+  - tidyr 1.3.2
+- Removed explicit `library(tools)` loading from R scripts and its respective version capture, as it is automatically loaded with R base
+- Bumped `r-diversity` and `r-dada-decipher-biomformat` singularity images from 1.1 to 1.2 to match R package updates 
+- Updated third-party licenses
+
+### Fixed
+- Fixed `assay_suffix` chained parameter evaluation, which was previously evaluated at parse time instead of runtime
+
+### Removed
+- Removed `run_workflow.py` script as it was deemed unnecessary for the Nextflow workflow setup; cleaned up related commands in `slurm_submit.slurm`
+
+<br>
+
+---
+
 ## [1.0.9](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/DEV_1.0.9)
 
 ### Fixed
 
 - Fix NCBI taxon lookup issue by wrapping `get_ncbi_ids()` in per-taxon tryCatch with retries and returning NA on failure
 
-<br>
+<br> 
 
 ---
+
 
 ## [1.0.8](https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/tree/NF_AmpIllumina_1.0.8)
 
@@ -183,7 +241,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Cutadapt 5.0
   - R-base 4.4.2
   - DADA2 1.34.0
-  - DECIPHER 3.20.0
+  - DECIPHER 3.2.0
   - biomformat 1.34.0
   - DESeq2 1.46.0
   - ggrepel 0.9.6

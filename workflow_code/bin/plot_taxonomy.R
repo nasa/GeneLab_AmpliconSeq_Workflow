@@ -134,7 +134,6 @@ if(opt[["samples-column"]] == "Sample Name") {
 
 
 library(glue)
-library(tools)
 library(ggplot2)
 library(dplyr)
 library(purrr)

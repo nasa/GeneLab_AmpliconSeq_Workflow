@@ -33,7 +33,7 @@ process PLOT_TAXONOMY  {
                   --assay-suffix  '${meta.assay_suffix}' \\
                   --output-prefix  '${params.cleaned_prefix}'
                  
-        Rscript -e "VERSIONS=sprintf('dplyr %s\\npurrr %s\\nreadr %s\\nstringr %s\\ntibble %s\\ntidyr %s\\nglue %s\\ntools %s\\nggplot2 %s\\n',  \\
+        Rscript -e "VERSIONS=sprintf('dplyr %s\\npurrr %s\\nreadr %s\\nstringr %s\\ntibble %s\\ntidyr %s\\nglue %s\\nggplot2 %s\\n',  \\
                                     packageVersion('dplyr'), \\
                                     packageVersion('purrr'), \\
                                     packageVersion('readr'), \\
@@ -41,7 +41,6 @@ process PLOT_TAXONOMY  {
                                     packageVersion('tibble'), \\
                                     packageVersion('tidyr'), \\
                                     packageVersion('glue'), \\
-                                    packageVersion('tools'), \\
                                     packageVersion('ggplot2')); \\
                     write(x=VERSIONS, file='versions.txt', append=TRUE)"
         """
