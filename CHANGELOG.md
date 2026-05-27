@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Option to run workflow in accession mode using a local ISA archive (`--isa_archive` parameter)
 - Caching support for reference databases to avoid redundant downloads on repeated runs of the main workflow
 - A Bioconductor package (microbiome 1.32.0) that is required by ANCOMBC >= 2.12
 - Support for `--primers-already-trimmed` behavior in the post-processing workflow by adding `trim_primers` parameter to control inclusion of trimmed-data-related information across its processes
