@@ -10,7 +10,7 @@ def get_runsheet_paths(LinkedHashMap row) {
     meta.region     = row["Parameter Value[Library Selection]"]
     meta.paired_end = row.paired_end.toBoolean()
     meta.f_primer   = row["F_Primer"]
-    meta.r_primer   = meta.paired_end ? row["R_Primer"] : "null" 
+    meta.r_primer   = row["R_Primer"]
     meta.groups     = row.containsKey("groups") ? row.groups : "null"
 
     // Extract factors
