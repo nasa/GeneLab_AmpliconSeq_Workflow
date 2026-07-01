@@ -123,12 +123,12 @@ workflow STAGE_ANALYSIS {
 
         } else {
             // Input file mode
-            runsheet_ch    = Channel.fromPath( input_file, checkIfExists: true )
+            runsheet_ch    = input_file
             isa_archive_ch = channel.empty()
             gl_file_ch     = channel.empty()
             primers_ch     = Channel.value([params.F_primer, params.R_primer])
 
-            reads_ch = Channel.fromPath( input_file, checkIfExists: true )
+            reads_ch = input_file
                 .splitCsv(header: true)
                 .map { row ->
                     row.paired.trim().toLowerCase() == 'true'

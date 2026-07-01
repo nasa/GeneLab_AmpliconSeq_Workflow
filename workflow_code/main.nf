@@ -136,7 +136,7 @@ workflow {
 
             error("""${c_back_bright_red}PRIMER ERROR! 
                   When using a csv file as input (--input_file) to this workflow you must provide 
-                  foward and reverse primer sequences. Please provide your forward 
+                  forward and reverse primer sequences. Please provide your forward 
                   and reverse primer sequences as arguements to the --F_primer 
                   and --R_primer parameters, respectively.
                   ${c_reset}""")
