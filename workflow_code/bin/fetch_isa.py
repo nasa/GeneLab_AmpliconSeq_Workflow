@@ -33,7 +33,7 @@ def main():
 
 
     # Build the JSON URL to get file information for a file with ISA in the name and a .zip extension
-    json_url = f"https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/{args.osd}/files/*ISA*.zip"
+    json_url = f"https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/{args.osd}/files/"
 
     # Fetch the JSON data
     response = requests.get(json_url)
