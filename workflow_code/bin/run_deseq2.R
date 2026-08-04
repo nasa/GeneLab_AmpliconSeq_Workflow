@@ -445,6 +445,19 @@ taxonomy_table <- taxonomy_table[common_ids,]
 
 #### pairwise comparisons
 unique_groups <- unique(metadata[[group]])
+if (length(unique_groups) < 2) {
+  warning_file <- glue("{diff_abund_out_dir}{output_prefix}deseq2_failure{assay_suffix}.txt")
+  writeLines(
+    text = glue("Group count information:
+Original number of groups: {length(unique_groups)}
+Number of groups after filtering: {length(unique_groups)}
+
+There are less than two groups to compare, hence, pairwise comparisons cannot be performed.
+Please ensure that your metadata contains two or more groups to compare..."),
+    con = warning_file
+  )
+  quit(status = 0)
+}
 
 # Create phyloseq object
 ASV_physeq <- phyloseq(otu_table(feature_table, taxa_are_rows = TRUE),
