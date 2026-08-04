@@ -64,7 +64,7 @@ process RUN_DADA2 {
                 "${filtered_R2_suffix}" \\
                 "${params.cleaned_prefix}" \\
                 "${params.target_region}" \\
-                "${params.concatenate_reads_only}" \\
+                "${params.concatenate_reads_only ? 'TRUE' : 'FALSE'}" \\
                 "${params.assay_suffix}" \\
                 "${database.name}"
         else
