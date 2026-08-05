@@ -137,9 +137,9 @@
                     "description": "Maximum number of expected errors allowed in reverse reads during DADA2 filterAndTrim()."
                 },
                 "concatenate_reads_only": {
-                    "type": "string",
-                    "default": "FALSE",
-                    "description": "Set to TRUE to concatenate forward and reverse reads instead of attempting to merge overlapping pairs in DADA2. Intended for amplicons that are too long to produce an overlapping region, such as 18S fragments captured with 515-926 primers. Note that 16S and 18S should have been separated already prior to running this workflow. This should likely be left as FALSE for any option other than 18S above."
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Set to true to concatenate forward and reverse reads instead of attempting to merge overlapping pairs in DADA2. Intended for amplicons that are too long to produce an overlapping region, such as 18S fragments captured with 515-926 primers. Note that 16S and 18S should have been separated already prior to running this workflow. This should likely be left as false for any option other than 18S above."
                 }
             }
         },

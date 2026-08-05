@@ -17,7 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `post_processing_schema.json` for parameter validation and automated help menu generation
 
 
+### Fixed
+- Write a failure text file and continue when metadata has fewer than two groups for beta diversity and differential abundance (ANCOMBC1/2, DESeq2), same as alpha diversity
+
 ### Changed
+- Changed `concatenate_reads_only` from a `"TRUE"`/`"FALSE"` string to a boolean (`true`/`false`)
 - Migrated output handling to Nextflow `workflow output {}` block in both main and post-processing workflows; removed deprecated suffix and directory parameters from `nextflow.config` and `post_processing.config`
 - Switched output files under `Metadata/` and `GeneLab/` to comply with other GeneLab workflows
 - Replaced `GET_RUNSHEET` process and associated workflow logic with a new staging analysis subworkflow supporting both accession-based and input-file-based execution modes

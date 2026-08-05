@@ -652,6 +652,21 @@ ggsave(filename = glue("{beta_diversity_out_dir}/{output_prefix}{distance_method
 #---------------------------- Run stats
 # Checking homogeneity of variance and comparing groups using adonis test
 
+number_of_groups <- unique(metadata[[groups_colname]]) %>% length()
+if (number_of_groups < 2) {
+  warning_file <- glue("{beta_diversity_out_dir}{output_prefix}beta_diversity_failure{assay_suffix}.txt")
+  writeLines(
+    text = glue("Group count information:
+Original number of groups: {length(group_levels)}
+Number of groups after filtering: {number_of_groups}
+
+There are less than two groups to compare, hence, beta diversity group comparisons cannot be performed.
+Please ensure that your metadata contains two or more groups to compare..."),
+    con = warning_file
+  )
+  quit(status = 0)
+}
+
 stats_res <- run_stats(dist_obj, metadata, groups_colname)
 write_csv(x = stats_res$variance, 
           file = glue("{beta_diversity_out_dir}/{output_prefix}{distance_method}_variance_table{assay_suffix}.csv"))

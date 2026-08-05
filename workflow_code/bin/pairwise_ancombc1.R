@@ -389,9 +389,23 @@ ps <- phyloseq(otu_table(feature_table, taxa_are_rows = TRUE),
 # Convert phyloseq to tree summarized experiment object
 tse <-  mia::makeTreeSummarizedExperimentFromPhyloseq(ps)
 
+group_levels <- metadata[,group] %>% unique() %>% sort()
+if (length(group_levels) < 2) {
+  warning_file <- glue("{diff_abund_out_dir}{output_prefix}ancombc1_failure{assay_suffix}.txt")
+  writeLines(
+    text = glue("Group count information:
+Original number of groups: {length(group_levels)}
+Number of groups after filtering: {length(group_levels)}
+
+There are less than two groups to compare, hence, pairwise comparisons cannot be performed.
+Please ensure that your metadata contains two or more groups to compare..."),
+    con = warning_file
+  )
+  quit(status = 0)
+}
 
 # Get unique group comparison as a matrix
-pairwise_comp.m <- utils::combn((metadata[,group] %>% unique %>% sort), 2)
+pairwise_comp.m <- utils::combn(group_levels, 2)
 pairwise_comp_df <- pairwise_comp.m %>% as.data.frame 
 
 colnames(pairwise_comp_df) <- map_chr(pairwise_comp_df,
