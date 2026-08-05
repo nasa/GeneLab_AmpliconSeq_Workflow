@@ -1,6 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
 //params.assay_suffix = "_GLAmpSeq"
 //params.group  = "groups"
 //params.samples_column = "Sample Name"
@@ -36,40 +33,16 @@ process PLOT_TAXONOMY  {
                   --assay-suffix  '${meta.assay_suffix}' \\
                   --output-prefix  '${params.cleaned_prefix}'
                  
-        Rscript -e "VERSIONS=sprintf('tidyverse %s\\nglue %s\\ntools %s\\nggplot2 %s\\n',  \\
-                                    packageVersion('tidyverse'), \\
+        Rscript -e "VERSIONS=sprintf('dplyr %s\\npurrr %s\\nreadr %s\\nstringr %s\\ntibble %s\\ntidyr %s\\nglue %s\\nggplot2 %s\\n',  \\
+                                    packageVersion('dplyr'), \\
+                                    packageVersion('purrr'), \\
+                                    packageVersion('readr'), \\
+                                    packageVersion('stringr'), \\
+                                    packageVersion('tibble'), \\
+                                    packageVersion('tidyr'), \\
                                     packageVersion('glue'), \\
-                                    packageVersion('tools'), \\
                                     packageVersion('ggplot2')); \\
                     write(x=VERSIONS, file='versions.txt', append=TRUE)"
         """
 
-}
-
-
-workflow {
-
-
-     meta  = Channel.of(["samples": params.samples_column,
-                         "group" : params.group,
-                         "depth" : params.rarefaction_depth,
-                         "assay_suffix" : params.assay_suffix,
-                         "output_prefix" : params.cleaned_prefix,
-                         "target_region" : params.target_region,
-                         "library_cutoff" : params.library_cutoff,
-                         "prevalence_cutoff" : params.prevalence_cutoff,
-                         "rare" : params.remove_rare ? "--remove-rare" : ""
-                        ])
-                            
-     
-     asv_table       =  Channel.fromPath(params.asv_table, checkIfExists: true)
-     taxonomy_table  =  Channel.fromPath(params.taxonomy, checkIfExists: true)
-     metadata        =  Channel.fromPath(params.input_file, checkIfExists: true) 
-     
-     
-     PLOT_TAXONOMY(meta, asv_table, taxonomy_table, metadata)
-     
-     
-     emit:
-         version = PLOT_TAXONOMY.out.version
 }

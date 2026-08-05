@@ -134,8 +134,13 @@ if(opt[["samples-column"]] == "Sample Name") {
 
 
 library(glue)
-library(tools)
-library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(tibble)
+library(tidyr)
 
 
 remove_rare_features <- function(feature_table, cut_off_percent=3/4){

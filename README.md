@@ -14,7 +14,7 @@
 
 ### Implementation Tools
 
-The current GeneLab Illumina amplicon sequencing data processing pipeline (AmpIllumina), [GL-DPPD-7104-C.md](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md), is implemented as a [Nextflow](https://nextflow.io/) DSL2 workflow and utilizes [Singularity](https://docs.sylabs.io/guides/3.10/user-guide/introduction.html) containers, [Docker](https://docs.docker.com/get-started/) containers, or [conda](https://docs.conda.io/en/latest/) environments to install/run all tools. This workflow is run using the command line interface (CLI) of any unix-based system.  While knowledge of creating workflows in Nextflow is not required to run the workflow as is, [the Nextflow documentation](https://nextflow.io/docs/latest/index.html) is a useful resource for users who want to modify and/or extend this workflow.   
+The current GeneLab Illumina amplicon sequencing data processing pipeline (AmpIllumina), [GL-DPPD-7104-D.md](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-D.md), is implemented as a [Nextflow](https://nextflow.io/) DSL2 workflow and utilizes [Singularity](https://docs.sylabs.io/guides/3.10/user-guide/introduction.html) containers, [Docker](https://docs.docker.com/get-started/) containers, or [conda](https://docs.conda.io/en/latest/) environments to install/run all tools. This workflow is run using the command line interface (CLI) of any unix-based system.  While knowledge of creating workflows in Nextflow is not required to run the workflow as is, [the Nextflow documentation](https://nextflow.io/docs/latest/index.html) is a useful resource for users who want to modify and/or extend this workflow.   
 
 ### Resource Requirements <!-- omit in toc -->
 
@@ -41,7 +41,8 @@ The table below details the default maximum resource allocations for individual 
 4. [Run the Workflow](#4-run-the-workflow)  
    4a. [Approach 1: Start with OSD or GLDS accession as input](#4a-approach-1-start-with-an-osd-or-glds-accession-as-input)  
    4b. [Approach 2: Start with a runsheet csv file as input](#4b-approach-2-start-with-a-runsheet-csv-file-as-input)  
-   4c. [Modify parameters and compute resources in the Nextflow config file](#4c-modify-parameters-and-compute-resources-in-the-nextflow-config-file)  
+   4c. [Approach 3: Run the workflow using an ISA Archive](#4c-approach-3-run-the-workflow-using-an-isa-archive)  
+   4d. [Modify parameters and compute resources in the Nextflow config file](#4c-modify-parameters-and-compute-resources-in-the-nextflow-config-file)  
 
 5. [Workflow Outputs](#5-workflow-outputs)  
    5a. [Main outputs](#5a-main-outputs)  
@@ -93,8 +94,8 @@ We recommend installing Singularity on a system wide level as per the associated
 All files required for utilizing the NF_AmpIllumina GeneLab workflow for processing amplicon Illumina data are in the [workflow_code](workflow_code) directory. To get a copy of the latest *NF_AmpIllumina* version on to your system, the code can be downloaded as a zip file from the release page then unzipped after downloading by running the following commands: 
 
 ```bash
-wget https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/releases/download/v1.0.9/NF_AmpIllumina_1.0.9.zip
-unzip NF_AmpIllumina_1.0.9.zip && cd NF_AmpIllumina_1.0.9
+wget https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/releases/download/v1.0.10/NF_AmpIllumina_1.0.10.zip
+unzip NF_AmpIllumina_1.0.10.zip && cd NF_AmpIllumina_1.0.10
 ```
 
 <br>
@@ -107,7 +108,7 @@ Although Nextflow can fetch Singularity images from a url, doing so may cause is
 
 To avoid this issue, run the following command to fetch the Singularity images prior to running the NF_AmpIllumina workflow:
 
-> Note: This command should be run in the location containing the `NF_AmpIllumina_1.0.9` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
+> Note: This command should be run in the location containing the `NF_AmpIllumina_1.0.10` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
 
 ```bash
 bash ./bin/prepull_singularity.sh nextflow.config
@@ -125,7 +126,7 @@ export NXF_SINGULARITY_CACHEDIR=$(pwd)/singularity
 
 ### 4. Run the Workflow
 
-> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.9` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.9` directory.*
+> ***Note:** All the commands in this step assume that the workflow will be run from within the `NF_AmpIllumina_1.0.10` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. They may also be run from a different location by providing the full path to the main.nf workflow file in the `NF_AmpIllumina_1.0.10` directory.*
 
 For options and detailed help on how to run the workflow, run the following command:
 
@@ -163,10 +164,25 @@ nextflow run main.nf \
 
 <br>
 
+#### 4c. Approach 3: Run the workflow using an ISA Archive
+
+> Note: Specifications for the ISA Tab Archive format can be found [here](https://isa-specs.readthedocs.io/en/latest/isatab.html).
+
+```bash
+nextflow run main.nf \
+   -resume \
+   -profile singularity \
+   --target_region 16S \
+   --accession OSD-487
+   --isa_archive </path/to/isaArchive> 
+```
+
+<br>
+
 
 **Required Parameters For All Approaches:**
 
-* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.9`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
+* `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.10`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
 * `-resume` - Resumes  workflow execution using previously cached results
 * `-profile` – Specifies the configuration profile(s) to load (multiple options can be provided as a comma-separated list)
    * Software environment profile options (choose one):
@@ -177,61 +193,65 @@ nextflow run main.nf \
       * `mamba` - instructs Nextflow to use conda environments via the mamba package manager 
    * Other option (can be combined with the software environment option above using a comma, e.g. `-profile slurm,singularity`):
       * `slurm` - instructs Nextflow to use the [Slurm cluster management and job scheduling system](https://slurm.schedmd.com/overview.html) to schedule and run the jobs on a Slurm HPC cluster
-* `--target_region` - Specifies the amplicon target region to be analyzed (type: string, options: 16S, 18S, or ITS)
+* `--target_region` - Specifies the amplicon target region to be analyzed (type: string, options: 16S, 18S, or ITS, default: 16S)
 
 
-**Additional Required Parameters For Approach 1:** 
+**Additional Required Parameters For [Approach 1](#4a-approach-1-start-with-an-osd-or-glds-accession-as-input)**   
 
-* `--accession` - The OSD or GLDS accession number specifying the [OSDR](https://osdr.nasa.gov/bio/repo/) dataset to process, e.g. OSD-487 or GLDS-487 (type: string)
+* `--accession` - The OSD or GLDS accession number specifying the [OSDR](https://osdr.nasa.gov/bio/repo/) dataset to process, e.g. OSD-487 or GLDS-487 (type: string, default: null)
   > *Note: Not all datasets have the same OSD and GLDS number, so make sure the correct OSD or GLDS number is specified*
 
 
-**Additional Required Parameters For Approach 2:** 
+**Additional Required Parameters For [Approach 2](#4b-approach-2-start-with-a-runsheet-csv-file-as-input):** 
 
-* `--input_file` –  A single-end or paired-end runsheet csv file containing assay metadata for each sample, including sample_id, forward (path to forward read), [reverse (path to reverse read, for paired-end only),] paired (boolean, TRUE | FALSE), groups (specifies sample treatment group name). Please see the [runsheet documentation](./examples/runsheet) in this repository for examples on how to format this file. (type: string)
+* `--input_file` –  A single-end or paired-end runsheet csv file containing assay metadata for each sample, including sample_id, forward (path to forward read), [reverse (path to reverse read, for paired-end only),] paired (boolean, TRUE | FALSE), groups (specifies sample treatment group name). Please see the [runsheet documentation](./examples/runsheet) in this repository for examples on how to format this file. (type: string, default: null)
 
-* `--F_primer` - Forward primer sequence (type: string)
+* `--F_primer` - Forward primer sequence (type: string, default: null)
 
-* `--R_primer` - Reverse primer sequence (type: string)
+* `--R_primer` - Reverse primer sequence (type: string, default: null)
 
 
-**Additional [Optional] Parameters For All Approaches**
-> *Note: See `nextflow run -h` and [Nextflow's CLI run command documentation](https://nextflow.io/docs/latest/cli.html#run) for more options and details on how to run Nextflow.*
+**Additional Required Parameters For [Approach 3](#4c-approach-3-run-the-workflow-using-an-isa-archive):**
 
-* `--errorStrategy` - Error handling strategy for Nextflow processes. If processes fail, use "ignore" to allow the workflow to continue running (type: string, default: "terminate")
-* `--trim_primers` - Whether primers should be trimmed (type: string, default: "TRUE")
-* `--primers_linked` - Whether forward and reverse primers are linked (type: string, default: "TRUE")
-* `--anchored_primers` - Whether primers are anchored at the start of reads (type: string, default: "TRUE")
+* `--accession` – The OSD or GLDS accession number specifying the [OSDR](https://osdr.nasa.gov/bio/repo/) dataset to process, e.g. OSD-487 or GLDS-487 (type: string, default: null)
+  > *Note: Not all datasets have the same OSD and GLDS number, so make sure the correct OSD or GLDS number is specified*
+
+* `--isa_archive` - specifies the path to a previously-downloaded *ISA.zip (type, string, default: null (an *ISA.zip is automatically fetched from the GeneLab Repository for the OSDR dataset being processed)) 
+
+<br>
+
+
+**Optional Parameters For All Approaches**
+
+* `--outdir` - Specifies the base directory where the output directories will be created (type: string, default: "${launchDir}")
+* `--trim_primers` - Whether primers should be trimmed (type: boolean, default: true)
 * `--min_cutadapt_len` - Minimum length of reads to keep after Cutadapt trimming (type: integer, default: 130) 
-* `--discard_untrimmed` - Whether to discard untrimmed reads (type: string, default: "TRUE")
+* `--discard_untrimmed` - Whether to discard untrimmed reads (type: boolean, default: true)
 * `--left_trunc` - Truncate forward reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0)
 * `--right_trunc` - Truncate reverse reads after this many bases. Reads shorter than this are discarded (type: integer, default: 0)
 * `--left_maxEE` - Maximum expected errors allowed in forward reads (type: integer, default: 1)
 * `--right_maxEE` - Maximum expected errors allowed in reverse reads (type: integer, default: 1)
-* `--concatenate_reads_only` - Whether to concatenate paired reads end-to-end instead of merging based on overlapping regions (type: string, default: "FALSE")
-* `--rarefaction_depth` - The minimum desired sample rarefaction depth for beta diversity analysis (type: integer, default: 500)
-* `--diff_abund_method` - Differential abundance testing method to use (type: string, default: "all")
-* `--group` - Column name in input CSV file containing groups to be compared (type: string, default: "groups")
-* `--samples_column` - Column name in input CSV file containing sample names (type: string, default: "sample_id")
-* `--remove_struc_zeros` - Whether to remove structural zeros when running ANCOMBC (type: boolean, default: false)
-* `--remove_rare` - Whether to filter out rare features and samples with low library sizes. Set this to true if using `prevalence_cutoff` or `library_cutoff` (type: boolean, default: false)
-* `--prevalence_cutoff` - Taxa with prevalence below this fraction will be excluded (type: float, default: 0)
-* `--library_cutoff` - Samples with library sizes below this threshold will be excluded (type: integer, default: 0)
 * `--output_prefix` - Prefix to add to output filenames, e.g. "Study1_". If the string is not empty and does not end with '_' or '-', an underscore will be automatically appended (type: string, default: "")
-* `--assay_suffix` - Suffix to add to output filenames (type: string, default: "_GLAmpSeq")
-* `--use_conda` - Whether Conda environments should be used to run Nextflow processes (type: boolean, default: false)
-* `--conda_cutadapt` - Path to existing Cutadapt conda environment (type: string, default: null)
-* `--conda_diversity` - Path to existing R diversity analysis conda environment (type: string, default: null)
-* `--conda_dp_tools` - Path to existing dp_tools conda environment (type: string, default: null)
-* `--conda_fastqc` - Path to existing FastQC conda environment (type: string, default: null)
-* `--conda_multiqc` - Path to existing MultiQC conda environment (type: string, default: null)
-* `--conda_R` - Path to existing R conda environment (type: string, default: null)
-* `--conda_zip` - Path to existing zip conda environment (type: string, default: null)
-* `--conda_wget` - Path to existing wget conda environment (type: string, default: null)
+* `--assay_suffix` - Suffix to add to output filenames (type: string, default: "_GLAmpSeq" that can be prepended with "\_<target_region>")
+* `--force_single_end` - Force single-end mode by specifying which read to use (type: string, options: "R1" or "R2", default: null)
 
 <br>
 
-#### 4c. Modify parameters and compute resources in the Nextflow config file
+
+**Additional Optional Parameters**
+
+The parameters listed above and more optional arguments for the AmpIllumina workflow, including but not limited to input/output options, trimming/filtering options, and debug-related and conda-related options that may not be immediately useful for most users, can be viewed by running the following command:
+
+```bash
+nextflow run main.nf --help
+```
+
+See `nextflow run -h` and [Nextflow's CLI run command documentation](https://nextflow.io/docs/latest/cli.html#run) for more options and details common to all nextflow workflows.
+
+<br>
+
+
+#### 4d. Modify parameters and compute resources in the Nextflow config file
 
 Additionally, all parameters and workflow resources can be directly specified in the [nextflow.config](./workflow_code/nextflow.config) file. For detailed instructions on how to modify and set parameters in the config file, please see the [documentation here](https://www.nextflow.io/docs/latest/config.html).
 
@@ -245,7 +265,16 @@ Once you've downloaded the workflow template, you can modify the parameters in t
 
 #### 5a. Main Outputs
 
-The outputs from this pipeline are documented in the [GL-DPPD-7104-C](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md) processing protocol.
+The outputs from this pipeline are documented in the [GL-DPPD-7104-D](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-D.md) processing protocol.
+
+Additional outputs are described below:
+- GeneLab/software_versions_<assay_suffix>.txt (version capturing file for all tools and packages used in the pipeline)
+- **Approach 1-specific:**
+    - Metadata/\*_amplicon\_<target_region>_v3_runsheet.csv (table containing metadata required for processing, including the raw reads files location)
+    - Metadata/\*-ISA.zip (the ISA archive of the OSD datasets to be processed, downloaded from the OSDR)
+    - Metadata/GLfile.csv (parsed from *runsheet.csv to match format of <input_file> from Approach 2)
+- **Approach 2-specific:**
+    - Metadata/\<input_file> (the runsheet csv file used to run Approach 2)
 
 #### 5b. Resource Logs
 
@@ -266,35 +295,35 @@ Standard Nextflow resource usage logs are also produced as follows:
 
 > Please note that to run the post-processing workflow successfully, you MUST run the processing workflow above via the [launch.sh](workflow_code/launch.sh) script first. Please see the [script](workflow_code/launch.sh) for how to run it and make sure to edit the place holders before running it.
 
-The post-processing workflow generates a README file, a protocols file, an md5sums table, and a file association table suitable for uploading to OSDR.
-
-For options and detailed help on how to run the post-processing workflow, run the following command:
-
-```bash
-nextflow run post_processing.nf --help
-```
+The post-processing workflow is designed to validate processed data generated by the main workflow, package processing information, purge file paths when necessary, and generate file association table suitable for uploading to OSDR, in addition to other output files, such as README, protocol, and md5sums tables.
 
 To generate the post-processing files after running the main processing workflow successfully, modify and set the parameters in [post_processing.config](workflow_code/post_processing.config), then run the following command:
 
 ```bash
-nextflow run post_processing.nf \
-   -c post_processing.config \ 
+nextflow -C post_processing.config \
+   run post_processing.nf \
    -resume \
    -profile singularity
 ``` 
 
-The outputs of the post-processing workflow are described below:
-> *Note: The outputs will be in a directory called `Post_Processing` by default*
+For more details on the parameters for the post-processing workflow, run the following command:
+
+```bash
+nextflow -C post_processing.config run post_processing.nf --help
+```
+
+> Note: When running the post-processing workflow, make sure the `-C post_processing.config` flag (capital C) is placed before the `run` command, as Nextflow requires configuration flags to precede the run subcommand. Using capital `-C` ensures that Nextflow disregards the default `nextflow.config` and uses only `post_processing.config`.
+
 
 **Post processing workflow output files** 
- - Post_processing/FastQC_Outputs/filtered_multiqc_GLAmpSeq_report.zip (Filtered sequence MultiQC report with paths purged) 
- - Post_processing/FastQC_Outputs/raw_multiqc_GLAmpSeq_report.zip (Raw sequence MultiQC report with paths purged)
- - Post_processing/<GLDS_accession>_associated-file-names.tsv (File association table for OSDR curation)
- - Post_processing/<GLDS_accession>_amplicon-validation.log (Automated verification and validation log file)
- - Post_processing/processed_md5sum_GLAmpSeq.tsv (md5sums for the files published on OSDR)
- - Post_processing/processing_info_GLAmpSeq.zip  (Zip file containing all files used to run the workflow and required logs with paths purged) 
- - Post_processing/protocol.txt  (File describing the methods used by the workflow)
- - Post_processing/README_GLAmpSeq.txt (README file listing and describing the outputs of the workflow)
+> *Note: The outputs are saved in a directory called `GeneLab` under `<outdir>`*
+ - <GLDS_accession>_associated-file-names\_<assay_suffix>.tsv (File association table for OSDR curation)
+ - <GLDS_accession>_amplicon-validation.log (Automated verification and validation log file)
+ - processed_md5sum_<assay_suffix>.tsv (md5sums for the processed files published on OSDR)
+ - raw_md5sum_<assay_suffix>.tsv (md5sums for the raw files published on OSDR, optional)
+ - processing_info_<assay_suffix>.zip  (Zip file containing all files used to run the workflow and required logs with paths purged) 
+ - protocol.txt  (File describing the methods used by the workflow)
+ - README_<assay_suffix>.txt (README file listing and describing the outputs of the workflow)
 
 <br>
 

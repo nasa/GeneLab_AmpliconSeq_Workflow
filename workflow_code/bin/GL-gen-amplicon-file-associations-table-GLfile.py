@@ -49,24 +49,14 @@ parser.add_argument("--primer_trimmed_R2_suffix", help = "Trimmed reverse reads 
 parser.add_argument("--filtered_suffix", help = "Filtered reads suffix", action = "store", default = "_filtered.fastq.gz")
 parser.add_argument("--filtered_R1_suffix", help = "Filtered forward reads suffix", action = "store", default = "_R1_filtered.fastq.gz")
 parser.add_argument("--filtered_R2_suffix", help = "Filtered reverse reads suffix", action = "store", default = "_R2_filtered.fastq.gz")
-parser.add_argument("--raw_reads_dir", help = "Specifies the name of the raw reads directory if they are to be included",
-                    action = "store", default = "Raw_Sequence_Data/")
-parser.add_argument("--fastqc_dir", help = "Specifies the name of fastqc and multiqc reports directory", 
-                    action = "store", default = "FastQC_Outputs/")
-parser.add_argument("--filtered_reads_dir", help = "Specifies the name of the filtered reads directory", 
-                    action = "store", default = "Filtered_Sequence_Data/")
-parser.add_argument("--trimmed_reads_dir", help = "Specifies the name of the trimmed reads directory", 
-                    action = "store", default = "Trimmed_Sequence_Data/")
-parser.add_argument("--final_outputs_dir", help = "Specifies the name of the final outputs directory.", 
-                    action = "store", default = "Final_Outputs/")
 parser.add_argument("--single-ended", help = "Add this flag if data are single-end sequencing.", action = "store_true")
 parser.add_argument("--primers-already-trimmed", help = "Add this flag if primers were trimmed prior to GeneLab processing, \
                     therefore there are no trimmed sequence data", action = "store_true")
-parser.add_argument("--R1-used-as-single-ended-data", help = "Provide this flag if processing only R1 reads as single-end (as the expected raw \
-                    filename suffixes will have 'R1' in there)", 
-                    action = "store_true")
+parser.add_argument("--force-single-end", default=None,
+                    help="If the data is paired-end but was processed as single-end, specify which read was used as single-end (R1 or R2)")
+parser.add_argument("--include-raw-fastq", help="Add this flag if raw fastq files should be included in the output, should not be set if force_single_end is used", action="store_true")
 parser.add_argument("--include-raw-multiqc-in-output",
-                    help = "Provide this flag if wanting to include the raw multiqc zip in the file-associations output table (may be wanted for older datasets)", 
+                    help = "Provide this flag if wanting to include the raw multiqc zip in the file-associations output table (may be wanted for older datasets), should not be set if force_single_end is used", 
                     action = "store_true")
 parser.add_argument("--use-sample-names-from-assay-table",
                     help = "Provide this flag if the unique filename strings in the processed outputs are taken directly from the \
@@ -121,25 +111,6 @@ def check_for_file_and_contents(file_path):
         report_failure("The file '" + str(file_path) + "' is empty.")
 
 
-def get_assay_table_from_ISA(isa_zip):
-    """ Tries to find a single assay table in an isa object """
-
-    zip_file = zipfile.ZipFile(isa_zip)
-    isa_files = zip_file.namelist()
-
-    # Getting wanted filename (those that start with "a_"  and contain the word "amplicon" seem to be what we want)
-    wanted_file_list = [item for item in isa_files if item.startswith("a_") and item.find("amplicon") != -1]
-    if len(wanted_file_list) != 1:
-        report_failure("We couldn't find the correct assay table in the ISA object, consider passing it directly to the '-a' argument.")
-
-    wanted_file = wanted_file_list[0]
-
-    df = pd.read_csv(zip_file.open(wanted_file), sep = "\t")
-
-    return(df)
-
-
-
 def parse_amplicon_names(name, raw_file_prefix, raw_R1_suffix, raw_R2_suffix, raw_suffix):
     """ This removes expected prefixes and suffixes """
 
@@ -154,51 +125,9 @@ def parse_amplicon_names(name, raw_file_prefix, raw_R1_suffix, raw_R2_suffix, ra
 
     return(curr_name)
 
-def get_sample_names_and_unique_filenames(assay_table,  raw_file_prefix, raw_R1_suffix,
-                                          raw_R2_suffix, raw_suffix,
-                                         use_sample_names_from_assay_table,
-                                         additional_string_to_remove_from_unique_filenames):
-    """
-    This gets the sample names ('Sample Name' column) from the assay table,
-    and tries to get what would have been the unique filename prefixes generated from
-    what's in the Raw Data File column of the assay table.
-
-    Unless the --use-sample-names-from-assay-table flag was provided, then it just uses what's
-    in the 'Sample Name' column.
-    """
-    sample_names = assay_table["Sample Name"].tolist()
-    
-    if use_sample_names_from_assay_table:
-        unique_filename_prefixes = sample_names
-        return(sample_names, unique_filename_prefixes)
-
-    all_filenames = assay_table["Raw Data File"]
-
-    unique_filename_prefixes = []
-    
-    # Attempting to split if they have multiple files (like paired-end)
-    # and also removing the common prefixes and suffixes intending to create the same 
-    # unique filenames used for processing
-
-    for entry in all_filenames:
-
-        # splitting if there are more than one (like with paired-end)
-        curr_name = entry.split(",")[0]
-
-        curr_name = parse_amplicon_names(curr_name, raw_file_prefix, raw_R1_suffix, raw_R2_suffix, raw_suffix)
-
-        unique_filename_prefixes.append(curr_name)
-
-
-    if additional_string_to_remove_from_unique_filenames:
-
-        unique_filename_prefixes = [x.replace(additional_string_to_remove_from_unique_filenames, "") for x in unique_filename_prefixes]
-
-    return(sample_names, unique_filename_prefixes)
-
 
 def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
-                                      fastqc_dir, output_prefix,  raw_multiqc_zip):
+                                      raw_multiqc_dir, output_prefix,  raw_multiqc_zip):
 
     # These are in multiple files if there was a mapping input table
     if isinstance(mapping_tab, pd.DataFrame):
@@ -210,7 +139,7 @@ def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
         # Working through each one
         for prefix in unique_prefixes:
 
-            curr_file_path = os.path.join(fastqc_dir, output_prefix + prefix + raw_multiqc_zip)
+            curr_file_path = os.path.join(raw_multiqc_dir, output_prefix + prefix + raw_multiqc_zip)
 
             # Making sure there are multiqc files for each unique prefix given in the mapping table
             check_for_file_and_contents(curr_file_path)
@@ -239,7 +168,7 @@ def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
         return(df)
 
     else:
-        input_zip = os.path.join(fastqc_dir, output_prefix + raw_multiqc_zip)
+        input_zip = os.path.join(raw_multiqc_dir, output_prefix + raw_multiqc_zip)
         zip_file = zipfile.ZipFile(input_zip)
         #df = pd.read_csv(zip_file.open(raw_multiqc_stats_file_path), sep = "\t", usecols = [0,6])
         df = pd.read_csv(zip_file.open(raw_multiqc_stats_file_path), sep = "\t")
@@ -256,14 +185,21 @@ def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
 
 
 def get_read_count_from_df(sample_name, read_counts_tab, 
-                           raw_suffix, raw_R1_suffix, 
-                           single_ended, sample_raw_prefix_dict):
+                           raw_suffix, raw_R1_suffix, raw_R2_suffix,
+                           single_ended, force_single_end, sample_raw_prefix_dict):
 
     if sample_raw_prefix_dict != "":
         return(round(read_counts_tab.at[sample_raw_prefix_dict[sample_name], "counts"]))
 
     if single_ended:
-        return(round(read_counts_tab.at[str(sample_name) + \
+        if force_single_end == "R1":
+            return(round(read_counts_tab.at[str(sample_name) + \
+                     raw_R1_suffix.replace("_raw.fastq.gz", ""), "counts"]))
+        elif force_single_end == "R2":
+            return(round(read_counts_tab.at[str(sample_name) + \
+                     raw_R2_suffix.replace("_raw.fastq.gz", ""), "counts"]))
+        elif force_single_end is None:
+            return(round(read_counts_tab.at[str(sample_name) + \
                      raw_suffix.replace("_raw.fastq.gz", ""), "counts"]))
     else:
         return(round(read_counts_tab.at[str(sample_name) + \
@@ -271,20 +207,27 @@ def get_read_count_from_df(sample_name, read_counts_tab,
 
 
 
-def write_colnames(raw_reads_dir, trimmed_reads_dir,
-                  filtered_reads_dir, include_raw_multiqc_in_output):
+def write_colnames(include_raw_fastq, include_raw_multiqc_in_output):
 
-    ## Builds as if primers were trimmed by the workflow (with Trimmed column),
-    #  but that is removed later if
-    ## --primers-already-trimmed argument was provided
-    colnames = ["Sample Name", 
-                f"Parameter Value[{raw_reads_dir}]",
-                "Parameter Value[Read Depth]",
-                "Unit",
-                "Parameter Value[MultiQC File Names]",
-                f"Parameter Value[{trimmed_reads_dir}]",
-                f"Parameter Value[{filtered_reads_dir}]",
-                f"Parameter Value[Filtered Sequence Data/MultiQC Reports]",
+    ## Builds as if primers were trimmed by the workflow (with Trimmed Sequence Data column),
+    #  but that is removed later if --primers-already-trimmed argument was provided
+    colnames = ["Sample Name"]
+
+    # Raw fastq file names only
+    if include_raw_fastq:
+        colnames.append("Parameter Value[Raw Sequence Data]")
+ 
+    # Read depth and raw MultiQC file names together
+    if include_raw_multiqc_in_output:
+        colnames += [
+            "Parameter Value[Read Depth]",
+            "Unit",
+            "Parameter Value[MultiQC File Names]",
+        ]
+
+    colnames += ["Parameter Value[Trimmed Sequence Data]",
+                "Parameter Value[Filtered Sequence Data]",
+                "Parameter Value[Filtered Sequence Data/MultiQC Reports]",
                 "Parameter Value[Taxonomy and ASV Counts Data]",
                 "Parameter Value[Alpha Diversity Data]",
                 "Parameter Value[Beta Diversity Data]",
@@ -295,37 +238,12 @@ def write_colnames(raw_reads_dir, trimmed_reads_dir,
                 "Parameter Value[Differential Abundance/ANCOMBC1]",
                 "Parameter Value[Differential Abundance/ANCOMBC2]",
                 "Parameter Value[Differential Abundance/DESeq2]"]
-    
-    if not include_raw_multiqc_in_output:
-        colnames.remove("Parameter Value[MultiQC File Names]")
 
     return colnames
 
 
-def create_constants(include_raw_multiqc_in_output, raw_multiqc_zip,
-                     filtered_multiqc_zip, Type, combined_prefix, assay_suffix):
-    """A function to create lists of contants to be in creating a file association table"""
-    if include_raw_multiqc_in_output:
-        fastqc = [combined_prefix + raw_multiqc_zip, 
-                  combined_prefix + filtered_multiqc_zip]
-    else:
-        fastqc = [combined_prefix + filtered_multiqc_zip]
 
-    if Type == "ASVs":
-        rep_seq_output = combined_prefix + f"ASVs{assay_suffix}.fasta"
-    else:
-        rep_seq_output = combined_prefix + f"OTUs{assay_suffix}.fasta"
-
-    final_outputs = [rep_seq_output, 
-                     combined_prefix + f"counts{assay_suffix}.tsv", 
-                     combined_prefix + f"read-count-tracking{assay_suffix}.tsv", 
-                     combined_prefix + f"taxonomy-and-counts{assay_suffix}.biom.zip", 
-                     combined_prefix + f"taxonomy-and-counts{assay_suffix}.tsv", 
-                     combined_prefix + f"taxonomy{assay_suffix}.tsv"]
- 
-    return fastqc, final_outputs
-
-def collect_final_outputs_columns(final_outputs_dir, file_prefix, output_prefix, assay_suffix):
+def collect_final_outputs_columns(final_outputs_dir, Type, file_prefix, output_prefix, assay_suffix):
     """
     Returns a dict with each new column as key and a comma-separated string of files as value
     """
@@ -333,8 +251,13 @@ def collect_final_outputs_columns(final_outputs_dir, file_prefix, output_prefix,
     results = {}
 
     # Primary files
+    if Type == "ASVs":
+        rep_seq_output = f"{output_prefix}ASVs{assay_suffix}.fasta"
+    else:
+        rep_seq_output = f"{output_prefix}OTUs{assay_suffix}.fasta"
+
     primary_files = [
-        f"{output_prefix}ASVs{assay_suffix}.fasta",
+        rep_seq_output,
         f"{output_prefix}counts{assay_suffix}.tsv",
         f"{output_prefix}taxonomy{assay_suffix}.tsv",
         f"{output_prefix}taxonomy-and-counts{assay_suffix}.tsv",
@@ -420,15 +343,16 @@ def runsheet_to_dict(runsheet):
 
 
 
-def create_association_table(header_colnames, fastqc,
+def create_association_table(header_colnames, multiqc,
                              unique_filename_prefixes, read_count_tab, 
-                             sample_file_dict, file_prefix,  output_prefix, combined_prefix,
+                             sample_file_dict, file_prefix,  output_prefix,
                              assay_suffix,  raw_file_prefix, 
                              raw_suffix, raw_R1_suffix, raw_R2_suffix,
                              primer_trimmed_suffix, primer_trimmed_R1_suffix, primer_trimmed_R2_suffix,
                              filtered_suffix, filtered_R1_suffix, filtered_R2_suffix,
-                             single_ended, R1_used_as_single_ended_data, sample_raw_prefix_dict,
-                             include_raw_multiqc_in_output, read_count_unit = "read"):
+                             single_ended, force_single_end, sample_raw_prefix_dict,
+                             final_outputs_dir, Type,
+                             include_raw_fastq, include_raw_multiqc_in_output, read_count_unit = "read"):
     """Create association table and add data rows to it"""
 
     # Initialize association table
@@ -436,16 +360,18 @@ def create_association_table(header_colnames, fastqc,
     # Create row
     for sample in unique_filename_prefixes:
         # Single-end (Paired-end data where only the forward reads were analyzed)
-        if single_ended and R1_used_as_single_ended_data:
-            # If only forward read was used, still want to include both foward and reverse read names 
-            # in the "Raw Data" column because it is tied to the hosted raw data, not just what was used here
-            curr_raw_data = [raw_file_prefix + sample + raw_R1_suffix,
-                             raw_file_prefix + sample + raw_R2_suffix]
-            # If only forward read was used, then we still want to include the _R1 portion of the filename 
-            curr_trimmed_data = [file_prefix + sample + primer_trimmed_R1_suffix]
-            curr_filt_data = [file_prefix + sample + filtered_R1_suffix]
+        if single_ended and force_single_end:
+            curr_raw_data = []  # raw data excluded when force_single_end is set
+            if force_single_end == "R1":
+                # If only forward read was used, then we still want to include the _R1 portion of the filename 
+                curr_trimmed_data = [file_prefix + sample + primer_trimmed_R1_suffix]
+                curr_filt_data = [file_prefix + sample + filtered_R1_suffix]
+            elif force_single_end == "R2":
+                # If only reverse read was used, then we still want to include the _R2 portion of the filename 
+                curr_trimmed_data = [file_prefix + sample + primer_trimmed_R2_suffix]
+                curr_filt_data = [file_prefix + sample + filtered_R2_suffix]
         # Single-end without reverse reads
-        elif single_ended:
+        elif single_ended and force_single_end is None:
             curr_raw_data = [raw_file_prefix + sample + raw_suffix]
             curr_trimmed_data = [file_prefix + sample + primer_trimmed_suffix]
             curr_filt_data = [file_prefix + sample + filtered_suffix]
@@ -457,27 +383,28 @@ def create_association_table(header_colnames, fastqc,
                                  file_prefix + sample + primer_trimmed_R2_suffix]
             curr_filt_data = [file_prefix + sample + filtered_R1_suffix, 
                               file_prefix + sample + filtered_R2_suffix]
-        # Get sample raw read count
-        curr_read_count = get_read_count_from_df(sample, read_count_tab, raw_suffix,
-                                                 raw_R1_suffix, single_ended, sample_raw_prefix_dict)
 
-        final_outputs_dict = collect_final_outputs_columns(args.final_outputs_dir, file_prefix, output_prefix, assay_suffix)
+        final_outputs_dict = collect_final_outputs_columns(final_outputs_dir, Type, file_prefix, output_prefix, assay_suffix)
 
-        curr_row_as_list = [sample_file_dict[sample],
-                            ", ".join(curr_raw_data),
-                            curr_read_count, 
-                            read_count_unit]
-        
-        # Divide fastqc into raw and filtered multiqc
+        curr_row_as_list = [sample_file_dict[sample]]
+
+        # Raw fastq file names only
+        if include_raw_fastq:
+            curr_row_as_list.append(", ".join(curr_raw_data))
+ 
+        # Read depth and raw MultiQC file names together
         if include_raw_multiqc_in_output:
-            raw_fastqc, filtered_fastqc = fastqc
-            curr_row_as_list.append(raw_fastqc)  # Add only if flag is True
+            # Get sample raw read count
+            curr_read_count = get_read_count_from_df(sample, read_count_tab, raw_suffix, raw_R1_suffix, raw_R2_suffix,
+                                                     single_ended, force_single_end, sample_raw_prefix_dict)
+            raw_multiqc, filtered_multiqc = multiqc
+            curr_row_as_list += [curr_read_count, read_count_unit, raw_multiqc]
         else:
-            filtered_fastqc = fastqc
+            filtered_multiqc = multiqc
 
         curr_row_as_list.extend([", ".join(curr_trimmed_data),
                                  ", ".join(curr_filt_data),
-                                 filtered_fastqc,
+                                 filtered_multiqc,
                                  final_outputs_dict["Taxonomy and ASV Counts Data"],
                                  final_outputs_dict["Alpha Diversity Data"],
                                  final_outputs_dict["Beta Diversity Data"],
@@ -489,17 +416,17 @@ def create_association_table(header_colnames, fastqc,
                                  final_outputs_dict["Differential Abundance/ANCOMBC2"],
                                  final_outputs_dict["Differential Abundance/DESeq2"]])
 
-        # Apped row to the association dataframe
+        # Append row to the association dataframe
         association_df.loc[len(association_df)] = curr_row_as_list
 
     return association_df
 
 
-def write_association_table(outfile, association_df, trimmed_reads_dir='Trimmed Sequence Data', primers_already_trimmed=False):
+def write_association_table(outfile, association_df, primers_already_trimmed=False):
     """Write to csv file"""
     # Removing trimmed column if primers were already removed and no primer-removal was done
     if primers_already_trimmed:
-        association_df.drop(f"Parameter Value[{trimmed_reads_dir}]", axis = 1, inplace = True)
+        association_df.drop(f"Parameter Value[Trimmed Sequence Data]", axis = 1, inplace = True)
     # Writing out
     association_df.to_csv(outfile, sep = "\t", index = False)
 
@@ -509,17 +436,20 @@ def main():
 
     ### Set variables  ###
     
+    if args.force_single_end:
+        args.single_ended = True
+        if args.include_raw_fastq or args.include_raw_multiqc_in_output:
+            print("WARNING: --force_single_end is set — --include-raw-fastq and --include-raw-multiqc-in-output will both be ignored.")
+            args.include_raw_fastq = False
+            args.include_raw_multiqc_in_output = False
+
+
+    include_raw_fastq             = args.include_raw_fastq
+    include_raw_multiqc_in_output = args.include_raw_multiqc_in_output
+    
     # Directories
-    fastqc_dir = str(args.fastqc_dir)
-    raw_reads_dir = str(args.raw_reads_dir)
-    filtered_reads_dir = str(args.filtered_reads_dir)
-    trimmed_reads_dir = str(args.trimmed_reads_dir)
-    final_outputs_dir = str(args.final_outputs_dir)
-    raw_reads_dir = raw_reads_dir.replace("_", " ").rstrip("/")
-    trimmed_reads_dir = trimmed_reads_dir.replace("_", " ").rstrip("/")
-    filtered_reads_dir = filtered_reads_dir.replace("_", " ").rstrip("/")
-    fastqc_dir = fastqc_dir.replace("_", " ").rstrip("/")
-    final_outputs_dir = final_outputs_dir.replace("_", " ").rstrip("/")
+    raw_multiqc_dir = "MultiQC_Reports"
+    final_outputs_dir = "Final_Outputs"
 
     # Suffixes
     filtered_suffix = str(args.filtered_suffix)
@@ -528,24 +458,18 @@ def main():
     raw_suffix = str(args.raw_suffix)
     raw_R1_suffix = str(args.raw_R1_suffix)
     raw_R2_suffix = str(args.raw_R2_suffix)
-    if args.R1_used_as_single_ended_data:
-        raw_suffix = raw_R1_suffix
-        # Just in case user only specified --R1-used-as-single-ended, but didn't specify --single-ended
-        args.single_ended = True 
     primer_trimmed_suffix = str(args.primer_trimmed_suffix)
     primer_trimmed_R1_suffix = str(args.primer_trimmed_R1_suffix)
     primer_trimmed_R2_suffix = str(args.primer_trimmed_R2_suffix)
     assay_suffix = str(args.assay_suffix)
 
 
-    # This one is only used for the raw data files
-    raw_file_prefix = f"{args.GLDS_ID}_Amplicon_" if args.raw_file_prefix == "" else  str(args.raw_file_prefix)
+    raw_file_prefix = f"{args.GLDS_ID}_Amplicon_" if args.raw_file_prefix == "" else  str(args.raw_file_prefix) # This one is only used for the raw data files
     file_prefix = f"{args.GLDS_ID}_GAmplicon_" if args.file_prefix == "" else  str(args.file_prefix)
-    raw_multiqc_zip = f"raw_multiqc{assay_suffix}_report.zip"
-    filtered_multiqc_zip = f"filtered_multiqc{assay_suffix}_report.zip"
+    raw_multiqc_zip = f"raw_multiqc{assay_suffix}_data.zip"
+    filtered_multiqc_zip = f"filtered_multiqc{assay_suffix}_data.zip"
+    raw_multiqc_stats_file_path = f"raw_multiqc{assay_suffix}_data/multiqc_general_stats.txt"
     output_prefix = str(args.output_prefix)
-    combined_prefix = file_prefix + output_prefix
-    raw_multiqc_stats_file_path = "raw_multiqc_report/raw_multiqc_data/multiqc_general_stats.txt"
 
     if args.map:
         map_tab = pd.read_csv(args.map, sep = "\t", names = ["sample", "prefix"])
@@ -561,7 +485,7 @@ def main():
     else:
         outfile = args.output
     
-    include_raw_multiqc_in_output = args.include_raw_multiqc_in_output
+
     Type = str(args.type)
 
 
@@ -577,38 +501,41 @@ def main():
     GL_file = pd.read_csv(args.GL_file, sep = ",")
     sample_names = unique_filename_prefixes = GL_file["sample_id"].tolist()
 
-    #sample_names, unique_filename_prefixes = get_sample_names_and_unique_filenames(assay_table,  raw_file_prefix, raw_R1_suffix,
-     #                                                                              raw_R2_suffix, raw_suffix, 
-      #                                                                             args.use_sample_names_from_assay_table,
-       #                                                                            args.additional_string_to_remove_from_unique_filenames)
-
     sample_file_dict = dict(zip(unique_filename_prefixes, sample_names))
 
-    read_counts_df = get_read_counts_from_raw_multiqc(map_tab, raw_multiqc_stats_file_path,
-                                                      args.fastqc_dir, output_prefix,  raw_multiqc_zip)
+    # Only read raw MultiQC stats if read depth and raw MultiQC are being included
+    read_counts_df = None
+    if include_raw_multiqc_in_output:
+        read_counts_df = get_read_counts_from_raw_multiqc(map_tab, raw_multiqc_stats_file_path,
+                                                        raw_multiqc_dir, output_prefix,  raw_multiqc_zip)
     
     ###################################  Write file association table ##########################################
-    header = write_colnames(raw_reads_dir, trimmed_reads_dir,
-                  filtered_reads_dir, include_raw_multiqc_in_output)
+    header = write_colnames(include_raw_fastq, include_raw_multiqc_in_output)
     
-    fastqc, final_outputs = create_constants(include_raw_multiqc_in_output, raw_multiqc_zip,
-                     filtered_multiqc_zip, Type, combined_prefix, assay_suffix)
+    filtered_multiqc_html = f"filtered_multiqc{assay_suffix}.html"
+    if include_raw_multiqc_in_output:
+        raw_multiqc_html = f"raw_multiqc{assay_suffix}.html"
+        multiqc = [file_prefix + output_prefix + raw_multiqc_html + "," + file_prefix + output_prefix + raw_multiqc_zip, 
+                  file_prefix + output_prefix + filtered_multiqc_html + "," + file_prefix + output_prefix + filtered_multiqc_zip]
+    else:
+        multiqc = [file_prefix + output_prefix + filtered_multiqc_html + "," + file_prefix + output_prefix + filtered_multiqc_zip]
     
-    # Retrieve a dictionary with sample names as keys and raw fatqfile prefix as values 
+    # Retrieve a dictionary with sample names as keys and raw fastqfile prefix as values 
     sample_raw_prefix_dict = runsheet_to_dict(args.runsheet) if args.runsheet != "" else ""
 
-    association_df = create_association_table(header, fastqc,
+    association_df = create_association_table(header, multiqc,
                              unique_filename_prefixes, read_counts_df, 
-                             sample_file_dict, file_prefix,  output_prefix, combined_prefix,
+                             sample_file_dict, file_prefix,  output_prefix,
                              assay_suffix,  raw_file_prefix, 
                              raw_suffix, raw_R1_suffix, raw_R2_suffix,
                              primer_trimmed_suffix, primer_trimmed_R1_suffix, primer_trimmed_R2_suffix,
                              filtered_suffix, filtered_R1_suffix, filtered_R2_suffix,
-                             args.single_ended, args.R1_used_as_single_ended_data, 
-                             sample_raw_prefix_dict, include_raw_multiqc_in_output, read_count_unit = "read")
+                             args.single_ended, args.force_single_end, sample_raw_prefix_dict,
+                             final_outputs_dir, Type,
+                             include_raw_fastq, include_raw_multiqc_in_output, read_count_unit = "read")
     
 
-    write_association_table(outfile, association_df, trimmed_reads_dir, args.primers_already_trimmed)
+    write_association_table(outfile, association_df, args.primers_already_trimmed)
 
 
 if __name__ == "__main__":

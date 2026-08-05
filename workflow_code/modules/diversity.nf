@@ -1,7 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
-
 //params.assay_suffix = "_GLAmpSeq"
 //params.group  = "groups"
 //params.samples_column = "Sample Name"
@@ -41,11 +37,23 @@ process ALPHA_DIVERSITY {
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
 
-        Rscript -e "VERSIONS=sprintf('FSA %s\\nmultcompView %s\\nrstatix %s\\n',  \\
-                                    packageVersion('FSA'), \\
-                                    packageVersion('multcompView'), \\
-                                    packageVersion('rstatix')); \\
-                    write(x=VERSIONS, file='versions.txt', append=TRUE)"
+        Rscript -e "VERSIONS=sprintf('vegan %s\\nphyloseq %s\\nglue %s\\nFSA %s\\nmultcompView %s\\nrstatix %s\\npatchwork %s\\nRColorBrewer %s\\nggplot2 %s\\ndplyr %s\\npurrr %s\\nreadr %s\\nstringr %s\\ntibble %s\\ntidyr %s\\n', \\
+                            packageVersion('vegan'), \\
+                            packageVersion('phyloseq'), \\
+                            packageVersion('glue'), \\
+                            packageVersion('FSA'), \\
+                            packageVersion('multcompView'), \\
+                            packageVersion('rstatix'), \\
+                            packageVersion('patchwork'), \\
+                            packageVersion('RColorBrewer'), \\
+                            packageVersion('ggplot2'), \\
+                            packageVersion('dplyr'), \\
+                            packageVersion('purrr'), \\
+                            packageVersion('readr'), \\
+                            packageVersion('stringr'), \\
+                            packageVersion('tibble'), \\
+                            packageVersion('tidyr')); \\
+            write(x=VERSIONS, file='versions.txt', append=TRUE)"
         """
 
 }
@@ -84,53 +92,24 @@ process BETA_DIVERSITY {
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
         
-        Rscript -e "VERSIONS=sprintf('vegan %s\\nmia %s\\nphyloseq %s\\nggdendro %s\\nbroom %s\\nRColorBrewer %s\\ntaxize %s\\nDescTools %s\\npatchwork %s\\nggrepel %s\\nhexbin %s\\nvsn %s\\n',  \\
-                                    packageVersion('vegan'), \\
-                                    packageVersion('mia'), \\
-                                    packageVersion('phyloseq'), \\
-                                    packageVersion('ggdendro'), \\
-                                    packageVersion('broom'), \\
-                                    packageVersion('RColorBrewer'), \\
-                                    packageVersion('taxize'), \\
-                                    packageVersion('DescTools'), \\
-                                    packageVersion('patchwork'), \\
-                                    packageVersion('ggrepel'), \\
-				                    packageVersion('hexbin'), \\
-				                    packageVersion('vsn')); \\
-                    write(x=VERSIONS, file='versions.txt', append=TRUE)"         
+        Rscript -e "VERSIONS=sprintf('vegan %s\\nphyloseq %s\\nglue %s\\nDESeq2 %s\\nggplot2 %s\\ndplyr %s\\npurrr %s\\nreadr %s\\nstringr %s\\ntibble %s\\ntidyr %s\\nggdendro %s\\nRColorBrewer %s\\nbroom %s\\nvsn %s\\nhexbin %s\\n', \\
+                            packageVersion('vegan'), \\
+                            packageVersion('phyloseq'), \\
+                            packageVersion('glue'), \\
+                            packageVersion('DESeq2'), \\
+                            packageVersion('ggplot2'), \\
+                            packageVersion('dplyr'), \\
+                            packageVersion('purrr'), \\
+                            packageVersion('readr'), \\
+                            packageVersion('stringr'), \\
+                            packageVersion('tibble'), \\
+                            packageVersion('tidyr'), \\
+                            packageVersion('ggdendro'), \\
+                            packageVersion('RColorBrewer'), \\
+                            packageVersion('broom'), \\
+                            packageVersion('vsn'),
+                            packageVersion('hexbin')); \\
+            write(x=VERSIONS, file='versions.txt', append=TRUE)"
         """
-
-}
-
-
-workflow{
-
-
-     meta  = Channel.of(["samples": params.samples_column,
-                         "group" : params.group,
-                         "depth" : params.rarefaction_depth,
-                         "assay_suffix" : params.assay_suffix,
-                         "output_prefix" : params.cleaned_prefix,
-                         "target_region" : params.target_region,
-                         "library_cutoff" : params.library_cutoff,
-                         "prevalence_cutoff" : params.prevalence_cutoff,
-                         "rare" : params.remove_rare ? "--remove-rare" : ""
-                        ])
-                            
-     
-     asv_table       =  Channel.fromPath(params.asv_table, checkIfExists: true)
-     taxonomy_table  =  Channel.fromPath(params.taxonomy, checkIfExists: true)
-     metadata        =  Channel.fromPath(params.input_file, checkIfExists: true) 
-                            
-    ALPHA_DIVERSITY(meta, asv_table, taxonomy_table, metadata)
-    BETA_DIVERSITY(meta, asv_table, taxonomy_table, metadata)
-
-    // Capture software versions
-    software_versions_ch = Channel.empty()
-    ALPHA_DIVERSITY.out.version | mix(software_versions_ch) | set{software_versions_ch}
-    BETA_DIVERSITY.out.version | mix(software_versions_ch) | set{software_versions_ch}
-    
-    emit:
-        version = software_versions_ch
 
 }

@@ -1,6 +1,3 @@
-#!/usr/bin/env nextflow
-nextflow.enable.dsl = 2
-
 process SOFTWARE_VERSIONS {
 
     tag "Writing out software versions..."
@@ -10,7 +7,7 @@ process SOFTWARE_VERSIONS {
         path(software_versions)
 
     output:
-        path("software_versions${params.assay_suffix}.txt")
+        path("software_versions${params.assay_suffix}.txt"), emit: software_versions_txt
 
     script:
         """

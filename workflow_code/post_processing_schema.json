@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/nasa/GeneLab_AmpliconSeq_Workflow/main/workflow_code/post_processing_schema.json",
+  "title": "Post-processing pipeline parameters",
+  "description": "Amplicon Illumina post-processing workflow for pipeline document GL-DPPD-7104-D",
+  "type": "object",
+  "properties": {},
+  "$defs": {
+    "input_output_options": {
+      "title": "Input/Output Options",
+      "type": "object",
+      "description": "Define the input, runsheet, and output directory for the post-processing workflow. The --outdir should point to the directory produced by the main processing workflow, as the post-processing steps read directly from its subdirectories. Both --GLDS_accession and --OSD_accession must be supplied.",
+      "default": "",
+      "properties": {
+        "outdir": {
+          "type": "string",
+          "default": "${launchDir}",
+          "description": "Path to the output directory produced by the main processing workflow. Post-processing steps read inputs from its subdirectories and write all post-processing outputs to GeneLab/ within this directory. The directory must exist before running this workflow."
+        },
+        "runsheet": {
+          "type": "string",
+          "description": "Path to the runsheet CSV used to execute the main processing workflow. For accession-based runs this is the GLfile.csv found in the Metadata/ output directory. For local input runs this is the CSV file passed to --input_file in the main workflow."
+        },
+        "GLDS_accession": {
+          "type": "string",
+          "description": "GeneLab GLDS accession number for the dataset being post-processed (e.g. GLDS-487).",
+          "pattern": "^GLDS-[0-9]+$"
+        },
+        "OSD_accession": {
+          "type": "string",
+          "description": "GeneLab OSD accession number for the dataset being post-processed (e.g. OSD-487).",
+          "pattern": "^OSD-[0-9]+$"
+        },
+        "assay_suffix": {
+          "type": "string",
+          "default": "_GLAmpSeq",
+          "description": "Assay suffix used during the main processing workflow."
+        },
+        "output_prefix": {
+          "type": "string",
+          "default": "",
+          "description": "Optional unique prefix prepended to output file names. An underscore ('_') is automatically appended if the value is non-empty and does not already end with '_' or '-'. Leave empty (default) for no prefix."
+        },
+        "target_files": {
+          "type": "string",
+          "default": "command.txt,nextflow_processing_info_GLAmpSeq.txt",
+          "description": "Comma-separated list of file names expected inside the processing_info.zip archive."
+        }
+      },
+      "required": [
+        "runsheet",
+        "GLDS_accession",
+        "OSD_accession"
+      ]
+    },
+    "analyst_options": {
+      "title": "Analyst Options",
+      "type": "object",
+      "description": "Analyst identity and protocol information embedded in the generated README and protocol text files.",
+      "default": "",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "First M. Last",
+          "description": "Full name of the analyst responsible for processing the dataset (e.g. 'Jane A. Smith')."
+        },
+        "email": {
+          "type": "string",
+          "default": "NASA@nasa.gov",
+          "description": "Email address of the analyst (e.g. 'jane.smith@nasa.gov')."
+        },
+        "protocol_id": {
+          "type": "string",
+          "default": "GL-DPPD-7104-D",
+          "description": "GeneLab pipeline document protocol identifier followed during processing (e.g. GL-DPPD-7104-D)."
+        },
+        "V_V_guidelines_link": {
+          "type": "string",
+          "default": "https://github.com/nasa/GeneLab_AmpliconSeq_Workflow/blob/main/README.md",
+          "description": "URL to the GeneLab amplicon sequencing data validation and verification guidelines. Currently a link to the README in this repository, but can be updated if guidelines are hosted elsewhere in the future."
+        }
+      }
+    },
+    "shared_processing_params": {
+      "title": "Shared Processing Parameters",
+      "type": "object",
+      "description": "Parameters carried over from the main processing workflow. These must match the values used during the processing run as they are used by GENERATE_PROTOCOL to accurately populate the methods and protocol text.",
+      "default": "",
+      "properties": {
+        "target_region": {
+          "type": "string",
+          "default": "16S",
+          "description": "The amplicon target region analyzed during the main processing workflow.",
+          "enum": [
+            "16S",
+            "18S",
+            "ITS"
+          ]
+        },
+        "left_trunc": {
+          "type": "integer",
+          "default": 0,
+          "description": "Forward read truncation length used during DADA2 filterAndTrim() in the main processing workflow."
+        },
+        "right_trunc": {
+          "type": "integer",
+          "default": 0,
+          "description": "Reverse read truncation length used during DADA2 filterAndTrim() in the main processing workflow."
+        },
+        "left_maxEE": {
+          "type": "integer",
+          "default": 1,
+          "description": "Maximum expected errors allowed in forward reads during DADA2 filterAndTrim() in the main processing workflow."
+        },
+        "right_maxEE": {
+          "type": "integer",
+          "default": 1,
+          "description": "Maximum expected errors allowed in reverse reads during DADA2 filterAndTrim() in the main processing workflow."
+        }
+      }
+    },
+    "processing_flags": {
+      "title": "Processing Flags",
+      "type": "object",
+      "description": "Boolean flags that describe how the main processing workflow was run. These control which files and sections are included in the README, md5sum generation, validation, file association table, and protocol text. Set these to match the parameters used during the main processing run.",
+      "default": "",
+      "properties": {
+        "trim_primers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Set to true if primer trimming was performed during the main processing workflow. When true, Trimmed_Sequence_Data is included in the README, processed md5sums, file associations table, validation, and protocol text."
+        },
+        "single_end": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set to true if the dataset was processed as single-end reads. When true, passes --single-end to the README generator and --single-ended to the file associations table and validation processes."
+        },
+        "force_single_end": {
+          "type": "string",
+          "description": "Force single-end mode by specifying which read was used during processing. Passes --force-single-end followed by the specified read to the README and protocol generators, and file associations table and validation processes. When set, --include_raw_data and --include_raw_multiqc are ignored regardless of their values.",
+          "enum": ["R1", "R2"],
+          "errorMessage": "force_single_end must be either 'R1' or 'R2'"
+        },
+        "include_raw_data": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set to true to include Raw_Sequence_Data in the README, associations table, and validation processes, and to generate raw read md5sums via GENERATE_MD5SUMS. Set to true if raw data should be part of the submission. Ignored if --force_single_end is set."
+        },
+        "include_raw_multiqc": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set to true to pass --include-raw-multiqc-in-output to the file associations table generator, indicating that the raw MultiQC report is included in the processed data submission. Set to true if raw data should be part of the submission. Ignored if --force_single_end is set."
+        }
+      }
+    },
+    "general_pipeline_settings": {
+      "title": "General Pipeline Settings",
+      "type": "object",
+      "description": "General settings controlling pipeline execution behaviour and tool configuration. Includes how Nextflow handles process failures and publishes output files, the container engine in use, and debug parameter reporting. These settings do not affect the scientific results of the pipeline.",
+      "default": "",
+      "properties": {
+        "publish_dir_mode": {
+          "type": "string",
+          "default": "link",
+          "hidden": true,
+          "description": "Nextflow publishDir mode controlling how output files are written to the output directory. 'link' (default) creates hard links; 'copy' duplicates files; 'symlink' creates symbolic links. See https://www.nextflow.io/docs/latest/process.html#publishdir for all options.",
+          "enum": [
+            "copy",
+            "copyNoFollow",
+            "link",
+            "move",
+            "relink",
+            "symlink"
+          ]
+        },
+        "containerEngine": {
+          "type": "string",
+          "default": "singularity",
+          "hidden": true,
+          "description": "The container engine used to run pipeline processes. Set automatically by the -profile flag: 'singularity' when using the singularity profile, 'docker' when using the docker profile. Do not set this manually unless overriding profile defaults."
+        },
+        "debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set to true to print a summary of all resolved parameter values to the terminal at pipeline startup."
+        },
+        "baseDir": {
+          "type": "string",
+          "default": "${launchDir}",
+          "hidden": true,
+          "description": "Base directory used internally to construct clean file paths. Set automatically to the launch directory. Do not set this manually."
+        }
+      }
+    },
+    "conda_related_params": {
+      "title": "Conda-related Params",
+      "type": "object",
+      "description": "Path to a pre-existing conda or mamba environment used by the post-processing workflow. Used when running with the conda or mamba profile (-profile conda or -profile mamba).",
+      "default": "",
+      "properties": {
+        "use_conda": {
+          "type": "boolean",
+          "hidden": true,
+          "description": "Set to true to use conda environments instead of containers for all pipeline processes. Set automatically when using the conda or mamba profile. Do not set manually."
+        },
+        "conda_dp_tools": {
+          "type": "string",
+          "description": "Path to an existing conda environment containing dp_tools. Used by all processes in this workflow. If not provided, an environment is created from envs/dp_tools.yaml."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/$defs/input_output_options"
+    },
+    {
+      "$ref": "#/$defs/analyst_options"
+    },
+    {
+      "$ref": "#/$defs/shared_processing_params"
+    },
+    {
+      "$ref": "#/$defs/processing_flags"
+    },
+    {
+      "$ref": "#/$defs/general_pipeline_settings"
+    },
+    {
+      "$ref": "#/$defs/conda_related_params"
+    }
+  ]
+}

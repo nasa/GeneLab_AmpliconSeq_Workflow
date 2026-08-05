@@ -158,16 +158,17 @@ if(opt[["samples-column"]] == "Sample Name") {
 
 
 library(ANCOMBC)
-library(DescTools)
 library(taxize)
 library(glue)
 library(phyloseq)
-library(utils)
-library(tools)
-library(patchwork)
 library(ggrepel)
-library(tidyverse)
-library(scales)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(tibble)
+library(tidyr)
 
 # ---------------------------- Functions ------------------------------------- #
 
@@ -448,6 +449,19 @@ tse <-  mia::makeTreeSummarizedExperimentFromPhyloseq(ps)
 # Getting the reference group and making sure that it is the reference 
 # used in the analysis
 group_levels <- metadata[, group] %>% unique() %>% sort()
+if (length(group_levels) < 2) {
+  warning_file <- glue("{diff_abund_out_dir}{output_prefix}ancombc2_failure{assay_suffix}.txt")
+  writeLines(
+    text = glue("Group count information:
+Original number of groups: {length(group_levels)}
+Number of groups after filtering: {length(group_levels)}
+
+There are less than two groups to compare, hence, pairwise comparisons cannot be performed.
+Please ensure that your metadata contains two or more groups to compare..."),
+    con = warning_file
+  )
+  quit(status = 0)
+}
 ref_group <- group_levels[1]
 tse[[group]] <- factor(tse[[group]] , levels = group_levels)
 

@@ -1,263 +1,336 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com///nextflow_schema.json",
-    "title": " pipeline parameters",
-    "description": "Amplicon Illumina workflow for pipeline document GL-DPPD-7104-C",
+    "$id": "https://raw.githubusercontent.com/nasa/GeneLab_AmpliconSeq_Workflow/main/workflow_code/nextflow_schema.json",
+    "title": "NASA GeneLab Data Processing AmpliconSeq pipeline parameters",
+    "description": "Amplicon Illumina workflow for pipeline document GL-DPPD-7104-D",
     "type": "object",
-    "properties": {
-        "conda_diversity": {
-            "type": "string",
-            "description": "Path to a conda environment containing R packages required for diversity and differential abundance testing (ANCOMBC and DESeq2)."
-        },
-        "conda_cutadapt": {
-            "type": "string",
-            "description": "Path to a conda environment containing cutadapt."
-        },
-        "conda_dp_tools": {
-            "type": "string",
-            "description": "Path to a conda environment containing dp_tools."
-        },
-        "conda_R": {
-            "type": "string",
-            "description": "ath to a conda environment containing R along with the packages decipher and biomformat installed."
-        },
-        "conda_zip": {
-            "type": "string",
-            "description": "Path to a conda environment containing zip."
-        },
-        "conda_multiqc": {
-            "type": "string",
-            "description": "Path to a conda environment containing multiqc"
-        },
-        "conda_fastqc": {
-            "type": "string",
-            "description": "Path to a conda environment containing fastqc."
-        },
-        "conda_wget": {
-            "type": "string",
-            "description": "Path to a conda environment containing wget."
-        },
-        "target_region": {
-            "type": "string",
-            "default": "16S",
-            "description": "What is the amplicon target region to be analyzed? Options are one of [16S, 18S, ITS].",
-            "enum": ["16S", "18S", "ITS"]
-        },
-        "raw_R1_suffix": {
-            "type": "string",
-            "default": "_R1_raw.fastq.gz",
-            "description": "Raw forward reads suffix (region following the unique part of the sample names). e.g. _R1_raw.fastq.gz."
-        },
-        "raw_R2_suffix": {
-            "type": "string",
-            "default": "_R2_raw.fastq.gz",
-            "description": "Raw reverse reads suffix (region following the unique part of the sample names). e.g. _R2_raw.fastq.gz."
-        },
-        "trim_primers": {
-            "type": "string",
-            "default": "TRUE",
-            "description": "Should primers be trimmed? TRUE or FALSE."
-        },
-        "input_file": {
-            "type": "string",
-            "description": "A 4-column (single-end) or 5-column (paired-end) input file (sample_id, forward, [reverse,] paired, groups). Mandatory if a GLDS or OSD accession is not provided."
-        },
-        "min_cutadapt_len": {
-            "type": "integer",
-            "default": 130,
-            "description": "What should be the minimum read length after quality trimming with cutadapt."
-        },
-        "primers_linked": {
-            "type": "string",
-            "default": "TRUE",
-            "description": "Are the primers linked?. https://cutadapt.readthedocs.io/en/stable/recipes.html#trimming-amplicon-primers-from-paired-end-reads."
-        },
-        "discard_untrimmed": {
-            "type": "string",
-            "default": "TRUE",
-            "description": "Should untrimmed reads be discarded? Any supplied string except TRUE will not discard them."
-        },
-        "anchored_primers": {
-            "type": "string",
-            "default": "TRUE",
-            "description": "Are the primers anchored? https://cutadapt.readthedocs.io/en/stable/recipes.html#trimming-amplicon-primers-from-paired-end-reads."
-        },
-        "F_primer": {
-            "type": "string",
-            "description": "Forward primer sequence e.g. AGAGTTTGATCCTGGCTCAG."
-        },
-        "R_primer": {
-            "type": "string",
-            "description": "Reverse primer sequence e.g. CTGCCTCCCGTAGGAGT."
-        },
-        "left_trunc": {
-            "type": "integer",
-            "default": 0,
-            "description": "truncate the sequences to the left by this number of bases for dada2."
-        },
-        "right_trunc": {
-            "type": "integer",
-            "default": 0,
-            "description": "truncate the sequences to the right by this number of bases for dada2."
-        },
-        "left_maxEE": {
-            "type": "integer",
-            "default": 1,
-            "description": "Maximum allowed errors to the left for dada2."
-        },
-        "right_maxEE": {
-            "type": "integer",
-            "default": 1,
-            "description": "Maximum allowed errors to the right for dada2."
-        },
-        "concatenate_reads_only": {
-            "type": "string",
-            "default": "FALSE",
-            "description": "This is typically used with primers like 515-926, that captured 18S fragments that are typically too long to merge.."
-        },
-        "accession": {
-            "type": "string",
-            "description": "A Genelab accession number if the --input_file parameter is not set. If this parameter is set, it will ignore the --input_file parameter."
-        },
-        "assay_suffix": {
-            "type": "string",
-            "default": "_GLAmpSeq",
-            "description": "Genelabs assay suffix."
-        },
-        "output_prefix": {
-            "type": "string",
+    "$defs": {
+        "input_output_options": {
+            "title": "Input/Output Options",
+            "type": "object",
+            "description": "Define where the pipeline should find input data and save output files. Provide either a GeneLab/OSD accession number or a local input CSV file — one of the two is required. If both are supplied, --accession takes precedence and --input_file is ignored.",
             "default": "",
-            "description": "Unique name to tag onto output files. Automatically appends '_' if not empty and does not end with '_' or '-'."
+            "properties": {
+                "target_region": {
+                    "type": "string",
+                    "default": "16S",
+                    "description": "The amplicon target region to be analyzed.",
+                    "enum": [
+                        "16S",
+                        "18S",
+                        "ITS"
+                    ]
+                },
+                "accession": {
+                    "type": "string",
+                    "description": "Input OSD or GLDS identifier as 'OSD-#' or 'GLDS-#' if processing an OSDR dataset.",
+                    "pattern": "^(OSD|GLDS)-[0-9]+$"
+                },
+                "input_file": {
+                    "type": "string",
+                    "description": "Path to a 4-column (single-end) or 5-column (paired-end) input CSV file with columns: sample_id, forward, [reverse,] paired, groups. Required if a GLDS or OSD accession number is not provided. --F_primer and --R_primer must be supplied when using this parameter. See SE_file.csv and PE_file.csv for examples.",
+                    "format": "file-path"
+                },
+                "isa_archive": {
+                    "type": "string",
+                    "description": "Path to the ISA.zip for an OSDR dataset. '--accession' must also be used.",
+                    "format": "file-path"
+                },
+                "specify_runsheet": {
+                    "type": "string",
+                    "description": "Path to a specific runsheet when multiple runsheets match the same target region. '--accession' must also be used, and the specified runsheet must match the target region defined by --target_region.",
+                    "format": "file-path"
+                },
+                "outdir": {
+                    "type": "string",
+                    "default": "${launchDir}",
+                    "description": "The output directory where the results will be saved. Absolute paths are required when running on cloud infrastructure."
+                },
+                "assay_suffix": {
+                    "type": "string",
+                    "default": "_GLAmpSeq",
+                    "description": "A string appended to output file names to label the assay type."
+                },
+                "output_prefix": {
+                    "type": "string",
+                    "description": "A unique prefix for output file names. An underscore ('_') is automatically appended if the value is non-empty and does not already end with '_' or '-'. Leave empty (default) for no prefix."
+                },
+                "database_store_path": {
+                    "type": "string",
+                    "default": "./Reference_DBs",
+                    "description": "Directory where DECIPHER reference databases will be downloaded and stored."
+                }
+            },
+            "required": [
+                "target_region"
+            ]
         },
-        "publishDir_mode": {
-            "type": "string",
-            "default": "link",
-            "description": "How should nextflow publish file outputs. Options can be found here https://www.nextflow.io/docs/latest/process.html#publishdir."
+        "trimming_options": {
+            "title": "Trimming Options",
+            "type": "object",
+            "description": "Control primer detection and trimming with cutadapt. When --trim_primers is true, forward and reverse primer sequences must be supplied via --F_primer and --R_primer (unless using --accession, in which case primers are read from the GeneLab runsheet automatically).",
+            "default": "",
+            "properties": {
+                "trim_primers": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Set to true to trim primer sequences from reads using cutadapt before DADA2 processing. If false, raw staged reads are passed directly to DADA2 without primer removal"
+                },
+                "F_primer": {
+                    "type": "string",
+                    "description": "Forward primer sequence e.g. AGAGTTTGATCCTGGCTCAG. Required when --trim_primers is true and --input_file is used. Automatically sourced from the GeneLab runsheet when --accession is supplied.",
+                    "pattern": "^[A-Za-z]+$",
+                    "errorMessage": "Forward primer sequence must contain letters only (no spaces, numbers, or special characters)"
+                },
+                "R_primer": {
+                    "type": "string",
+                    "description": "Reverse primer sequence e.g. CTGCCTCCCGTAGGAGT. Required when --trim_primers is true and --input_file is used. Automatically sourced from the GeneLab runsheet when --accession is supplied.",
+                    "pattern": "^[A-Za-z]+$",
+                    "errorMessage": "Reverse primer sequence must contain letters only (no spaces, numbers, or special characters)"
+                },
+                "min_cutadapt_len": {
+                    "type": "integer",
+                    "default": 130,
+                    "description": "Minimum read length (in bases) to retain after primer and quality trimming with cutadapt. Reads shorter than this value are discarded."
+                },
+                "primers_linked": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Set to true if the forward and reverse primers are linked, meaning both primer sequences are expected to be present on the same read (typical for short amplicons). See https://cutadapt.readthedocs.io/en/stable/recipes.html#trimming-amplicon-primers-from-paired-end-reads."
+                },
+                "anchored_primers": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Set to true if primers are anchored, i.e. expected to appear at a fixed position at the start of reads. Anchoring improves specificity of primer detection. See https://cutadapt.readthedocs.io/en/stable/recipes.html#trimming-amplicon-primers-from-paired-end-reads."
+                },
+                "discard_untrimmed": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Set to true to discard reads in which no primer was detected. Set to false to retain untrimmed reads, for example when sequencing quality is low and some reads may lack detectable primers."
+                }
+            }
         },
-        "primer_trimmed_R1_suffix": {
-            "type": "string",
-            "default": "_R1_trimmed.fastq.gz",
-            "description": "Suffix to use for naming your primer trimmed forward reads."
+        "filtering_options": {
+            "title": "Filtering Options",
+            "type": "object",
+            "description": "Parameters passed to the DADA2 filterAndTrim() function, which performs quality filtering and optional truncation of reads before error modelling and ASV inference.",
+            "default": "",
+            "properties": {
+                "left_trunc": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Truncate forward reads to this length in bases during DADA2 filterAndTrim(). All bases beyond this position are removed."
+                },
+                "right_trunc": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Truncate reverse reads to this length in bases during DADA2 filterAndTrim(). All bases beyond this position are removed."
+                },
+                "left_maxEE": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Maximum number of expected errors allowed in forward reads during DADA2 filterAndTrim()."
+                },
+                "right_maxEE": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Maximum number of expected errors allowed in reverse reads during DADA2 filterAndTrim()."
+                },
+                "concatenate_reads_only": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Set to true to concatenate forward and reverse reads instead of attempting to merge overlapping pairs in DADA2. Intended for amplicons that are too long to produce an overlapping region, such as 18S fragments captured with 515-926 primers. Note that 16S and 18S should have been separated already prior to running this workflow. This should likely be left as false for any option other than 18S above."
+                }
+            }
         },
-        "primer_trimmed_R2_suffix": {
-            "type": "string",
-            "default": "_R2_trimmed.fastq.gz",
-            "description": "Suffix to use for naming your primer trimmed reverse reads."
+        "taxonomy_and_differential_abundance_options": {
+            "title": "Taxonomy and Differential Abundance Options",
+            "type": "object",
+            "description": "Parameters controlling diversity analysis (alpha and beta diversity), taxonomy plotting, and differential abundance testing.",
+            "default": "",
+            "properties": {
+                "rarefaction_depth": {
+                    "type": "integer",
+                    "default": 500,
+                    "description": "Rarefaction depth (minimum read count) used for alpha and beta diversity analyses. Samples with fewer reads than this value are excluded from rarefaction-based diversity metrics."
+                },
+                "samples_column": {
+                    "type": "string",
+                    "default": "sample_id",
+                    "description": "Name of the column in the input CSV file (or GeneLab runsheet) that contains unique sample identifiers. When using --accession, this is set automatically to 'Sample Name'."
+                },
+                "group": {
+                    "type": "string",
+                    "default": "groups",
+                    "description": "Name of the column in the input CSV file that contains treatment group labels. This column is used to define contrasts for diversity analysis and differential abundance testing. When using --accession, this is set automatically to 'groups'."
+                },
+                "remove_struc_zeros": {
+                    "type": "boolean",
+                    "description": "Set to true to remove structural zeros (a.k.a ASVs with zero counts in all samples of at least one treatment group)"
+                },
+                "remove_rare": {
+                    "type": "boolean",
+                    "description": "Set to true to filter out rare taxa and low-depth samples before diversity and differential abundance analysis. When enabled, the thresholds defined by --prevalence_cutoff and --library_cutoff are applied."
+                },
+                "prevalence_cutoff": {
+                    "type": "number",
+                    "default": 0,
+                    "description": "Applies when --remove_rare is true. A decimal fraction between 0 and 1 representing the minimum proportion of samples in which a taxon must be present to be retained. For example, 0.15 retains only taxa present in at least 15% of samples. Default is 0 (no prevalence filtering)."
+                },
+                "library_cutoff": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Applies when --remove_rare is true. Samples with total read counts (library sizes) below this threshold are excluded from diversity and differential abundance analysis. For example, set to 100 to discard samples with fewer than 100 reads. Default is 0 (no library size filtering)."
+                },
+                "diff_abund_method": {
+                    "type": "string",
+                    "default": "all",
+                    "description": "Differential abundance method(s) to run. 'ancombc1' runs ANCOMBC v1; 'ancombc2' runs ANCOMBC v2; 'deseq2' runs DESeq2; 'all' (default) runs all three methods sequentially.",
+                    "enum": [
+                        "all",
+                        "ancombc1",
+                        "ancombc2",
+                        "deseq2"
+                    ]
+                }
+            }
         },
-        "filtered_R1_suffix": {
-            "type": "string",
-            "default": "_R1_filtered.fastq.gz",
-            "description": "Suffix to use for naming your quality filtered forward reads."
+        "debugging_options": {
+            "title": "Debugging options",
+            "type": "object",
+            "description": "Parameters used to reduce the size of inputs or reference data",
+            "default": "",
+            "properties": {
+                "limit_samples_to": {
+                    "type": "integer",
+                    "description": "Only use the first n samples for the analysis"
+                },
+                "force_single_end": {
+                    "type": "string",
+                    "description": "Force single-end mode by specifying which read to use",
+                    "enum": ["R1", "R2"],
+                    "errorMessage": "force_single_end must be either 'R1' or 'R2'"
+                },
+                "dp_tools_plugin": {
+                    "type": "string",
+                    "description": "Alternative dp_tools plugin."
+                }
+            }
         },
-        "filtered_R2_suffix": {
-            "type": "string",
-            "default": "_R2_filtered.fastq.gz",
-            "description": "Suffix to use for naming your quality filtered reverse reads."
+        "general_pipeline_settings": {
+            "title": "General Pipeline Settings",
+            "type": "object",
+            "description": "General settings controlling pipeline execution behaviour and tool configuration. Includes how Nextflow handles process failures and publishes output files, the container engine in use, and MultiQC report customization. These settings do not affect the scientific results of the pipeline.",
+            "default": "",
+            "properties": {
+                "publish_dir_mode": {
+                    "type": "string",
+                    "default": "link",
+                    "hidden": true,
+                    "description": "Nextflow publishDir mode controlling how output files are written to the output directory. 'link' (default) creates hard links; 'copy' duplicates files; 'symlink' creates symbolic links. See https://www.nextflow.io/docs/latest/process.html#publishdir for all options.",
+                    "enum": [
+                        "copy",
+                        "copyNoFollow",
+                        "link",
+                        "move",
+                        "relink",
+                        "symlink"
+                    ]
+                },
+                "multiqc_config": {
+                    "type": "string",
+                    "default": "${projectDir}/config/multiqc.config",
+                    "description": "Path to a custom MultiQC configuration file. Applied to both the raw-read and filtered-read MultiQC reports. Defaults to the config/multiqc.config file bundled with the pipeline."
+                },
+                "api_url": {
+                    "type": "string",
+                    "default": "https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/*/",
+                    "hidden": true
+                },
+                "errorStrategy": {
+                    "type": "string",
+                    "default": "terminate",
+                    "description": "Nextflow error strategy applied when a process fails. See https://www.nextflow.io/docs/latest/process.html#errorstrategy."
+                },
+                "containerEngine": {
+                    "type": "string",
+                    "default": "singularity",
+                    "hidden": true,
+                    "description": "The container engine used to run pipeline processes. Set automatically by the -profile flag: 'singularity' when using the singularity profile, 'docker' when using the docker profile. Do not set this manually unless overriding profile defaults."
+                },
+                "debug": {
+                    "type": "boolean",
+                    "description": "Set to true to print a summary of all resolved parameter values to the terminal at pipeline startup."
+                }
+            }
         },
-        "raw_reads_dir": {
-            "type": "string",
-            "default": "../Raw_Sequence_Data/",
-            "description": "Where should the fastqc report of the raw reads be stored?"
-        },
-        "metadata_dir": {
-            "type": "string",
-            "default": "../Metadata/",
-            "description": "This directory contains a file listing the software versions used by the pipeline."
-        },
-        "genelab_dir": {
-            "type": "string",
-            "default": "../GeneLab/",
-            "description": "This directory contains the runsheet, ISA zip file and params file used when an --accession is used to run the workflow."
-        },
-        "fastqc_out_dir": {
-            "type": "string",
-            "default": "../workflow_output/FastQC_Outputs/",
-            "description": "Where should multiqc outputs be stored?"
-        },
-        "trimmed_reads_dir": {
-            "type": "string",
-            "default": "../workflow_output/Trimmed_Sequence_Data/",
-            "description": "Where should your cutadapt trimmed reads be stored?"
-        },
-        "filtered_reads_dir": {
-            "type": "string",
-            "default": "../workflow_output/Filtered_Sequence_Data/",
-            "description": "Where should your filtered reads be stored?"
-        },
-        "final_outputs_dir": {
-            "type": "string",
-            "default": "../workflow_output/Final_Outputs/",
-            "description": "Where should most outputs and summary reports be stored?"
-        },
-        "multiqc_config": {
-            "type": "string",
-            "default": "config/multiqc.config",
-            "description": "Path to a custom multiqc config file."
-        },
-        "diff_abund_method": {
-            "type": "string",
-            "default": "all",
-            "description": "The method to use for differential abundance testing. Either ['all', 'ancombc1', 'ancombc2', or 'deseq2'] respectively."
-        },
-        "group": {
-            "type": "string",
-            "default": "groups",
-            "description": "Column in input csv file with treatments to be compared."
-        },
-        "samples_column": {
-            "type": "string",
-            "default": "sample_id",
-            "description": "Column in input csv file with sample names belonging to each treatment group."
-        },
-        "remove_struc_zeros": {
-            "type": "boolean",
-            "description": "Should structural zeros (a.k.a ASVs with zeros count in at least one group) be removed? default is false i.e. structural zeros will be retained. Options are true or false."
-        },
-        "remove_rare": {
-            "type": "boolean",
-            "description": "Should rare features be filtered out prior to analysis? If true, rare features will be removed. Options are true or false."
-        },
-        "prevalence_cutoff": {
-            "type": "integer",
-            "default": 0,
-            "description": "If --remove_rare is true, a numerical fraction between 0 and 1. Taxa with prevalences(the proportion of samples in which the taxon is present) less than this will be excluded from diversity and differential abundance analysis. Default is 0 , i.e. do not exclude any taxa. For example, to exclude taxa that are not present in at least 15% of the samples set it to 0.15."
-        },
-        "library_cutoff": {
-            "type": "integer",
-            "default": 0,
-            "description": "If --remove-rare is true, a numerical threshold for filtering samples based on library sizes. Samples with library sizes less than this number will be excluded in the analysis. Default is 0 i.e do not remove any sample. For example, if you want to discard samples with library sizes less than 100, then set to 100."
-        },
-        "rarefaction_depth": {
-            "type": "integer",
-            "default": 500,
-            "description": "The Minimum desired sample rarefaction depth for diversity analysis."
-        },
-        "errorStrategy": {
-            "type": "string",
-            "default": "terminate",
-            "description": "How should nextflow handle errors. Options can be found here https://www.nextflow.io/docs/latest/process.html#errorstrategy."
-        },
-        "debug": {
-            "type": "boolean",
-            "description": "Set to true if you'd like to see the values of your set parameters printed to the terminal."
-        },
-        "containerEngine": {
-            "type": "string",
-            "default": "singularity",
-            "hidden": true,
-            "description": "The container engine to use. singularity or docker."
-        },
-        "use_conda": {
-            "type": "boolean",
-            "hidden": true,
-            "description": "Should conda be used by default to run the workflow?"
+        "conda_related_params": {
+            "title": "Conda-related Params",
+            "type": "object",
+            "description": "Paths to pre-existing conda or mamba environments for each pipeline step. Used when running with the conda or mamba profile (-profile conda or -profile mamba). If a path is not provided for a given tool, Nextflow will create a new environment from the corresponding YAML file in envs/. Supplying existing environments avoids repeated environment creation and speeds up pipeline startup.",
+            "default": "",
+            "properties": {
+                "use_conda": {
+                    "type": "boolean",
+                    "hidden": true,
+                    "description": "Set to true to use conda environments instead of containers for all pipeline processes. Set automatically when using the conda or mamba profile. Do not set manually."
+                },
+                "conda_dp_tools": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing dp_tools."
+                },
+                "conda_fastqc": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing fastqc."
+                },
+                "conda_multiqc": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing multiqc"
+                },
+                "conda_cutadapt": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing cutadapt."
+                },
+                "conda_R": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing R with the DADA2, DECIPHER, and biomformat packages installed."
+                },
+                "conda_diversity": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing R packages required for diversity analysis and differential abundance testing (ANCOMBC and DESeq2)."
+                },
+                "conda_zip": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing zip."
+                },
+                "conda_wget": {
+                    "type": "string",
+                    "description": "Path to an existing conda environment containing wget."
+                }
+            }
         }
     },
-    "required": [
-        "target_region",
-        "raw_R1_suffix",
-        "raw_R2_suffix",
-        "trim_primers",
-        "input_file"
+    "allOf": [
+        {
+            "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/trimming_options"
+        },
+        {
+            "$ref": "#/$defs/filtering_options"
+        },
+        {
+            "$ref": "#/$defs/taxonomy_and_differential_abundance_options"
+        },
+        {
+            "$ref": "#/$defs/debugging_options"
+        },
+        {
+            "$ref": "#/$defs/general_pipeline_settings"
+        },
+        {
+            "$ref": "#/$defs/conda_related_params"
+        }
     ]
 }
