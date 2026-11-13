@@ -247,6 +247,46 @@ expandy <- function(vec, ymin=NULL) {
   expand_limits(y=c(ymin, ceiling(max.val/10^min.log)*10^min.log))
 }
 
+# diff_robust_ must be matched before diff_
+rename_ancombc_columns <- function(col_names, group, ref_group) {
+  prefixes <- c(
+    "^lfc_" = "Lnfc_",
+    "^se_" = "Lnfc-SE_",
+    "^W_" = "Stat_",
+    "^p_" = "P-value_",
+    "^q_" = "Q-value_",
+    "^diff_robust_" = "Diff-robust_",
+    "^diff_" = "Diff_",
+    "^passed_ss_" = "Passed-ss_"
+  )
+  map_chr(col_names, function(colname) {
+    if (colname == "taxon") return(colname)
+    n_group <- str_count(colname, fixed(group))
+    renamed <- if (n_group == 1) {
+      str_replace(
+        colname,
+        glue("(.+)_{group}(.+)"),
+        glue("\\1_(\\2)v({ref_group})")
+      )
+    } else if (n_group >= 2) {
+      str_replace(
+        colname,
+        glue("(.+)_{group}(.+)_{group}(.+)"),
+        glue("\\1_(\\2)v(\\3)")
+      )
+    } else {
+      colname
+    }
+    for (pat in names(prefixes)) {
+      if (str_detect(renamed, pat)) {
+        renamed <- str_replace(renamed, pat, prefixes[[pat]])
+        break
+      }
+    }
+    renamed
+  })
+}
+
 
 
 
@@ -506,66 +546,25 @@ is_two_group <- length(unique(tse[[group]])) == 2
 # Create new column names - the original column names given by ANCOMBC are
 # difficult to understand
 tryCatch({
-  # Check if this is a 2-group comparison (using res instead of res_pair)
   if(is_two_group) {
-    # For 2-group comparisons, use the group-specific columns
     group_cols <- colnames(output$res)[grepl(paste0("^[a-zA-Z_]+_", group), colnames(output$res))]
-    if(length(group_cols) > 0) {
-      # Extract group name from the first group-specific column
-      group_name <- str_replace(group_cols[1], paste0("^[a-zA-Z_]+_", group), "")
-      # Create comparison name
-      comparison_name <- glue("({group_name})v({ref_group})")
-      
-      new_colnames <- c(
-        feature,  # Keep the feature column name
-        glue("Lnfc_{comparison_name}"),
-        glue("Lnfc-SE_{comparison_name}"),
-        glue("Stat_{comparison_name}"),
-        glue("P-value_{comparison_name}"),
-        glue("Q-value_{comparison_name}"),
-        glue("Diff_{comparison_name}"),
-        glue("Passed-ss_{comparison_name}")
-      )
-    } else {
+    if(length(group_cols) == 0) {
       stop("Could not identify group-specific column for 2-group comparison")
     }
+    stats_cols <- c("taxon", group_cols)
+    new_colnames <- rename_ancombc_columns(stats_cols, group, ref_group)
   } else {
-    # Multi-group comparisons
-    new_colnames <- map_chr(output$res_pair  %>% colnames, 
-                            function(colname) {
-                              # Columns comparing a group to the reference group
-                              if(str_count(colname,group) == 1){
-                                str_replace_all(string=colname, 
-                                                pattern=glue("(.+)_{group}(.+)"),
-                                                replacement=glue("\\1_(\\2)v({ref_group})")) %>% 
-                                str_replace(pattern = "^lfc_", replacement = "Lnfc_") %>% 
-                                str_replace(pattern = "^se_", replacement = "Lnfc-SE_") %>% 
-                                str_replace(pattern = "^W_", replacement = "Stat_") %>%
-                                str_replace(pattern = "^p_", replacement = "P-value_") %>%
-                                str_replace(pattern = "^q_", replacement = "Q-value_") %>%
-                                str_replace(pattern = "^diff_", replacement = "Diff_") %>%
-                                str_replace(pattern = "^passed_ss_", replacement = "Passed-ss_")
-                                
-                              # Columns with normal two groups comparison
-                              } else if(str_count(colname,group) == 2){
-                                
-                                str_replace_all(string=colname, 
-                                                pattern=glue("(.+)_{group}(.+)_{group}(.+)"),
-                                                replacement=glue("\\1_(\\2)v(\\3)")) %>% 
-                                str_replace(pattern = "^lfc_", replacement = "Lnfc_") %>% 
-                                str_replace(pattern = "^se_", replacement = "Lnfc-SE_") %>% 
-                                str_replace(pattern = "^W_", replacement = "Stat_") %>%
-                                str_replace(pattern = "^p_", replacement = "P-value_") %>%
-                                str_replace(pattern = "^q_", replacement = "Q-value_") %>%
-                                str_replace(pattern = "^diff_", replacement = "Diff_") %>%
-                                str_replace(pattern = "^passed_ss_", replacement = "Passed-ss_")
-                                
-                                # Feature/ ASV column 
-                              } else{
-                                
-                                return(colname)
-                              }
-                            } )
+    stats_cols <- colnames(output$res_pair)
+    new_colnames <- rename_ancombc_columns(stats_cols, group, ref_group)
+  }
+
+  new_colnames[match("taxon", new_colnames)] <- feature
+  if(is_two_group) {
+    paired_stats_df <- output$res %>%
+      select(taxon, all_of(group_cols)) %>%
+      set_names(new_colnames)
+  } else {
+    paired_stats_df <- output$res_pair %>% set_names(new_colnames)
   }
 }, error = function(e) {
   writeLines(c("ANCOMBC2 script failed at res_pair processing:", e$message,
@@ -578,25 +577,6 @@ tryCatch({
             file.path(diff_abund_out_dir, glue("{output_prefix}ancombc2_failure{assay_suffix}.txt")))
   quit(status = 0)
 })
-
-# Change the column named taxon to the feature name e.g. ASV
-new_colnames[match("taxon", new_colnames)] <- feature
-
-# Rename columns
-if(is_two_group) {
-  # For 2-group comparisons, we need to select the group-specific columns and rename them
-  # The columns are named like "lfc_groupsGround Control", "se_groupsGround Control", etc.
-  
-  group_specific_cols <- colnames(output$res)[grepl(paste0("^[a-zA-Z_]+_", group), colnames(output$res))]
-  
-  # Create a new data frame with the selected columns
-  paired_stats_df <- output$res %>%
-    select(taxon, all_of(group_specific_cols)) %>%
-    set_names(new_colnames)
-} else {
-  # Multi-group comparisons
-  paired_stats_df <- output$res_pair  %>%  set_names(new_colnames)
-}
 
 # Get the unique comparison names 
 uniq_comps <- str_replace_all(new_colnames, ".+_(\\(.+\\))", "\\1") %>% unique()
@@ -805,8 +785,10 @@ volcano_plots <- map(uniq_comps, function(comparison){
 
 message("Writing out results of differential abundance using ANCOMBC2...")
 output_file <- glue("{diff_abund_out_dir}{output_prefix}ancombc2_differential_abundance{assay_suffix}.csv")
+# Remove Diff and Diff-robust columns
+final_output <- merged_df %>%
+  select(-starts_with("Diff_"), -starts_with("Diff-robust_"))
 # Replace dots in column names with hyphens to sanitize sample names
-final_output <- merged_df %>% select(-starts_with("Diff_"))
 colnames(final_output) <- gsub("\\.", "-", colnames(final_output))
 write_csv(final_output, output_file)
 

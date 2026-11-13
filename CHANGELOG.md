@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Removed the browser user-agent override from reference database downloads
 - Write a failure text file and continue when metadata has fewer than two groups for beta diversity and differential abundance (ANCOMBC1/2, DESeq2), same as alpha diversity
+- ANCOMBC2 column renaming failing on two-group comparisons due to the new `diff_robust_*` column in ANCOMBC 2.12
 
 ### Changed
 - Drop groups with fewer than 2 samples before ANCOMBC1 and ANCOMBC2 and write them to `samples_dropped<assay_suffix>.txt`
