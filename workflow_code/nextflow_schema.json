@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nasa/GeneLab_AmpliconSeq_Workflow/main/workflow_code/nextflow_schema.json",
     "title": "NASA GeneLab Data Processing AmpliconSeq pipeline parameters",
-    "description": "Amplicon Illumina workflow for pipeline document GL-DPPD-7104-D",
+    "description": "Amplicon Illumina workflow for pipeline document GL-DPPD-7104-C",
     "type": "object",
     "$defs": {
         "input_output_options": {

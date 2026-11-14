@@ -50,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - SILVA_SSU_r138.2_v2, downloaded from DECIPHER and uploaded to Figshare (https://doi.org/10.6084/m9.figshare.32118616) in April 2026 
   - UNITE_v2025, downloaded from DECIPHER and uploaded to Figshare (https://doi.org/10.6084/m9.figshare.32118652) in April 2026
 
-- Updated versions of Cutadapt and certain R/Bioconductor packages to match GeneLab Amplicon Pipeline version [GL-DPPD-7104-D](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-D.md)
+- Updated versions of Cutadapt and certain R/Bioconductor packages to match GeneLab Amplicon Pipeline version [GL-DPPD-7104-C](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md)
 - Replaced tidyverse package with its individually-used component packages across R scripts to ensure specific versions of these packages are being used:
   - ggplot2 4.0.2
   - dplyr 1.2.1

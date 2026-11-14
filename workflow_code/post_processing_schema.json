@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/nasa/GeneLab_AmpliconSeq_Workflow/main/workflow_code/post_processing_schema.json",
   "title": "Post-processing pipeline parameters",
-  "description": "Amplicon Illumina post-processing workflow for pipeline document GL-DPPD-7104-D",
+  "description": "Amplicon Illumina post-processing workflow for pipeline document GL-DPPD-7104-C",
   "type": "object",
   "properties": {},
   "$defs": {
@@ -71,8 +71,8 @@
         },
         "protocol_id": {
           "type": "string",
-          "default": "GL-DPPD-7104-D",
-          "description": "GeneLab pipeline document protocol identifier followed during processing (e.g. GL-DPPD-7104-D)."
+          "default": "GL-DPPD-7104-C",
+          "description": "GeneLab pipeline document protocol identifier followed during processing (e.g. GL-DPPD-7104-C)."
         },
         "V_V_guidelines_link": {
           "type": "string",
