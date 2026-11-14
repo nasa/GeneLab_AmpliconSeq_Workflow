@@ -42,7 +42,7 @@ The table below details the default maximum resource allocations for individual 
    4a. [Approach 1: Start with OSD or GLDS accession as input](#4a-approach-1-start-with-an-osd-or-glds-accession-as-input)  
    4b. [Approach 2: Start with a runsheet csv file as input](#4b-approach-2-start-with-a-runsheet-csv-file-as-input)  
    4c. [Approach 3: Run the workflow using an ISA Archive](#4c-approach-3-run-the-workflow-using-an-isa-archive)  
-   4d. [Modify parameters and compute resources in the Nextflow config file](#4c-modify-parameters-and-compute-resources-in-the-nextflow-config-file)  
+   4d. [Modify parameters and compute resources in the Nextflow config file](#4d-modify-parameters-and-compute-resources-in-the-nextflow-config-file)  
 
 5. [Workflow Outputs](#5-workflow-outputs)  
    5a. [Main outputs](#5a-main-outputs)  
@@ -173,7 +173,7 @@ nextflow run main.nf \
    -resume \
    -profile singularity \
    --target_region 16S \
-   --accession OSD-487
+   --accession OSD-487 \
    --isa_archive </path/to/isaArchive> 
 ```
 
@@ -183,7 +183,7 @@ nextflow run main.nf \
 **Required Parameters For All Approaches:**
 
 * `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.10`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
-* `-resume` - Resumes  workflow execution using previously cached results
+* `-resume` - Resumes workflow execution using previously cached results
 * `-profile` – Specifies the configuration profile(s) to load (multiple options can be provided as a comma-separated list)
    * Software environment profile options (choose one):
       * `singularity` - instructs Nextflow to use Singularity container environments
