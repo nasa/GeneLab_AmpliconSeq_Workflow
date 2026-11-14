@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Removed the browser user-agent override from reference database downloads
 - Write a failure text file and continue when metadata has fewer than two groups for beta diversity and differential abundance (ANCOMBC1/2, DESeq2), same as alpha diversity
+- Fixed `assay_suffix` chained parameter evaluation, which was previously evaluated at parse time instead of runtime
 - ANCOMBC2 column renaming failing on two-group comparisons due to the new `diff_robust_*` column in ANCOMBC 2.12
 
 ### Changed
@@ -59,9 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed explicit `library(tools)` loading from R scripts and its respective version capture, as it is automatically loaded with R base
 - Bumped `r-diversity` and `r-dada-decipher-biomformat` singularity images from 1.1 to 1.2 to match R package updates 
 - Updated third-party licenses
-
-### Fixed
-- Fixed `assay_suffix` chained parameter evaluation, which was previously evaluated at parse time instead of runtime
 
 ### Removed
 - Removed `run_workflow.py` script as it was deemed unnecessary for the Nextflow workflow setup; cleaned up related commands in `slurm_submit.slurm`
