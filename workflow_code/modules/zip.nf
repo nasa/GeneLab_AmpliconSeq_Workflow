@@ -1,3 +1,5 @@
+include { cleanedPrefix } from './utils.nf'
+
 process ZIP {
     tag "Zipping $label"
     label "zip"
@@ -6,14 +8,14 @@ process ZIP {
     tuple val(label), path(files)
 
     output:
-    path("${params.cleaned_prefix}${label}${params.assay_suffix}*.zip"), emit: zip
+    path("${cleanedPrefix()}${label}${params.assay_suffix}*.zip"), emit: zip
     path("versions.txt"), emit: version
 
     script:
     def is_biom = files.toString().endsWith(".biom")
     def out_name = is_biom
-            ? "${params.cleaned_prefix}${label}${params.assay_suffix}.biom.zip"
-            : "${params.cleaned_prefix}${label}${params.assay_suffix}.zip"
+            ? "${cleanedPrefix()}${label}${params.assay_suffix}.biom.zip"
+            : "${cleanedPrefix()}${label}${params.assay_suffix}.zip"
     def junk_flag = is_biom ? "-j" : ""
     """
     zip -q ${junk_flag} ${out_name} ${files}

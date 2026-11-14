@@ -1,9 +1,3 @@
-def colorCodes = [
-    c_back_bright_red: "\u001b[41;1m",
-    c_bright_green:    "\u001b[32;1m",
-    c_reset:           "\033[0m"
-]
-
 def get_runsheet_paths(LinkedHashMap row) {
     def meta = [:]
     meta.id         = row["Sample Name"]
@@ -63,6 +57,7 @@ workflow PARSE_RUNSHEET {
         runsheet_path
 
     main:
+
         sample_limit = params.limit_samples_to ? params.limit_samples_to : -1
 
         if (sample_limit > 0) {
@@ -85,10 +80,10 @@ workflow PARSE_RUNSHEET {
             .count()
             .subscribe { count ->
                 if (count > 1) {
-                    log.error "${colorCodes.c_back_bright_red}ERROR: Inconsistent metadata across samples.${colorCodes.c_reset}"
+                    log.error "ERROR: Inconsistent metadata across samples."
                     exit 1
                 } else {
-                    println "${colorCodes.c_bright_green}Metadata consistency check passed.${colorCodes.c_reset}"
+                    println "Metadata consistency check passed."
                 }
             }
 
@@ -100,19 +95,19 @@ workflow PARSE_RUNSHEET {
                 def total_count  = all_reads.size()
                 def unique_count = all_reads.toSet().size()
                 if (unique_count != total_count) {
-                    error "${colorCodes.c_back_bright_red}ERROR: Duplicate read files detected.${colorCodes.c_reset}"
+                    error "ERROR: Duplicate read files detected."
                 } else {
-                    println "${colorCodes.c_bright_green}All ${unique_count} read files are unique.${colorCodes.c_reset}"
+                    println "All ${unique_count} read files are unique."
                 }
             }
 
         // Print autodetected metadata for first sample
         ch_samples.take(1) | view { meta, reads ->
-            """${colorCodes.c_bright_green}Autodetected Processing Metadata:
+            """Autodetected Processing Metadata:
             Target Region : ${meta.region}
             Paired End    : ${meta.paired_end}
             F Primer      : ${meta.f_primer}
-            R Primer      : ${meta.r_primer}${colorCodes.c_reset}"""
+            R Primer      : ${meta.r_primer}"""
         }
 
     emit:

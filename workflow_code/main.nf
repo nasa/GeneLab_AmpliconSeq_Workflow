@@ -1,24 +1,57 @@
 nextflow.enable.dsl = 2
 
-include { validateParameters } from 'plugin/nf-schema'
+include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 
-def prefix = params.output_prefix ?: ""
-params.cleaned_prefix = (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
+// Stage analysis setup (inputs, and raw reads)
+include { STAGE_ANALYSIS } from './subworkflows/stage_analysis.nf'
 
-validateParameters()
+// Read quality check and filtering
+include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
 
-// Terminal text color definitions
-c_back_bright_red = "\u001b[41;1m";
-c_bright_green    = "\u001b[32;1m";
-c_blue            = "\033[0;34m";
-c_reset           = "\033[0m";
+// Trim primers if requested
+include { CUTADAPT ; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
 
-/************************************************
-*********** Show pipeline parameters ************
-*************************************************/
-if(params.debug){
+// Cluster ASVs
+include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
+include { RUN_DADA2 } from './modules/run_dada.nf'
 
-log.info """${c_blue}
+// Filtered quality check
+include { FASTQC as FILTERED_FASTQC ; MULTIQC as FILTERED_MULTIQC  } from './modules/quality_assessment.nf'
+
+// Diversity, differential abundance and visualizations
+include { ALPHA_DIVERSITY; BETA_DIVERSITY } from './modules/diversity.nf'
+include { PLOT_TAXONOMY } from './modules/taxonomy_plots.nf'
+include { ZIP as ZIP_BIOM; ZIP as ZIP_ALPHA; ZIP as ZIP_BETA_EUCLIDEAN; ZIP as ZIP_BETA_BRAY; ZIP as ZIP_TAXONOMY_SAMPLES; ZIP as ZIP_TAXONOMY_GROUPS } from './modules/zip.nf'
+include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
+include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
+include { DESEQ } from './modules/deseq.nf'
+include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
+include { SOFTWARE_VERSIONS; cleanedPrefix } from './modules/utils.nf'
+
+// A function to delete white spaces from an input string and covert it to lower case
+def deleteWS(string){
+
+    return string.replaceAll(/\s+/, '').toLowerCase()
+
+}
+
+
+workflow {
+    main:
+    if (params.help) {
+        log.info paramsHelp([showHidden: params.showHidden], params.help in [true, "true"] ? "" : params.help)
+        exit 0
+    }
+
+    validateParameters()
+
+
+    /************************************************
+    *********** Show pipeline parameters ************
+    *************************************************/
+    if(params.debug){
+
+    log.info """
          Nextflow AmpIllumina Consensus Pipeline: $workflow.manifest.version
          
          You have set the following parameters:
@@ -75,58 +108,21 @@ log.info """${c_blue}
          Diversity and Differential abundance : ${params.conda_diversity}
          zip: ${params.conda_zip}
          wget: ${params.conda_wget}
-         ${c_reset}"""
-}
+         """
+    }
 
-// Stage analysis setup (inputs, and raw reads)
-include { STAGE_ANALYSIS } from './subworkflows/stage_analysis.nf'
+    def ch_dp_tools_plugin = params.dp_tools_plugin ? channel.value(file(params.dp_tools_plugin)) : channel.value(file("$projectDir/bin/dp_tools__NF_AmpIllumina_${params.target_region}"))
 
-// Read quality check and filtering
-include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
-
-// Trim primers if requested
-include { CUTADAPT ; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
-
-// Cluster ASVs
-include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
-include { RUN_DADA2 } from './modules/run_dada.nf'
-
-// Filtered quality check
-include { FASTQC as FILTERED_FASTQC ; MULTIQC as FILTERED_MULTIQC  } from './modules/quality_assessment.nf'
-
-// Diversity, differential abundance and visualizations
-include { ALPHA_DIVERSITY; BETA_DIVERSITY } from './modules/diversity.nf'
-include { PLOT_TAXONOMY } from './modules/taxonomy_plots.nf'
-include { ZIP as ZIP_BIOM; ZIP as ZIP_ALPHA; ZIP as ZIP_BETA_EUCLIDEAN; ZIP as ZIP_BETA_BRAY; ZIP as ZIP_TAXONOMY_SAMPLES; ZIP as ZIP_TAXONOMY_GROUPS } from './modules/zip.nf'
-include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
-include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
-include { DESEQ } from './modules/deseq.nf'
-include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
-include { SOFTWARE_VERSIONS } from './modules/utils.nf'
-
-ch_dp_tools_plugin = params.dp_tools_plugin ? channel.value(file(params.dp_tools_plugin)) : channel.value(file("$projectDir/bin/dp_tools__NF_AmpIllumina_${params.target_region}"))
-
-ch_input_file = params.input_file ? channel.fromPath(params.input_file) : null
-ch_isa_archive = params.isa_archive ? channel.fromPath(params.isa_archive) : null
-
-// A function to delete white spaces from an input string and covert it to lower case
-def deleteWS(string){
-
-    return string.replaceAll(/\s+/, '').toLowerCase()
-
-}
-
-
-workflow {
-    main:
+    def ch_input_file = params.input_file ? channel.fromPath(params.input_file) : null
+    def ch_isa_archive = params.isa_archive ? channel.fromPath(params.isa_archive) : null
 
     //  ---------------------  Sanity Checks ------------------------------------- //
     // Test input requirement
     if (!params.accession &&  !params.input_file){
-       error("""${c_back_bright_red}INPUT ERROR! 
+       error("""INPUT ERROR! 
               Please supply either an accession (OSD or Genelab number) or an input CSV file
               by passing either to the --accession or --input_file parameter, respectively.
-              ${c_reset}""")
+              """)
     } 
     
     // Test input csv file
@@ -134,20 +130,20 @@ workflow {
         // Test primers
         if(!params.F_primer || !params.R_primer){
 
-            error("""${c_back_bright_red}PRIMER ERROR! 
+            error("""PRIMER ERROR! 
                   When using a csv file as input (--input_file) to this workflow you must provide 
                   forward and reverse primer sequences. Please provide your forward 
                   and reverse primer sequences as arguements to the --F_primer 
                   and --R_primer parameters, respectively.
-                  ${c_reset}""")
+                  """)
          }
     }
 
     // Test ISA archive and accession
     if (params.isa_archive && !params.accession) {
-        error """${c_back_bright_red}INPUT ERROR!
+        error """INPUT ERROR!
             --isa_archive requires --accession to resolve OSD/GLDS accessions
-            for the ISA-to-runsheet conversion.${c_reset}"""
+            for the ISA-to-runsheet conversion."""
     }
 
     software_versions_ch = channel.empty()
@@ -286,7 +282,7 @@ workflow {
                 "group" : "groups",
                 "depth" : params.rarefaction_depth,
                 "assay_suffix" : params.assay_suffix,
-                "output_prefix" : params.cleaned_prefix,
+                "output_prefix" : cleanedPrefix(),
                 "target_region" : params.target_region,
                 "library_cutoff" : params.library_cutoff,
                 "prevalence_cutoff" : params.prevalence_cutoff,
@@ -302,7 +298,7 @@ workflow {
                 "group" : params.group,
                 "depth" : params.rarefaction_depth,
                 "assay_suffix" : params.assay_suffix,
-                "output_prefix" : params.cleaned_prefix,
+                "output_prefix" : cleanedPrefix(),
                 "target_region" : params.target_region,
                 "library_cutoff" : params.library_cutoff,
                 "prevalence_cutoff" : params.prevalence_cutoff,

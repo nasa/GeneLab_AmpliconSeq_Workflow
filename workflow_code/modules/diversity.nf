@@ -33,7 +33,7 @@ process ALPHA_DIVERSITY {
                   --samples-column '${meta.samples}' \\
                   --rarefaction-depth ${meta.depth}   \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${params.cleaned_prefix}' \\
+                  --output-prefix  '${meta.output_prefix}' \\
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
 
@@ -88,7 +88,7 @@ process BETA_DIVERSITY {
                   --samples-column '${meta.samples}' \\
                   --rarefaction-depth ${meta.depth}   \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${params.cleaned_prefix}' \\
+                  --output-prefix  '${meta.output_prefix}' \\
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\
                   --library-cutoff  ${meta.library_cutoff} ${meta.rare}
         

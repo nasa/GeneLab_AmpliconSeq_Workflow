@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Write a failure text file and continue when metadata has fewer than two groups for beta diversity and differential abundance (ANCOMBC1/2, DESeq2), same as alpha diversity
 - Fixed `assay_suffix` chained parameter evaluation, which was previously evaluated at parse time instead of runtime
 - ANCOMBC2 column renaming failing on two-group comparisons due to the new `diff_robust_*` column in ANCOMBC 2.12
+- Main and post-processing workflows failing under Nextflow's strict v2 syntax parser; moved top-level code into `workflow` blocks and removed config-level `trace_timestamp` and `parent_dir` variables
 
 ### Changed
 - Drop groups with fewer than 2 samples before ANCOMBC1 and ANCOMBC2 and write them to `samples_dropped<assay_suffix>.txt`
@@ -42,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved post-processing output files from under `Post_Processing/` to under `GeneLab/`; removed `Post_Processing/`
 - Modified `nextflow_schema.json` to reflect updated pipeline parameters with improved parameter descriptions and group definitions 
 - Wired up `nf-schema` plugin to `nextflow_schema.json` for parameter validation and automated help menu generation
+- Bumped `nf-schema` plugin from 2.6.0 to 2.8.0 and require Nextflow 26.04 or later
 - Updated `post_processing.config` to support running the post-processing workflow with `-C` instead of `-c` (i.e., disregards the default `nextflow.config` and uses only `post_processing.config` ); modified launch scripts (`launch.sh` and `slurm_submit.slurm`) accordingly 
 
 - Updated database versions:

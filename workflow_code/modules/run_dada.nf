@@ -2,6 +2,8 @@
 *********************  ASV generation using Dada2 ***************************************
 ****************************************************************************************/
 
+include { cleanedPrefix } from './utils.nf'
+
 process RUN_DADA2 {
 
     tag "Running dada2..."
@@ -12,15 +14,15 @@ process RUN_DADA2 {
         path(trimmed_read_counts) // or dummy NO_FILE if no trimming
         path(database)
     output:
-        path("*_filtered.fastq.gz"),                                                    emit: reads
-        path("${params.cleaned_prefix}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
-        path("${params.cleaned_prefix}taxonomy${params.assay_suffix}.tsv"),             emit: taxonomy
-        path("${params.cleaned_prefix}taxonomy-and-counts${params.assay_suffix}.biom"), emit: biom
-        path("${params.cleaned_prefix}ASVs${params.assay_suffix}.fasta"),               emit: fasta
-        path("${params.cleaned_prefix}read-count-tracking${params.assay_suffix}.tsv"),  emit: read_count
-        path("${params.cleaned_prefix}counts${params.assay_suffix}.tsv"),               emit: counts
-        path("${params.cleaned_prefix}taxonomy-and-counts${params.assay_suffix}.tsv"),  emit: taxonomy_count
-        path("versions.txt"),                                                           emit: version
+        path("*_filtered.fastq.gz"),                                               emit: reads
+        path("${cleanedPrefix()}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
+        path("${cleanedPrefix()}taxonomy${params.assay_suffix}.tsv"),             emit: taxonomy
+        path("${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.biom"), emit: biom
+        path("${cleanedPrefix()}ASVs${params.assay_suffix}.fasta"),               emit: fasta
+        path("${cleanedPrefix()}read-count-tracking${params.assay_suffix}.tsv"),  emit: read_count
+        path("${cleanedPrefix()}counts${params.assay_suffix}.tsv"),               emit: counts
+        path("${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv"),  emit: taxonomy_count
+        path("versions.txt"),                                                      emit: version
     script:
         def input_dir     = params.trim_primers ? "Trimmed_Sequence_Data/" : "raw_reads/"
         def trimmed_count = params.trim_primers ? "${trimmed_read_counts}" : ""
@@ -62,7 +64,7 @@ process RUN_DADA2 {
                 "${R2_suffix}" \\
                 "${filtered_R1_suffix}" \\
                 "${filtered_R2_suffix}" \\
-                "${params.cleaned_prefix}" \\
+                "${cleanedPrefix()}" \\
                 "${params.target_region}" \\
                 "${params.concatenate_reads_only ? 'TRUE' : 'FALSE'}" \\
                 "${params.assay_suffix}" \\
@@ -76,15 +78,15 @@ process RUN_DADA2 {
                 "${input_dir}" \\
                 "${single_end_suffix}" \\
                 "${filtered_single_end_suffix}" \\
-                "${params.cleaned_prefix}" \\
+                "${cleanedPrefix()}" \\
                 "${params.target_region}" \\
                 "${params.assay_suffix}" \\
                 "${database.name}"
         fi
 
-        (head -n 1 ${params.cleaned_prefix}taxonomy-and-counts${params.assay_suffix}.tsv; \\
-            awk 'NR>1{print}' ${params.cleaned_prefix}taxonomy-and-counts${params.assay_suffix}.tsv | sort -V -k1) \\
-            > temp_tax_cont.tsv && mv temp_tax_cont.tsv ${params.cleaned_prefix}taxonomy-and-counts${params.assay_suffix}.tsv
+        (head -n 1 ${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv; \\
+            awk 'NR>1{print}' ${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv | sort -V -k1) \\
+            > temp_tax_cont.tsv && mv temp_tax_cont.tsv ${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv
 
         R --vanilla --version | grep "R version" > versions.txt
         get_R_package_version.R

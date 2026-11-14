@@ -1,24 +1,27 @@
 nextflow.enable.dsl=2
 
-include { validateParameters } from 'plugin/nf-schema'
+include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 
-def prefix = params.output_prefix ?: ""
-params.cleaned_prefix = (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
+include { PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
+           GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
 
-validateParameters()
 
-// Terminal text color definitions
-c_back_bright_red = "\u001b[41;1m"
-c_bright_green    = "\u001b[32;1m"
-c_blue            = "\033[0;34m"
-c_reset           = "\033[0m"
+workflow {
+      main:
+        if (params.help) {
+            log.info paramsHelp([showHidden: params.showHidden], params.help in [true, "true"] ? "" : params.help)
+            exit 0
+        }
 
-/************************************************
-*********** Show pipeline parameters ************
-*************************************************/
-if(params.debug){
+        validateParameters()
 
-log.info """${c_blue}
+
+        /************************************************
+        *********** Show pipeline parameters ************
+        *************************************************/
+        if(params.debug){
+
+        log.info """
          GeneLab Post Processing Pipeline: $workflow.manifest.version
          
          You have set the following parameters:
@@ -48,23 +51,16 @@ log.info """${c_blue}
          General Pipeline Settings:
          Profile: ${workflow.profile}
          Nextflow Directory Publishing Mode: ${params.publish_dir_mode}
-         ${c_reset}"""
+         """
 
-}
+        }
 
-
-include { PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
-           GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
-
-
-workflow {
-      main:
         // Make sure accessions numbers are set
         if(!params.GLDS_accession || !params.OSD_accession){
-           error("""${c_back_bright_red}ACCESSION ERROR!. 
+           error("""ACCESSION ERROR!. 
                     Please supply both --GLDS_accession and --OSD_accession.
                     They can be any string you choose but they must be set.
-                 ${c_reset}""")
+                 """)
         }
 
         // If force_single_end is set, ignore include_raw_data and include_raw_multiqc as they should reflect paired-end data which is assumed to have been already included

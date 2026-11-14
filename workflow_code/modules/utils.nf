@@ -1,3 +1,8 @@
+def cleanedPrefix() {
+    def prefix = params.output_prefix ?: ""
+    return (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
+}
+
 process SOFTWARE_VERSIONS {
 
     tag "Writing out software versions..."

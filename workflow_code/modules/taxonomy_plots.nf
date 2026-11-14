@@ -31,7 +31,7 @@ process PLOT_TAXONOMY  {
                   --group '${meta.group}' \\
                   --samples-column '${meta.samples}' \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${params.cleaned_prefix}'
+                  --output-prefix  '${meta.output_prefix}'
                  
         Rscript -e "VERSIONS=sprintf('dplyr %s\\npurrr %s\\nreadr %s\\nstringr %s\\ntibble %s\\ntidyr %s\\nglue %s\\nggplot2 %s\\n',  \\
                                     packageVersion('dplyr'), \\
