@@ -22,7 +22,7 @@ The table below details the default maximum resource allocations for individual 
 
 | CPU Cores | Memory |
 |-------------------|----------------|
-| 2                 | 5 GB           |
+| 10                | 20 GB          |
 
 > **Note:** These per-process resource allocations are defaults. They can be adjusted by modifying `cpus` and `memory` directives in the configuration file: [`nextflow.config`](workflow_code/nextflow.config).
 
