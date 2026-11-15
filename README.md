@@ -39,7 +39,7 @@ The table below details the default maximum resource allocations for individual 
 3. [Fetch Singularity Images](#3-fetch-singularity-images)  
 
 4. [Run the Workflow](#4-run-the-workflow)  
-   4a. [Approach 1: Start with OSD or GLDS accession as input](#4a-approach-1-start-with-an-osd-or-glds-accession-as-input)  
+   4a. [Approach 1: Start with OSD or GLDS accession as input](#4a-approach-1-start-with-osd-or-glds-accession-as-input)  
    4b. [Approach 2: Start with a runsheet csv file as input](#4b-approach-2-start-with-a-runsheet-csv-file-as-input)  
    4c. [Approach 3: Run the workflow using an ISA Archive](#4c-approach-3-run-the-workflow-using-an-isa-archive)  
    4d. [Modify parameters and compute resources in the Nextflow config file](#4d-modify-parameters-and-compute-resources-in-the-nextflow-config-file)  
@@ -196,7 +196,7 @@ nextflow run main.nf \
 * `--target_region` - Specifies the amplicon target region to be analyzed (type: string, options: 16S, 18S, or ITS, default: 16S)
 
 
-**Additional Required Parameters For [Approach 1](#4a-approach-1-start-with-an-osd-or-glds-accession-as-input)**   
+**Additional Required Parameters For [Approach 1](#4a-approach-1-start-with-osd-or-glds-accession-as-input)**   
 
 * `--accession` - The OSD or GLDS accession number specifying the [OSDR](https://osdr.nasa.gov/bio/repo/) dataset to process, e.g. OSD-487 or GLDS-487 (type: string, default: null)
   > *Note: Not all datasets have the same OSD and GLDS number, so make sure the correct OSD or GLDS number is specified*
