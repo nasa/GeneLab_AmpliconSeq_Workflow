@@ -86,7 +86,7 @@ workflow {
        software_versions_ch   =  channel.fromPath("${processed_dir}/GeneLab/software_versions_*.txt")
        rarefaction_depth_ch =  channel
                                   .fromPath("${processed_dir}/Final_Outputs/alpha_diversity/*rarefaction_depth${params.assay_suffix}.txt")
-                                  ifEmpty { file("empty_depth.txt").tap { it.text = "" } }
+                                  .ifEmpty { file("empty_depth.txt").tap { it.text = "" } }
 
 
         // If an assay table is provided use it as the input table otherwise use the provided ISA zip file - no longer needed, using GLfile.csv for GENERATE_CURATION_TABLE
