@@ -162,7 +162,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate amplicon processing protocol text.")
     parser.add_argument('versions_file', help='Path to versions.txt')
     parser.add_argument('protocol_id', help='Protocol ID (e.g. GL-DPPD-7104-C)')
-    parser.add_argument('--workflow_version', default='1.0.9', help='Workflow version (default: 1.0.9)')
+    parser.add_argument('--workflow_version', default='1.0.10', help='Workflow version (default: 1.0.10)')
     parser.add_argument('--rarefaction_depth_file', default=None, help='File containing rarefaction depth value')
     parser.add_argument('--target_region', required=True, choices=list(REFERENCE_DB.keys()), help='Target region (e.g. 16S, 18S, ITS)')
     parser.add_argument('--trunc_len', required=True, help='truncLen values as "left,right" (e.g. "230,190")')
