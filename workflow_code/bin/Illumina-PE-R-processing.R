@@ -300,7 +300,16 @@ if ( target_region == "18S" ) {
 write.table(tax_tab, paste0(output_prefix, "taxonomy", assay_suffix, ".tsv"), sep = "\t", quote=F, row.names=FALSE)
 
     ### generating and writing out biom file format ###
-biom_object <- make_biom(data=asv_tab, observation_metadata=tax_tab)
+biom_counts <- as.matrix(asv_tab[, sample_cols_present, drop=FALSE])
+row.names(biom_counts) <- asv_tab$ASV_ID
+biom_taxonomy <- tax_tab[, setdiff(colnames(tax_tab), "ASV_ID"), drop=FALSE]
+row.names(biom_taxonomy) <- tax_tab$ASV_ID
+biom_object <- make_biom(data=biom_counts, observation_metadata=biom_taxonomy)
+biom_object$data <- lapply(biom_object$data, I)
+biom_object$rows <- lapply(biom_object$rows, function(row) {
+    row$metadata <- as.list(row$metadata)
+    row
+})
 write_biom(biom_object, paste0(output_prefix, "taxonomy-and-counts", assay_suffix, ".biom"))
 
     # making a tsv of combined tax and counts
