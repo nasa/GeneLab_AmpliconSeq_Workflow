@@ -72,7 +72,7 @@ process CUTADAPT {
 
 
         paste <( printf "${sample_id}" ) \\
-              <( grep "reads processed" > ${sample_id}-cutadapt.log | tr -s " " "\\t" | cut -f 4 | tr -d "," ) \\
+              <( grep "reads processed" ${sample_id}-cutadapt.log | tr -s " " "\\t" | cut -f 4 | tr -d "," ) \\
               <( grep "Reads written" ${sample_id}-cutadapt.log | tr -s " " "\\t" | cut -f 5 | tr -d "," ) \\
               > ${sample_id}-trimmed-counts.tsv
     fi

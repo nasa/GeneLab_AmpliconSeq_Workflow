@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Fixed
+
+- Fixed empty Cutadapt logs and missing read counts during single-end processing
 - Removed the browser user-agent override from reference database downloads
 - Write a failure text file and continue when metadata has fewer than two groups for beta diversity and differential abundance (ANCOMBC1/2, DESeq2), same as alpha diversity
 - Fixed `assay_suffix` chained parameter evaluation, which was previously evaluated at parse time instead of runtime
