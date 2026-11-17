@@ -20,6 +20,9 @@ process CUTADAPT {
 
     script:
     def discard_untrimmed_flag = params.discard_untrimmed ? "--discard-untrimmed" : ""
+    def single_end_primers = params.force_single_end == 'R2' ?
+        (params.primers_linked ? '-a ${R_linked_primer}' : '-g ${R_primer}') :
+        (params.primers_linked ? '-a ${F_linked_primer}' : '-g ${F_primer}')
     
     def primer_trimmed_R1_suffix = "${params.assay_suffix}_R1_trimmed.fastq.gz"
     def primer_trimmed_R2_suffix = "${params.assay_suffix}_R2_trimmed.fastq.gz"    
@@ -61,7 +64,7 @@ process CUTADAPT {
     # Single-end
     else
 
-        cutadapt ${params.primers_linked ? '-a \${F_linked_primer}' : '-g \${F_primer}' } \\
+        cutadapt ${single_end_primers} \\
                  -o ${sample_id}${single_end_suffix} \\
                  ${discard_untrimmed_flag} \\
                  -m ${params.min_cutadapt_len} \\
