@@ -4,6 +4,7 @@ include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 
 include { PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
            GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
+include { cleanedPrefix; enabled } from './modules/utils.nf'
 
 
 workflow {
@@ -64,7 +65,7 @@ workflow {
         }
 
         // If force_single_end is set, ignore include_raw_data and include_raw_multiqc as they should reflect paired-end data which is assumed to have been already included
-        if (params.force_single_end && (params.include_raw_data || params.include_raw_multiqc)) {
+        if (params.force_single_end && (enabled(params.include_raw_data) || enabled(params.include_raw_multiqc))) {
             log.warn "force_single_end is set — --include_raw_data and --include_raw_multiqc will both be ignored."
         }
 
@@ -78,15 +79,15 @@ workflow {
             error "Output directory '${processed_dir}' does not exist. Make sure the main workflow is run first."
        }
 
-       processing_scripts_dir = Channel.fromPath("${processed_dir}/processing_scripts", type: 'dir')
-       
-       raw_multiqc_report_dir = channel.fromPath("${processed_dir}/Raw_Sequence_Data/MultiQC_Reports", type: 'dir')
+       processing_scripts_dir = channel.fromPath("${processed_dir}/processing_scripts", type: 'dir')
+       raw_multiqc_report_dir = enabled(params.include_raw_multiqc) && !params.force_single_end
+           ? channel.fromPath("${processed_dir}/Raw_Sequence_Data/MultiQC_Reports", type: 'dir')
+           : channel.value([])
        final_outputs_dir = channel.fromPath("${processed_dir}/Final_Outputs", type: 'dir')
-     
-       software_versions_ch   =  channel.fromPath("${processed_dir}/GeneLab/software_versions_*.txt")
-       rarefaction_depth_ch =  channel
-                                  .fromPath("${processed_dir}/Final_Outputs/alpha_diversity/*rarefaction_depth${params.assay_suffix}.txt")
-                                  .ifEmpty { file("empty_depth.txt").tap { it.text = "" } }
+
+       software_versions_ch = channel.fromPath("${processed_dir}/GeneLab/software_versions${params.assay_suffix}.txt")
+       def rarefaction_depth_file = file("${processed_dir}/Final_Outputs/alpha_diversity/${cleanedPrefix()}rarefaction_depth${params.assay_suffix}.txt")
+       rarefaction_depth_ch = channel.value(rarefaction_depth_file.exists() ? rarefaction_depth_file : [])
 
 
         // If an assay table is provided use it as the input table otherwise use the provided ISA zip file - no longer needed, using GLfile.csv for GENERATE_CURATION_TABLE

@@ -175,15 +175,16 @@ process GENERATE_PROTOCOL {
     output:
         path("protocol.txt"), emit: protocol
     script:
-        def trim_flag = params.trim_primers ? "--trim_primers" : ""
+        def trim_flag = enabled(params.trim_primers) ? "--trim_primers" : ""
         def force_single_end_flag = params.force_single_end ? "--force_single_end ${params.force_single_end}" : ""
+        def depth_flag = rarefaction_depth ? "--rarefaction_depth_file '${rarefaction_depth}'" : ""
         """
         generate_protocol.py ${software_versions} ${protocol_id} \\
-            --rarefaction_depth_file ${rarefaction_depth} \\
             --target_region ${params.target_region} \\
             --trunc_len "${params.left_trunc},${params.right_trunc}" \\
             --max_ee "${params.left_maxEE},${params.right_maxEE}" \\
             --workflow_version ${workflow.manifest.version} \\
-            ${force_single_end_flag} ${trim_flag}
+            --diff_abund_method '${params.diff_abund_method}' \\
+            ${force_single_end_flag} ${trim_flag} ${depth_flag}
         """
 }
