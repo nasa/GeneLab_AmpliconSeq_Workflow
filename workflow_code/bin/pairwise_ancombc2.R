@@ -248,7 +248,7 @@ expandy <- function(vec, ymin=NULL) {
 }
 
 # diff_robust_ must be matched before diff_
-rename_ancombc_columns <- function(col_names, group, ref_group) {
+rename_ancombc_columns <- function(col_names, group, ref_group, is_two_group = FALSE) {
   prefixes <- c(
     "^lfc_" = "Lnfc_",
     "^se_" = "Lnfc-SE_",
@@ -261,6 +261,14 @@ rename_ancombc_columns <- function(col_names, group, ref_group) {
   )
   map_chr(col_names, function(colname) {
     if (colname == "taxon") return(colname)
+    if (is_two_group) {
+      # Strip only the leading statistic and grouping field from the full label.
+      group_prefixes <- paste0(substring(names(prefixes), 2L), group)
+      i <- which(startsWith(colname, group_prefixes))[1]
+      if (is.na(i)) return(colname)
+      level <- substring(colname, nchar(group_prefixes[i]) + 1L)
+      return(paste0(prefixes[[i]], "(", level, ")v(", ref_group, ")"))
+    }
     n_group <- str_count(colname, fixed(group))
     renamed <- if (n_group == 1) {
       str_replace(
@@ -552,7 +560,7 @@ tryCatch({
       stop("Could not identify group-specific column for 2-group comparison")
     }
     stats_cols <- c("taxon", group_cols)
-    new_colnames <- rename_ancombc_columns(stats_cols, group, ref_group)
+    new_colnames <- rename_ancombc_columns(stats_cols, group, ref_group, is_two_group = TRUE)
   } else {
     stats_cols <- colnames(output$res_pair)
     new_colnames <- rename_ancombc_columns(stats_cols, group, ref_group)
