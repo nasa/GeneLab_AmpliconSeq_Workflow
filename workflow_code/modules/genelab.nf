@@ -180,7 +180,7 @@ process GENERATE_PROTOCOL {
     script:
         def trim_flag = params.trim_primers ? "--trim_primers" : ""
         def force_single_end_flag = params.force_single_end ? "--force_single_end ${params.force_single_end}" : ""
-        def depth_flag = rarefaction_depth ? "--rarefaction_depth_file '${rarefaction_depth}'" : ""
+        def depth_flag = rarefaction_depth ? "--rarefaction_depth_file ${rarefaction_depth}" : ""
         """
         generate_protocol.py ${software_versions} ${protocol_id} \\
             --target_region ${params.target_region} \\

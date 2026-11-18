@@ -4,6 +4,7 @@ include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 
 params {
     trim_primers: Boolean
+    limit_samples_to: Integer?
 }
 
 // Stage analysis setup (inputs, and raw reads)
