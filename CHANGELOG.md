@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Option to run workflow in accession mode using a local ISA archive (`--isa_archive` parameter)
 - Caching support for reference databases to avoid redundant downloads on repeated runs of the main workflow
-- A Bioconductor package (microbiome 1.32.0) that is required by ANCOMBC >= 2.12
 - Support for `--primers-already-trimmed` behavior in the post-processing workflow by adding `trim_primers` parameter to control inclusion of trimmed-data-related information across its processes
 - Validation for alpha/beta diversity outputs, including failure files and rarefaction depth consistency across both analyses, for taxonomy plots, and for outputs of the three differential abundance methods, including per-method volcano plot counts against number of contrasts
 - `post_processing_schema.json` for parameter validation and automated help menu generation
@@ -49,21 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped `nf-schema` plugin from 2.6.0 to 2.8.0 and require Nextflow 26.04 or later
 - Updated `post_processing.config` to support running the post-processing workflow with `-C` instead of `-c` (i.e., disregards the default `nextflow.config` and uses only `post_processing.config` ); modified launch scripts (`launch.sh` and `slurm_submit.slurm`) accordingly 
 
-- Updated database versions:
-  - SILVA_SSU_r138.2_v2, downloaded from DECIPHER and uploaded to Figshare (https://doi.org/10.6084/m9.figshare.32118616) in April 2026 
-  - UNITE_v2025, downloaded from DECIPHER and uploaded to Figshare (https://doi.org/10.6084/m9.figshare.32118652) in April 2026
-
-- Updated versions of Cutadapt and certain R/Bioconductor packages to match GeneLab Amplicon Pipeline version [GL-DPPD-7104-C](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md)
-- Replaced tidyverse package with its individually-used component packages across R scripts to ensure specific versions of these packages are being used:
-  - ggplot2 4.0.2
-  - dplyr 1.2.1
-  - readr 2.2.0
-  - stringr 1.6.0
-  - purrr 1.2.1
-  - tibble 3.3.1
-  - tidyr 1.3.2
+- Load the individual R packages used by each script.
 - Removed explicit `library(tools)` loading from R scripts and its respective version capture, as it is automatically loaded with R base
-- Bumped `r-diversity` and `r-dada-decipher-biomformat` singularity images from 1.1 to 1.2 to match R package updates 
 - Updated third-party licenses
 
 ### Removed
