@@ -1,4 +1,4 @@
-include { cleanedPrefix } from './utils.nf'
+include { cleanedPrefix; enabled } from './utils.nf'
 
 process PACKAGE_PROCESSING_INFO {
 
@@ -34,9 +34,9 @@ process GENERATE_README {
         path({ "${cleanedPrefix()}README${params.assay_suffix}.txt" }), emit: readme
 
     script:
-        def raw_reads = params.include_raw_data ? "--include-raw-reads" : ""
-        def trimmed_reads = params.trim_primers ? "" : "--primers_already_trimmed"
-        def single_end = params.single_end ? "--single-end" : ""
+        def raw_reads = enabled(params.include_raw_data) ? "--include-raw-reads" : ""
+        def trimmed_reads = enabled(params.trim_primers) ? "" : "--primers_already_trimmed"
+        def single_end = enabled(params.single_end) ? "--single-end" : ""
         def force_single_end = params.force_single_end ? "--force-single-end ${params.force_single_end}" : ""
         """    
         GL-gen-processed-data-amplicon-readme-updated.py \\
@@ -54,6 +54,7 @@ process GENERATE_README {
 
 
 process VALIDATE_PROCESSING {
+    cache false
 
     tag "Running automated validation and verification...."
 
@@ -68,20 +69,21 @@ process VALIDATE_PROCESSING {
         path({ "${params.GLDS_accession}_${cleanedPrefix()}amplicon-validation${params.assay_suffix}.log" }), emit: log
 
     script:
-        def raw_fastq = params.include_raw_data ? "--include-raw-fastq" : ""
-        def primers_flag = params.trim_primers ? "" : "--primers-already-trimmed"
-        def single_end_flag = params.single_end ? "--single-ended" : ""
+        def raw_fastq = enabled(params.include_raw_data) ? "--include-raw-fastq" : ""
+        def primers_flag = enabled(params.trim_primers) ? "" : "--primers-already-trimmed"
+        def single_end_flag = enabled(params.single_end) ? "--single-ended" : ""
         def force_single_end = params.force_single_end ? "--force-single-end ${params.force_single_end}" : ""
         """
         GL-validate-processed-amplicon-data \\
              --output '${params.GLDS_accession}_${cleanedPrefix()}amplicon-validation${params.assay_suffix}.log' \\
              --GLDS-ID '${params.GLDS_accession}' \\
-             --runsheet '${runsheet}' \\
+             --runsheet ${runsheet} \\
              --outdir '${processed_dir}' \\
              --V_V_guidelines_link '${params.V_V_guidelines_link}' \\
              --output-prefix '${cleanedPrefix()}' \\
              --zip_targets '${target_files}' \\
              --assay_suffix '${params.assay_suffix}' \\
+             --diff-abund-method '${params.diff_abund_method}' \\
              --raw_suffix "${params.assay_suffix}_raw.fastq.gz" \\
              --raw_R1_suffix "${params.assay_suffix}_R1_raw.fastq.gz" \\
              --raw_R2_suffix "${params.assay_suffix}_R2_raw.fastq.gz" \\
@@ -91,8 +93,8 @@ process VALIDATE_PROCESSING {
              --filtered_suffix "${params.assay_suffix}_filtered.fastq.gz" \\
              --filtered_R1_suffix "${params.assay_suffix}_R1_filtered.fastq.gz" \\
              --filtered_R2_suffix "${params.assay_suffix}_R2_filtered.fastq.gz" \\
-             --processing_zip_file '${processing_info}' \\
-             --readme '${README}' \\
+             --processing_zip_file ${processing_info} \\
+             --readme ${README} \\
              ${raw_fastq} ${primers_flag} ${single_end_flag} ${force_single_end}
         """
 }
@@ -112,17 +114,18 @@ process GENERATE_CURATION_TABLE {
         path({ "${params.GLDS_accession}_${cleanedPrefix()}associated-file-names${params.assay_suffix}.tsv" }), emit: curation_table
 
     script:
-        def primers_flag = params.trim_primers ? "" : "--primers-already-trimmed"
-        def single_end_flag = params.single_end ? "--single-ended" : ""
+        def primers_flag = enabled(params.trim_primers) ? "" : "--primers-already-trimmed"
+        def single_end_flag = enabled(params.single_end) ? "--single-ended" : ""
         def force_single_end = params.force_single_end ? "--force-single-end ${params.force_single_end}" : ""
-        def include_raw_fastq_flag = params.include_raw_data ? "--include-raw-fastq" : ""
-        def include_raw_multiqc_flag = params.include_raw_multiqc ? "--include-raw-multiqc-in-output" : ""        
+        def include_raw_fastq_flag = enabled(params.include_raw_data) ? "--include-raw-fastq" : ""
+        def include_raw_multiqc_flag = enabled(params.include_raw_multiqc) ? "--include-raw-multiqc-in-output" : ""
         """
 
         GL-gen-amplicon-file-associations-table-GLfile.py --GL-file ${input_table} \\
                     --output '${params.GLDS_accession}_${cleanedPrefix()}associated-file-names${params.assay_suffix}.tsv' \\
                     --GLDS-ID  '${params.GLDS_accession}' \\
                     --output-prefix '${cleanedPrefix()}' \\
+                    --diff-abund-method '${params.diff_abund_method}' \\
                     --assay_suffix '${params.assay_suffix}' \\
                     --raw_suffix '${params.assay_suffix}_raw.fastq.gz' \\
                     --raw_R1_suffix '${params.assay_suffix}_R1_raw.fastq.gz' \\

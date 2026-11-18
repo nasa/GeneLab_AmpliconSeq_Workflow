@@ -116,6 +116,12 @@
           "type": "integer",
           "default": 1,
           "description": "Maximum expected errors allowed in reverse reads during DADA2 filterAndTrim() in the main processing workflow."
+        },
+        "diff_abund_method": {
+          "type": "string",
+          "default": "all",
+          "enum": ["all", "ancombc1", "ancombc2", "deseq2"],
+          "description": "Differential abundance method selected in the main processing workflow. Validation checks the outputs from the selected method or all three when set to 'all'."
         }
       }
     },

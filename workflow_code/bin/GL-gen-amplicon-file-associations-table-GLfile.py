@@ -34,6 +34,8 @@ parser.add_argument("--output",
                     help = 'Name of output log file (default: "<GLDS-ID>_[<output_prefix>]-associated-file-names.tsv", with appended prefix if one is provided)',
                     default = "", action = "store")
 parser.add_argument("-p", "--output-prefix", help = "Output additional file prefix if there is one", action = "store", default = "")
+parser.add_argument("--diff-abund-method", choices=["all", "ancombc1", "ancombc2", "deseq2"], default="all",
+                    help="Differential abundance method selected in the processing workflow.")
 parser.add_argument("--additional-string-to-remove-from-unique-filenames",
                     help = "If there is any additional text to remove from unqiue filenames, it can be provided here.",
                     action = "store")
@@ -152,8 +154,7 @@ def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
 
             # Test to see if the sequence counts are presented as raw counts
             # or as decimal representation of a million
-            max_count = curr_df.iloc[:,1].max()
-            if not isinstance(max_count, int):
+            if not pd.api.types.is_integer_dtype(curr_df.iloc[:, 1]):
                 curr_df.iloc[:,-1] = curr_df.iloc[:,-1] * 1000000  # convert to raw counts
 
             curr_df.columns = ["sample", "counts"]
@@ -168,15 +169,14 @@ def get_read_counts_from_raw_multiqc(mapping_tab, raw_multiqc_stats_file_path,
         return(df)
 
     else:
-        input_zip = os.path.join(raw_multiqc_dir, output_prefix + raw_multiqc_zip)
+        input_zip = os.path.join(raw_multiqc_dir, raw_multiqc_zip)
         zip_file = zipfile.ZipFile(input_zip)
         #df = pd.read_csv(zip_file.open(raw_multiqc_stats_file_path), sep = "\t", usecols = [0,6])
         df = pd.read_csv(zip_file.open(raw_multiqc_stats_file_path), sep = "\t")
         df = df.iloc[:,[0,-1]] # retrieve the samples column[0] and  last column[-1] which is reads counts column
         # Test to see if the sequence counts are presented as raw counts
         # or as decimal representation of a million
-        max_count = df.iloc[:,1].max()
-        if not isinstance(max_count, int):
+        if not pd.api.types.is_integer_dtype(df.iloc[:, 1]):
             df.iloc[:,-1] = df.iloc[:,-1] * 1000000  # convert to raw counts
         df.columns = ["sample", "counts"]
         df.set_index("sample", inplace = True)
@@ -243,7 +243,7 @@ def write_colnames(include_raw_fastq, include_raw_multiqc_in_output):
 
 
 
-def collect_final_outputs_columns(final_outputs_dir, Type, file_prefix, output_prefix, assay_suffix):
+def collect_final_outputs_columns(final_outputs_dir, Type, file_prefix, output_prefix, assay_suffix, diff_abund_method="all"):
     """
     Returns a dict with each new column as key and a comma-separated string of files as value
     """
@@ -317,6 +317,8 @@ def collect_final_outputs_columns(final_outputs_dir, Type, file_prefix, output_p
 
         # method-specific
         for method in ["ANCOMBC1", "ANCOMBC2", "DESeq2"]:
+            if diff_abund_method not in ("all", method.lower()):
+                continue
             subdir = os.path.join(da_dir, method.lower())
             if os.path.isdir(subdir):
                 method_files = sorted([file_prefix + f for f in os.listdir(subdir) if not ("volcano" in f.lower() and f.lower().endswith(".png"))])
@@ -352,7 +354,7 @@ def create_association_table(header_colnames, multiqc,
                              filtered_suffix, filtered_R1_suffix, filtered_R2_suffix,
                              single_ended, force_single_end, sample_raw_prefix_dict,
                              final_outputs_dir, Type,
-                             include_raw_fastq, include_raw_multiqc_in_output, read_count_unit = "read"):
+                             include_raw_fastq, include_raw_multiqc_in_output, read_count_unit="read", diff_abund_method="all"):
     """Create association table and add data rows to it"""
 
     # Initialize association table
@@ -384,7 +386,8 @@ def create_association_table(header_colnames, multiqc,
             curr_filt_data = [file_prefix + sample + filtered_R1_suffix, 
                               file_prefix + sample + filtered_R2_suffix]
 
-        final_outputs_dict = collect_final_outputs_columns(final_outputs_dir, Type, file_prefix, output_prefix, assay_suffix)
+        final_outputs_dict = collect_final_outputs_columns(final_outputs_dir, Type, file_prefix, output_prefix,
+                                                           assay_suffix, diff_abund_method)
 
         curr_row_as_list = [sample_file_dict[sample]]
 
@@ -406,15 +409,15 @@ def create_association_table(header_colnames, multiqc,
                                  ", ".join(curr_filt_data),
                                  filtered_multiqc,
                                  final_outputs_dict["Taxonomy and ASV Counts Data"],
-                                 final_outputs_dict["Alpha Diversity Data"],
-                                 final_outputs_dict["Beta Diversity Data"],
-                                 final_outputs_dict["Beta Diversity Data/Bray-Curtis"],
-                                 final_outputs_dict["Beta Diversity Data/Euclidean_distance"],
-                                 final_outputs_dict["Taxonomy Plots"],
-                                 final_outputs_dict["Differential Abundance"],
-                                 final_outputs_dict["Differential Abundance/ANCOMBC1"],
-                                 final_outputs_dict["Differential Abundance/ANCOMBC2"],
-                                 final_outputs_dict["Differential Abundance/DESeq2"]])
+                                 final_outputs_dict.get("Alpha Diversity Data", ""),
+                                 final_outputs_dict.get("Beta Diversity Data", ""),
+                                 final_outputs_dict.get("Beta Diversity Data/Bray-Curtis", ""),
+                                 final_outputs_dict.get("Beta Diversity Data/Euclidean_distance", ""),
+                                 final_outputs_dict.get("Taxonomy Plots", ""),
+                                 final_outputs_dict.get("Differential Abundance", ""),
+                                 final_outputs_dict.get("Differential Abundance/ANCOMBC1", ""),
+                                 final_outputs_dict.get("Differential Abundance/ANCOMBC2", ""),
+                                 final_outputs_dict.get("Differential Abundance/DESeq2", "")])
 
         # Append row to the association dataframe
         association_df.loc[len(association_df)] = curr_row_as_list
@@ -515,10 +518,10 @@ def main():
     filtered_multiqc_html = f"filtered_multiqc{assay_suffix}.html"
     if include_raw_multiqc_in_output:
         raw_multiqc_html = f"raw_multiqc{assay_suffix}.html"
-        multiqc = [file_prefix + output_prefix + raw_multiqc_html + "," + file_prefix + output_prefix + raw_multiqc_zip, 
-                  file_prefix + output_prefix + filtered_multiqc_html + "," + file_prefix + output_prefix + filtered_multiqc_zip]
+        multiqc = [file_prefix + raw_multiqc_html + "," + file_prefix + raw_multiqc_zip,
+                   file_prefix + filtered_multiqc_html + "," + file_prefix + filtered_multiqc_zip]
     else:
-        multiqc = [file_prefix + output_prefix + filtered_multiqc_html + "," + file_prefix + output_prefix + filtered_multiqc_zip]
+        multiqc = file_prefix + filtered_multiqc_html + "," + file_prefix + filtered_multiqc_zip
     
     # Retrieve a dictionary with sample names as keys and raw fastqfile prefix as values 
     sample_raw_prefix_dict = runsheet_to_dict(args.runsheet) if args.runsheet != "" else ""
@@ -532,7 +535,8 @@ def main():
                              filtered_suffix, filtered_R1_suffix, filtered_R2_suffix,
                              args.single_ended, args.force_single_end, sample_raw_prefix_dict,
                              final_outputs_dir, Type,
-                             include_raw_fastq, include_raw_multiqc_in_output, read_count_unit = "read")
+                             include_raw_fastq, include_raw_multiqc_in_output,
+                             read_count_unit="read", diff_abund_method=args.diff_abund_method)
     
 
     write_association_table(outfile, association_df, args.primers_already_trimmed)
