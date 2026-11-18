@@ -143,22 +143,25 @@ process GENERATE_CURATION_TABLE {
 
 
 process GENERATE_MD5SUMS {
-    
+    cache false
+
     beforeScript "chmod +x ${projectDir}/bin/*"
     tag "Generating md5sums for the files to be released on OSDR..."
  
     input:
         val(processed_dir)
-        val(done_token)
+        path(readme)
+        path(processing_info)
 
     output:
         path({ "${cleanedPrefix()}raw_md5sum${params.assay_suffix}.tsv" }), emit: raw_md5sum, optional: true
         path({ "${cleanedPrefix()}processed_md5sum${params.assay_suffix}.tsv" }), emit: processed_md5sum
     script:
-        def raw_md5_flag = (!params.force_single_end && params.include_raw_data) ? "--generate_raw_md5sums" : ""
-        def primers_flag = params.trim_primers ? "" : "--primers_already_trimmed"
+        def raw_md5_flag = (!params.force_single_end && enabled(params.include_raw_data)) ? "--generate_raw_md5sums" : ""
+        def primers_flag = enabled(params.trim_primers) ? "" : "--primers_already_trimmed"
         """
-        generate_md5sums.py --outdir ${processed_dir} --assay_suffix '${params.assay_suffix}' --output_prefix '${cleanedPrefix()}' ${raw_md5_flag} ${primers_flag}
+        generate_md5sums.py --outdir '${processed_dir}' --readme ${readme} --processing_info ${processing_info} \\
+            --assay_suffix '${params.assay_suffix}' --output_prefix '${cleanedPrefix()}' ${raw_md5_flag} ${primers_flag}
         """
 }
 
