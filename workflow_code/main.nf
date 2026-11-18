@@ -2,6 +2,10 @@ nextflow.enable.dsl = 2
 
 include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 
+params {
+    trim_primers: Boolean
+}
+
 // Stage analysis setup (inputs, and raw reads)
 include { STAGE_ANALYSIS } from './subworkflows/stage_analysis.nf'
 
@@ -26,7 +30,7 @@ include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
 include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
 include { DESEQ } from './modules/deseq.nf'
 include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
-include { SOFTWARE_VERSIONS; cleanedPrefix; enabled } from './modules/utils.nf'
+include { SOFTWARE_VERSIONS; cleanedPrefix } from './modules/utils.nf'
 
 // A function to delete white spaces from an input string and covert it to lower case
 def deleteWS(string){
@@ -126,7 +130,7 @@ workflow {
     } 
     
     // Test input csv file
-    if (!params.accession && params.input_file && enabled(params.trim_primers)) {
+    if (!params.accession && params.input_file && params.trim_primers) {
         // Test primers
         if(!params.F_primer || !params.R_primer){
 
@@ -191,7 +195,7 @@ workflow {
     trimmed_reads_ch = channel.empty()
     trimmed_reads_counts = channel.empty()
     cutadapt_logs = channel.empty()
-    if (enabled(params.trim_primers)) {
+    if (params.trim_primers) {
 
         //if(!params.accession) primers_ch = channel.value([params.F_primer, params.R_primer]) // to be removed once stage analysis workflow is implemented
         CUTADAPT(staged_reads_ch, primers_ch)

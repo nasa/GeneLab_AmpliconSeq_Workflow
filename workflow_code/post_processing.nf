@@ -2,9 +2,16 @@ nextflow.enable.dsl=2
 
 include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 
+params {
+    trim_primers: Boolean
+    single_end: Boolean
+    include_raw_data: Boolean
+    include_raw_multiqc: Boolean
+}
+
 include { PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
            GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
-include { cleanedPrefix; enabled } from './modules/utils.nf'
+include { cleanedPrefix } from './modules/utils.nf'
 
 
 workflow {
@@ -65,7 +72,7 @@ workflow {
         }
 
         // If force_single_end is set, ignore include_raw_data and include_raw_multiqc as they should reflect paired-end data which is assumed to have been already included
-        if (params.force_single_end && (enabled(params.include_raw_data) || enabled(params.include_raw_multiqc))) {
+        if (params.force_single_end && (params.include_raw_data || params.include_raw_multiqc)) {
             log.warn "force_single_end is set — --include_raw_data and --include_raw_multiqc will both be ignored."
         }
 
@@ -80,7 +87,7 @@ workflow {
        }
 
        processing_scripts_dir = channel.fromPath("${processed_dir}/processing_scripts", type: 'dir')
-       raw_multiqc_report_dir = enabled(params.include_raw_multiqc) && !params.force_single_end
+       raw_multiqc_report_dir = params.include_raw_multiqc && !params.force_single_end
            ? channel.fromPath("${processed_dir}/Raw_Sequence_Data/MultiQC_Reports", type: 'dir')
            : channel.value([])
        final_outputs_dir = channel.fromPath("${processed_dir}/Final_Outputs", type: 'dir')

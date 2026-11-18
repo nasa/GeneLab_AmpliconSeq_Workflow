@@ -2,7 +2,7 @@
 *********************  ASV generation using Dada2 ***************************************
 ****************************************************************************************/
 
-include { cleanedPrefix; enabled } from './utils.nf'
+include { cleanedPrefix } from './utils.nf'
 
 process RUN_DADA2 {
 
@@ -24,7 +24,7 @@ process RUN_DADA2 {
         path("${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv"),  emit: taxonomy_count
         path("versions.txt"),                                                      emit: version
     script:
-        def trim_primers = enabled(params.trim_primers)
+        def trim_primers = params.trim_primers
         def input_dir     = trim_primers ? "Trimmed_Sequence_Data/" : "raw_reads/"
         def trimmed_count = trim_primers ? "${trimmed_read_counts}" : ""
         def trimming_reverse = params.force_single_end == "R2"
