@@ -1,3 +1,5 @@
+include { assaySuffix } from './utils.nf'
+
 /**************************************************************************************** 
 *********************  Sequence quality assessment and control processes ****************
 ****************************************************************************************/
@@ -43,9 +45,9 @@ process MULTIQC {
         path(multiqc_config)
         path(files)
     output:
-        path("${prefix}_multiqc${params.assay_suffix}_data.zip"), emit: zipped_data
-        path("${prefix}_multiqc${params.assay_suffix}.html"), emit: html
-        path("${prefix}_multiqc${params.assay_suffix}_data"), emit: data
+        path({ "${prefix}_multiqc${assaySuffix()}_data.zip" }), emit: zipped_data
+        path({ "${prefix}_multiqc${assaySuffix()}.html" }), emit: html
+        path({ "${prefix}_multiqc${assaySuffix()}_data" }), emit: data
         path("versions.txt"), emit: version
     script:
         """
@@ -53,13 +55,13 @@ process MULTIQC {
             --force \\
             --interactive \\
             -o . \\
-            -n ${prefix}_multiqc${params.assay_suffix} \\
+            -n ${prefix}_multiqc${assaySuffix()} \\
             --cl-config 'max_table_rows: 99999999' \\
             --config ${multiqc_config} \\
             ${files} > /dev/null 2>&1
 
         # Clean paths and create zip
-        clean_multiqc_paths.py ${ prefix }_multiqc${ params.assay_suffix }_data .
+        clean_multiqc_paths.py ${ prefix }_multiqc${ assaySuffix() }_data .
 
         multiqc --version > versions.txt
         """

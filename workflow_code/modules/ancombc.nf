@@ -22,8 +22,8 @@ process ANCOMBC {
 
     output:
         path("differential_abundance/${method}/"), emit: output_dir
-        path("differential_abundance/${params.cleaned_prefix}contrasts${meta.assay_suffix}.csv"), emit: contrasts_file, optional: true
-        path("differential_abundance/${params.cleaned_prefix}SampleTable${meta.assay_suffix}.csv"), emit: sample_table_file, optional: true
+        path("differential_abundance/${meta.output_prefix}contrasts${meta.assay_suffix}.csv"), emit: contrasts_file, optional: true
+        path("differential_abundance/${meta.output_prefix}SampleTable${meta.assay_suffix}.csv"), emit: sample_table_file, optional: true
         path("versions.txt"), emit: version
 
     script:      
@@ -41,7 +41,7 @@ process ANCOMBC {
                   --group '${meta.group}' \\
                   --samples-column '${meta.samples}' \\
                   --assay-suffix  '${meta.assay_suffix}' \\
-                  --output-prefix  '${params.cleaned_prefix}' \\
+                  --output-prefix  '${meta.output_prefix}' \\
                   --cpus ${task.cpus} \\
                   --target-region  '${meta.target_region}' \\
                   --prevalence-cutoff ${meta.prevalence_cutoff} \\

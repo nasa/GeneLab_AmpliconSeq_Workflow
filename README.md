@@ -14,7 +14,7 @@
 
 ### Implementation Tools
 
-The current GeneLab Illumina amplicon sequencing data processing pipeline (AmpIllumina), [GL-DPPD-7104-D.md](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-D.md), is implemented as a [Nextflow](https://nextflow.io/) DSL2 workflow and utilizes [Singularity](https://docs.sylabs.io/guides/3.10/user-guide/introduction.html) containers, [Docker](https://docs.docker.com/get-started/) containers, or [conda](https://docs.conda.io/en/latest/) environments to install/run all tools. This workflow is run using the command line interface (CLI) of any unix-based system.  While knowledge of creating workflows in Nextflow is not required to run the workflow as is, [the Nextflow documentation](https://nextflow.io/docs/latest/index.html) is a useful resource for users who want to modify and/or extend this workflow.   
+The current GeneLab Illumina amplicon sequencing data processing pipeline (AmpIllumina), [GL-DPPD-7104-C.md](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md), is implemented as a [Nextflow](https://nextflow.io/) DSL2 workflow and utilizes [Singularity](https://docs.sylabs.io/guides/3.10/user-guide/introduction.html) containers, [Docker](https://docs.docker.com/get-started/) containers, or [conda](https://docs.conda.io/en/latest/) environments to install/run all tools. This workflow is run using the command line interface (CLI) of any unix-based system.  While knowledge of creating workflows in Nextflow is not required to run the workflow as is, [the Nextflow documentation](https://nextflow.io/docs/latest/index.html) is a useful resource for users who want to modify and/or extend this workflow.   
 
 ### Resource Requirements <!-- omit in toc -->
 
@@ -22,7 +22,7 @@ The table below details the default maximum resource allocations for individual 
 
 | CPU Cores | Memory |
 |-------------------|----------------|
-| 2                 | 5 GB           |
+| 10                | 20 GB          |
 
 > **Note:** These per-process resource allocations are defaults. They can be adjusted by modifying `cpus` and `memory` directives in the configuration file: [`nextflow.config`](workflow_code/nextflow.config).
 
@@ -39,10 +39,10 @@ The table below details the default maximum resource allocations for individual 
 3. [Fetch Singularity Images](#3-fetch-singularity-images)  
 
 4. [Run the Workflow](#4-run-the-workflow)  
-   4a. [Approach 1: Start with OSD or GLDS accession as input](#4a-approach-1-start-with-an-osd-or-glds-accession-as-input)  
+   4a. [Approach 1: Start with OSD or GLDS accession as input](#4a-approach-1-start-with-osd-or-glds-accession-as-input)  
    4b. [Approach 2: Start with a runsheet csv file as input](#4b-approach-2-start-with-a-runsheet-csv-file-as-input)  
    4c. [Approach 3: Run the workflow using an ISA Archive](#4c-approach-3-run-the-workflow-using-an-isa-archive)  
-   4d. [Modify parameters and compute resources in the Nextflow config file](#4c-modify-parameters-and-compute-resources-in-the-nextflow-config-file)  
+   4d. [Modify parameters and compute resources in the Nextflow config file](#4d-modify-parameters-and-compute-resources-in-the-nextflow-config-file)  
 
 5. [Workflow Outputs](#5-workflow-outputs)  
    5a. [Main outputs](#5a-main-outputs)  
@@ -108,7 +108,7 @@ Although Nextflow can fetch Singularity images from a url, doing so may cause is
 
 To avoid this issue, run the following command to fetch the Singularity images prior to running the NF_AmpIllumina workflow:
 
-> Note: This command should be run in the location containing the `NF_AmpIllumina_1.0.10` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
+> Note: This command should be run in the `NF_AmpIllumina_1.0.10` directory that was downloaded in [step 2](#2-download-the-workflow-files) above. Depending on your network speed, fetching the images will take ~20 minutes. Approximately 4GB of RAM is needed to download and build the Singularity images.
 
 ```bash
 bash ./bin/prepull_singularity.sh nextflow.config
@@ -173,7 +173,7 @@ nextflow run main.nf \
    -resume \
    -profile singularity \
    --target_region 16S \
-   --accession OSD-487
+   --accession OSD-487 \
    --isa_archive </path/to/isaArchive> 
 ```
 
@@ -183,7 +183,7 @@ nextflow run main.nf \
 **Required Parameters For All Approaches:**
 
 * `main.nf` - Instructs Nextflow to run the NF_AmpIllumina workflow. If running in a directory other than `NF_AmpIllumina_1.0.10`, replace with the full path to the NF_AmpIllumina main.nf workflow file.
-* `-resume` - Resumes  workflow execution using previously cached results
+* `-resume` - Resumes workflow execution using previously cached results
 * `-profile` – Specifies the configuration profile(s) to load (multiple options can be provided as a comma-separated list)
    * Software environment profile options (choose one):
       * `singularity` - instructs Nextflow to use Singularity container environments
@@ -196,7 +196,7 @@ nextflow run main.nf \
 * `--target_region` - Specifies the amplicon target region to be analyzed (type: string, options: 16S, 18S, or ITS, default: 16S)
 
 
-**Additional Required Parameters For [Approach 1](#4a-approach-1-start-with-an-osd-or-glds-accession-as-input)**   
+**Additional Required Parameters For [Approach 1](#4a-approach-1-start-with-osd-or-glds-accession-as-input)**   
 
 * `--accession` - The OSD or GLDS accession number specifying the [OSDR](https://osdr.nasa.gov/bio/repo/) dataset to process, e.g. OSD-487 or GLDS-487 (type: string, default: null)
   > *Note: Not all datasets have the same OSD and GLDS number, so make sure the correct OSD or GLDS number is specified*
@@ -265,7 +265,7 @@ Once you've downloaded the workflow template, you can modify the parameters in t
 
 #### 5a. Main Outputs
 
-The outputs from this pipeline are documented in the [GL-DPPD-7104-D](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-D.md) processing protocol.
+The outputs from this pipeline are documented in the [GL-DPPD-7104-C](https://github.com/nasa/GeneLab_Data_Processing/blob/master/Amplicon/Illumina/Pipeline_GL-DPPD-7104_Versions/GL-DPPD-7104-C.md) processing protocol.
 
 Additional outputs are described below:
 - GeneLab/software_versions_<assay_suffix>.txt (version capturing file for all tools and packages used in the pipeline)

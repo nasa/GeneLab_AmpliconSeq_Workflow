@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nasa/GeneLab_AmpliconSeq_Workflow/main/workflow_code/nextflow_schema.json",
     "title": "NASA GeneLab Data Processing AmpliconSeq pipeline parameters",
-    "description": "Amplicon Illumina workflow for pipeline document GL-DPPD-7104-D",
+    "description": "Amplicon Illumina workflow for pipeline document GL-DPPD-7104-C",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -49,7 +49,12 @@
                 "assay_suffix": {
                     "type": "string",
                     "default": "_GLAmpSeq",
-                    "description": "A string appended to output file names to label the assay type."
+                    "description": "Base suffix for output filenames. The target region is prepended when prepend_target_region is true."
+                },
+                "prepend_target_region": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use target_region as the <tech_type> filename label, for example counts_16S_GLAmpSeq.tsv. Set to false to use assay_suffix as provided."
                 },
                 "output_prefix": {
                     "type": "string",

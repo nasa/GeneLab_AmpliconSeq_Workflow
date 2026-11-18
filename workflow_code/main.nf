@@ -1,24 +1,63 @@
 nextflow.enable.dsl = 2
 
-include { validateParameters } from 'plugin/nf-schema'
+include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 
-def prefix = params.output_prefix ?: ""
-params.cleaned_prefix = (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
+params {
+    trim_primers: Boolean
+    limit_samples_to: Integer?
+    prepend_target_region: Boolean
+}
 
-validateParameters()
+// Stage analysis setup (inputs, and raw reads)
+include { STAGE_ANALYSIS } from './subworkflows/stage_analysis.nf'
 
-// Terminal text color definitions
-c_back_bright_red = "\u001b[41;1m";
-c_bright_green    = "\u001b[32;1m";
-c_blue            = "\033[0;34m";
-c_reset           = "\033[0m";
+// Read quality check and filtering
+include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
 
-/************************************************
-*********** Show pipeline parameters ************
-*************************************************/
-if(params.debug){
+// Trim primers if requested
+include { CUTADAPT ; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
 
-log.info """${c_blue}
+// Cluster ASVs
+include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
+include { RUN_DADA2 } from './modules/run_dada.nf'
+
+// Filtered quality check
+include { FASTQC as FILTERED_FASTQC ; MULTIQC as FILTERED_MULTIQC  } from './modules/quality_assessment.nf'
+
+// Diversity, differential abundance and visualizations
+include { ALPHA_DIVERSITY; BETA_DIVERSITY } from './modules/diversity.nf'
+include { PLOT_TAXONOMY } from './modules/taxonomy_plots.nf'
+include { ZIP as ZIP_BIOM; ZIP as ZIP_ALPHA; ZIP as ZIP_BETA_EUCLIDEAN; ZIP as ZIP_BETA_BRAY; ZIP as ZIP_TAXONOMY_SAMPLES; ZIP as ZIP_TAXONOMY_GROUPS } from './modules/zip.nf'
+include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
+include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
+include { DESEQ } from './modules/deseq.nf'
+include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
+include { SOFTWARE_VERSIONS; cleanedPrefix; assaySuffix } from './modules/utils.nf'
+
+// A function to delete white spaces from an input string and covert it to lower case
+def deleteWS(string){
+
+    return string.replaceAll(/\s+/, '').toLowerCase()
+
+}
+
+
+workflow {
+    main:
+    if (params.help) {
+        log.info paramsHelp([showHidden: params.showHidden], params.help in [true, "true"] ? "" : params.help)
+        exit 0
+    }
+
+    validateParameters()
+
+
+    /************************************************
+    *********** Show pipeline parameters ************
+    *************************************************/
+    if(params.debug){
+
+    log.info """
          Nextflow AmpIllumina Consensus Pipeline: $workflow.manifest.version
          
          You have set the following parameters:
@@ -28,7 +67,7 @@ log.info """${c_blue}
          Input csv file : ${params.input_file}
          Output directory: ${params.outdir}
          Database Store Directory: ${params.database_store_path}
-         Genelab Assay Suffix: ${params.assay_suffix}
+         Genelab Assay Suffix: ${assaySuffix()}
          Output Prefix: ${params.output_prefix}
          Trim Primers: ${params.trim_primers}
 
@@ -75,79 +114,42 @@ log.info """${c_blue}
          Diversity and Differential abundance : ${params.conda_diversity}
          zip: ${params.conda_zip}
          wget: ${params.conda_wget}
-         ${c_reset}"""
-}
+         """
+    }
 
-// Stage analysis setup (inputs, and raw reads)
-include { STAGE_ANALYSIS } from './subworkflows/stage_analysis.nf'
+    def ch_dp_tools_plugin = params.dp_tools_plugin ? channel.value(file(params.dp_tools_plugin)) : channel.value(file("$projectDir/bin/dp_tools__NF_AmpIllumina_${params.target_region}"))
 
-// Read quality check and filtering
-include { FASTQC as RAW_FASTQC ; MULTIQC as RAW_MULTIQC  } from './modules/quality_assessment.nf'
-
-// Trim primers if requested
-include { CUTADAPT ; COMBINE_CUTADAPT_LOGS_AND_SUMMARIZE } from './modules/cutadapt.nf'
-
-// Cluster ASVs
-include { DOWNLOAD_DATABASE } from './modules/download_database.nf'
-include { RUN_DADA2 } from './modules/run_dada.nf'
-
-// Filtered quality check
-include { FASTQC as FILTERED_FASTQC ; MULTIQC as FILTERED_MULTIQC  } from './modules/quality_assessment.nf'
-
-// Diversity, differential abundance and visualizations
-include { ALPHA_DIVERSITY; BETA_DIVERSITY } from './modules/diversity.nf'
-include { PLOT_TAXONOMY } from './modules/taxonomy_plots.nf'
-include { ZIP as ZIP_BIOM; ZIP as ZIP_ALPHA; ZIP as ZIP_BETA_EUCLIDEAN; ZIP as ZIP_BETA_BRAY; ZIP as ZIP_TAXONOMY_SAMPLES; ZIP as ZIP_TAXONOMY_GROUPS } from './modules/zip.nf'
-include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
-include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
-include { DESEQ } from './modules/deseq.nf'
-include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
-include { SOFTWARE_VERSIONS } from './modules/utils.nf'
-
-ch_dp_tools_plugin = params.dp_tools_plugin ? channel.value(file(params.dp_tools_plugin)) : channel.value(file("$projectDir/bin/dp_tools__NF_AmpIllumina_${params.target_region}"))
-
-ch_input_file = params.input_file ? channel.fromPath(params.input_file) : null
-ch_isa_archive = params.isa_archive ? channel.fromPath(params.isa_archive) : null
-
-// A function to delete white spaces from an input string and covert it to lower case
-def deleteWS(string){
-
-    return string.replaceAll(/\s+/, '').toLowerCase()
-
-}
-
-
-workflow {
-    main:
+    def ch_input_file = params.input_file ? channel.fromPath(params.input_file) : null
+    def ch_isa_archive = params.isa_archive ? channel.fromPath(params.isa_archive) : null
 
     //  ---------------------  Sanity Checks ------------------------------------- //
     // Test input requirement
     if (!params.accession &&  !params.input_file){
-       error("""${c_back_bright_red}INPUT ERROR! 
+       error("""INPUT ERROR! 
               Please supply either an accession (OSD or Genelab number) or an input CSV file
               by passing either to the --accession or --input_file parameter, respectively.
-              ${c_reset}""")
+              """)
     } 
     
     // Test input csv file
-    if(params.input_file){
+    if (!params.accession && params.input_file && params.trim_primers) {
         // Test primers
         if(!params.F_primer || !params.R_primer){
 
-            error("""${c_back_bright_red}PRIMER ERROR! 
+            error("""PRIMER ERROR! 
                   When using a csv file as input (--input_file) to this workflow you must provide 
                   forward and reverse primer sequences. Please provide your forward 
                   and reverse primer sequences as arguements to the --F_primer 
                   and --R_primer parameters, respectively.
-                  ${c_reset}""")
+                  """)
          }
     }
 
     // Test ISA archive and accession
     if (params.isa_archive && !params.accession) {
-        error """${c_back_bright_red}INPUT ERROR!
+        error """INPUT ERROR!
             --isa_archive requires --accession to resolve OSD/GLDS accessions
-            for the ISA-to-runsheet conversion.${c_reset}"""
+            for the ISA-to-runsheet conversion."""
     }
 
     software_versions_ch = channel.empty()
@@ -183,8 +185,8 @@ workflow {
 
     // Download reference database for taxonomic classification
     def db_config = [
-            "16S": ["SILVA_SSU_r138_2_v2.RData", "https://api.figshare.com/v2/file/download/64078939"],
-            "ITS": ["UNITE_v2025.RData", "https://api.figshare.com/v2/file/download/64079011"],
+            "16S": ["SILVA_SSU_r138_2_2024.RData", "https://api.figshare.com/v2/file/download/52846199"],
+            "ITS": ["UNITE_v2024_April2024.RData", "https://api.figshare.com/v2/file/download/52846346"],
             "18S": ["PR2_v4_13_March2021.RData", "https://api.figshare.com/v2/file/download/46241917"]
         ]
     target_region_ch = Channel.value(params.target_region)
@@ -195,7 +197,7 @@ workflow {
     trimmed_reads_ch = channel.empty()
     trimmed_reads_counts = channel.empty()
     cutadapt_logs = channel.empty()
-    if(params.trim_primers){
+    if (params.trim_primers) {
 
         //if(!params.accession) primers_ch = channel.value([params.F_primer, params.R_primer]) // to be removed once stage analysis workflow is implemented
         CUTADAPT(staged_reads_ch, primers_ch)
@@ -233,7 +235,7 @@ workflow {
                      .collate(2)
         
         // Run dada2 without primer trimming
-        RUN_DADA2(samples_ch, raw_reads_ch, file("NO_FILE"), DOWNLOAD_DATABASE.out.database)
+        RUN_DADA2(samples_ch, raw_reads_ch, [], DOWNLOAD_DATABASE.out.database)
     }
 
     dada_counts = RUN_DADA2.out.counts
@@ -244,14 +246,14 @@ workflow {
     filtered_reads_ch = RUN_DADA2.out.reads
             .flatten()
             .map { file ->
-                    // derive sample_id from filename
-                    def sample_id
-                    if (file.name.endsWith("${params.assay_suffix}_R1_filtered.fastq.gz")) {
-                            sample_id = file.name.replace("${params.assay_suffix}_R1_filtered.fastq.gz", "")
-                    } else if (file.name.endsWith("${params.assay_suffix}_R2_filtered.fastq.gz")) {
-                            sample_id = file.name.replace("${params.assay_suffix}_R2_filtered.fastq.gz", "")
+                    def suffixes = ["_R1", "_R2", ""].collect { read ->
+                        "${assaySuffix()}${read}_filtered.fastq.gz"
                     }
-
+                    def suffix = suffixes.find { file.name.endsWith(it) }
+                    if (!suffix) {
+                        error "Unexpected filtered read filename: ${file.name}"
+                    }
+                    def sample_id = file.name.substring(0, file.name.length() - suffix.length())
                     tuple(sample_id, file)
             }
             .groupTuple(by:0)  // group R1/R2 by sample_id
@@ -285,8 +287,8 @@ workflow {
         values = ["samples": "Sample Name",
                 "group" : "groups",
                 "depth" : params.rarefaction_depth,
-                "assay_suffix" : params.assay_suffix,
-                "output_prefix" : params.cleaned_prefix,
+                "assay_suffix" : assaySuffix(),
+                "output_prefix" : cleanedPrefix(),
                 "target_region" : params.target_region,
                 "library_cutoff" : params.library_cutoff,
                 "prevalence_cutoff" : params.prevalence_cutoff,
@@ -301,8 +303,8 @@ workflow {
         values = ["samples": params.samples_column,
                 "group" : params.group,
                 "depth" : params.rarefaction_depth,
-                "assay_suffix" : params.assay_suffix,
-                "output_prefix" : params.cleaned_prefix,
+                "assay_suffix" : assaySuffix(),
+                "output_prefix" : cleanedPrefix(),
                 "target_region" : params.target_region,
                 "library_cutoff" : params.library_cutoff,
                 "prevalence_cutoff" : params.prevalence_cutoff,
@@ -310,7 +312,7 @@ workflow {
                 "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
                 ]
         
-        metadata  =  ch_input_file
+        metadata  =  runsheet_ch
 
     }
     meta  = channel.of(values)
@@ -463,7 +465,6 @@ workflow {
 
         ANCOMBC1("ancombc1", meta, dada_counts, dada_taxonomy, metadata, filtered_count)
         ancombc1_ch = ANCOMBC1.out.output_dir
-        da_contrasts_ch = ANCOMBC1.out.contrasts_file
         da_sampleTable_ch = ANCOMBC1.out.sample_table_file
         ANCOMBC1.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
@@ -474,6 +475,11 @@ workflow {
         DESEQ(meta, dada_counts, dada_taxonomy, metadata, ANCOMBC2.out.output_dir)
         deseq2_ch = DESEQ.out.output_dir
         DESEQ.out.version | mix(software_versions_ch) | set{software_versions_ch}
+
+        // Use the first available contrasts file in method order.
+        da_contrasts_ch = ANCOMBC1.out.contrasts_file
+            .concat(ANCOMBC2.out.contrasts_file, DESEQ.out.contrasts_file)
+            .take(1)
 
         // Zipping DA plots
 	    //ANCOMBC1
