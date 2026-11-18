@@ -2,7 +2,7 @@ include { GET_ACCESSIONS    } from '../modules/get_accessions.nf'
 include { FETCH_ISA         } from '../modules/fetch_isa.nf'
 include { ISA_TO_RUNSHEET   } from '../modules/isa_to_runsheet.nf'
 include { SELECT_RUNSHEET   } from '../modules/select_runsheet.nf'
-include { PARSE_RUNSHEET    } from './parse_runsheet.nf'
+include { PARSE_RUNSHEET; TRUNCATE_RUNSHEET } from './parse_runsheet.nf'
 include { COPY_READS        } from '../modules/copy_reads.nf'
 include { COPY_REMOTE_READS } from '../modules/copy_reads.nf'
 
@@ -91,6 +91,7 @@ workflow STAGE_ANALYSIS {
             runsheet_ch = SELECT_RUNSHEET.out.runsheet
 
             PARSE_RUNSHEET( runsheet_ch )
+            runsheet_ch = PARSE_RUNSHEET.out.runsheet
 
             // Extract primers from runsheet
             primers_ch = runsheet_ch
@@ -128,12 +129,26 @@ workflow STAGE_ANALYSIS {
             gl_file_ch     = channel.empty()
             primers_ch     = Channel.value([params.F_primer, params.R_primer])
 
-            reads_ch = input_file
+            def sample_limit = params.limit_samples_to ?: -1
+            if (sample_limit > 0) {
+                TRUNCATE_RUNSHEET( input_file, sample_limit )
+                runsheet_ch = TRUNCATE_RUNSHEET.out.truncated_runsheet
+            }
+
+            reads_ch = runsheet_ch
                 .splitCsv(header: true)
                 .map { row ->
-                    row.paired.trim().toLowerCase() == 'true'
-                        ? tuple("${row.sample_id}", [file("${row.forward}"), file("${row.reverse}")], "true")
-                        : tuple("${row.sample_id}", [file("${row.forward}")], "false")
+                    def paired = row.paired.trim().toLowerCase() == 'true'
+                    if (params.force_single_end == 'R2') {
+                        if (!paired || !row.reverse?.trim()) {
+                            error "Cannot use --force_single_end R2 for sample ${row.sample_id} because its runsheet row has no reverse read."
+                        }
+                        return tuple(row.sample_id, [file(row.reverse)], "false")
+                    }
+                    if (paired && !params.force_single_end) {
+                        return tuple(row.sample_id, [file(row.forward), file(row.reverse)], "true")
+                    }
+                    tuple(row.sample_id, [file(row.forward)], "false")
                 }
 
             COPY_READS( reads_ch )

@@ -3,6 +3,10 @@ def cleanedPrefix() {
     return (prefix && !prefix.endsWith("_") && !prefix.endsWith("-")) ? prefix + "_" : prefix
 }
 
+def enabled(value) {
+    return value?.toString()?.equalsIgnoreCase("true") == true
+}
+
 process SOFTWARE_VERSIONS {
 
     tag "Writing out software versions..."

@@ -2,7 +2,7 @@
 *********************  ASV generation using Dada2 ***************************************
 ****************************************************************************************/
 
-include { cleanedPrefix } from './utils.nf'
+include { cleanedPrefix; enabled } from './utils.nf'
 
 process RUN_DADA2 {
 
@@ -11,7 +11,7 @@ process RUN_DADA2 {
     input:
         tuple path(sample_IDs_file), val(isPaired)
         path(reads)
-        path(trimmed_read_counts) // or dummy NO_FILE if no trimming
+        path(trimmed_read_counts) // Empty when primers are already trimmed.
         path(database)
     output:
         path("*_filtered.fastq.gz"),                                               emit: reads
@@ -24,10 +24,14 @@ process RUN_DADA2 {
         path("${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv"),  emit: taxonomy_count
         path("versions.txt"),                                                      emit: version
     script:
-        def input_dir     = params.trim_primers ? "Trimmed_Sequence_Data/" : "raw_reads/"
-        def trimmed_count = params.trim_primers ? "${trimmed_read_counts}" : ""
+        def trim_primers = enabled(params.trim_primers)
+        def input_dir     = trim_primers ? "Trimmed_Sequence_Data/" : "raw_reads/"
+        def trimmed_count = trim_primers ? "${trimmed_read_counts}" : ""
+        def trimming_reverse = params.force_single_end == "R2"
+        def single_end_trunc = trimming_reverse ? params.right_trunc : params.left_trunc
+        def single_end_maxEE = trimming_reverse ? params.right_maxEE : params.left_maxEE
         
-        def starting_reads_suffix = params.trim_primers ? "trimmed" : "raw"
+        def starting_reads_suffix = trim_primers ? "trimmed" : "raw"
         def R1_suffix     = "${params.assay_suffix}_R1_${starting_reads_suffix}.fastq.gz"   
         def R2_suffix     = "${params.assay_suffix}_R2_${starting_reads_suffix}.fastq.gz"
         def single_end_suffix = isPaired == "false" ? (
@@ -57,7 +61,7 @@ process RUN_DADA2 {
                 "${params.right_trunc}" \\
                 "${params.left_maxEE}" \\
                 "${params.right_maxEE}" \\
-                "${params.trim_primers ? 'TRUE' : 'FALSE'}" \\
+                "${trim_primers ? 'TRUE' : 'FALSE'}" \\
                 ${sample_IDs_file} \\
                 "${input_dir}" \\
                 "${R1_suffix}" \\
@@ -71,9 +75,9 @@ process RUN_DADA2 {
                 "${database.name}"
         else
             Illumina-SE-R-processing.R \\
-                "${params.left_trunc}" \\
-                "${params.left_maxEE}" \\
-                "${params.trim_primers ? 'TRUE' : 'FALSE'}" \\
+                "${single_end_trunc}" \\
+                "${single_end_maxEE}" \\
+                "${trim_primers ? 'TRUE' : 'FALSE'}" \\
                 ${sample_IDs_file} \\
                 "${input_dir}" \\
                 "${single_end_suffix}" \\

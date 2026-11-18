@@ -21,13 +21,13 @@ def main():
     args = parser.parse_args()
 
     target = args.target.lower()
-    runsheet_files = glob.glob(f"{args.input_dir}/*.csv")
+    runsheet_files = glob.glob(os.path.join(args.input_dir, "*.csv"))
 
     if len(runsheet_files) == 0:
         sys.exit(f"Error: No runsheet CSV files found in {args.input_dir}/.")
 
     if args.specify_runsheet:
-        match = f"{args.input_dir}/{args.specify_runsheet}"
+        match = os.path.join(args.input_dir, args.specify_runsheet)
         if match in runsheet_files:
             shutil.copy(match, os.path.basename(match))
             print(f"Using specified runsheet: {args.specify_runsheet}")
@@ -38,18 +38,13 @@ def main():
                 f"Available: {[os.path.basename(f) for f in runsheet_files]}"
             )
 
-    if len(runsheet_files) == 1:
-        shutil.copy(runsheet_files[0], os.path.basename(runsheet_files[0]))
-        print(f"Single runsheet found, using: {os.path.basename(runsheet_files[0])}")
-        sys.exit(0)
-
-    # Multiple runsheets — filter by target region
     def get_target_region(filepath):
         with open(filepath, newline='') as f:
             reader = csv.DictReader(f)
             regions = set()
             for row in reader:
-                regions.add(row.get("Parameter Value[Library Selection]", "").lower())
+                region = row.get("Parameter Value[Library Selection]") or ""
+                regions.add(region.strip().lower())
             return regions
 
     matching = []

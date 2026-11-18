@@ -26,7 +26,7 @@ include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
 include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
 include { DESEQ } from './modules/deseq.nf'
 include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
-include { SOFTWARE_VERSIONS; cleanedPrefix } from './modules/utils.nf'
+include { SOFTWARE_VERSIONS; cleanedPrefix; enabled } from './modules/utils.nf'
 
 // A function to delete white spaces from an input string and covert it to lower case
 def deleteWS(string){
@@ -126,7 +126,7 @@ workflow {
     } 
     
     // Test input csv file
-    if(params.input_file){
+    if (!params.accession && params.input_file && enabled(params.trim_primers)) {
         // Test primers
         if(!params.F_primer || !params.R_primer){
 
@@ -191,7 +191,7 @@ workflow {
     trimmed_reads_ch = channel.empty()
     trimmed_reads_counts = channel.empty()
     cutadapt_logs = channel.empty()
-    if(params.trim_primers){
+    if (enabled(params.trim_primers)) {
 
         //if(!params.accession) primers_ch = channel.value([params.F_primer, params.R_primer]) // to be removed once stage analysis workflow is implemented
         CUTADAPT(staged_reads_ch, primers_ch)
@@ -229,7 +229,7 @@ workflow {
                      .collate(2)
         
         // Run dada2 without primer trimming
-        RUN_DADA2(samples_ch, raw_reads_ch, file("NO_FILE"), DOWNLOAD_DATABASE.out.database)
+        RUN_DADA2(samples_ch, raw_reads_ch, [], DOWNLOAD_DATABASE.out.database)
     }
 
     dada_counts = RUN_DADA2.out.counts
@@ -240,14 +240,14 @@ workflow {
     filtered_reads_ch = RUN_DADA2.out.reads
             .flatten()
             .map { file ->
-                    // derive sample_id from filename
-                    def sample_id
-                    if (file.name.endsWith("${params.assay_suffix}_R1_filtered.fastq.gz")) {
-                            sample_id = file.name.replace("${params.assay_suffix}_R1_filtered.fastq.gz", "")
-                    } else if (file.name.endsWith("${params.assay_suffix}_R2_filtered.fastq.gz")) {
-                            sample_id = file.name.replace("${params.assay_suffix}_R2_filtered.fastq.gz", "")
+                    def suffixes = ["_R1", "_R2", ""].collect { read ->
+                        "${params.assay_suffix}${read}_filtered.fastq.gz"
                     }
-
+                    def suffix = suffixes.find { file.name.endsWith(it) }
+                    if (!suffix) {
+                        error "Unexpected filtered read filename: ${file.name}"
+                    }
+                    def sample_id = file.name.substring(0, file.name.length() - suffix.length())
                     tuple(sample_id, file)
             }
             .groupTuple(by:0)  // group R1/R2 by sample_id
@@ -306,7 +306,7 @@ workflow {
                 "struc_zero": params.remove_struc_zeros ? "--remove-structural-zeros" : ""
                 ]
         
-        metadata  =  ch_input_file
+        metadata  =  runsheet_ch
 
     }
     meta  = channel.of(values)
@@ -459,7 +459,6 @@ workflow {
 
         ANCOMBC1("ancombc1", meta, dada_counts, dada_taxonomy, metadata, filtered_count)
         ancombc1_ch = ANCOMBC1.out.output_dir
-        da_contrasts_ch = ANCOMBC1.out.contrasts_file
         da_sampleTable_ch = ANCOMBC1.out.sample_table_file
         ANCOMBC1.out.version | mix(software_versions_ch) | set{software_versions_ch}
 
@@ -470,6 +469,11 @@ workflow {
         DESEQ(meta, dada_counts, dada_taxonomy, metadata, ANCOMBC2.out.output_dir)
         deseq2_ch = DESEQ.out.output_dir
         DESEQ.out.version | mix(software_versions_ch) | set{software_versions_ch}
+
+        // Use the first available contrasts file in method order.
+        da_contrasts_ch = ANCOMBC1.out.contrasts_file
+            .concat(ANCOMBC2.out.contrasts_file, DESEQ.out.contrasts_file)
+            .take(1)
 
         // Zipping DA plots
 	    //ANCOMBC1

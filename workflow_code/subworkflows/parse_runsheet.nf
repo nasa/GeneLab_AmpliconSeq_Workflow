@@ -26,6 +26,9 @@ def get_runsheet_paths(LinkedHashMap row) {
 }
 
 def mutate_to_single_end(it, read_choice) {
+    if (read_choice == 'R2' && !it[0].paired_end) {
+        error "Cannot use --force_single_end R2 for sample ${it[0].id} because its runsheet row has no reverse read."
+    }
     def new_meta = it[0].clone()
     new_meta.paired_end = false
     def chosen_read = read_choice == 'R1' ? it[1][0] : it[1][1]
@@ -43,11 +46,11 @@ process TRUNCATE_RUNSHEET {
 
     script:
     """
-    head -n 1 ${runsheet} > ${runsheet.baseName}_truncated.csv
+    head -n 1 ${runsheet} > "${runsheet.baseName}_truncated.csv"
     if [ ${limit} -gt 0 ]; then
-        tail -n +2 ${runsheet} | head -n ${limit} >> ${runsheet.baseName}_truncated.csv
+        tail -n +2 ${runsheet} | head -n ${limit} >> "${runsheet.baseName}_truncated.csv"
     else
-        tail -n +2 ${runsheet} >> ${runsheet.baseName}_truncated.csv
+        tail -n +2 ${runsheet} >> "${runsheet.baseName}_truncated.csv"
     fi
     """
 }
