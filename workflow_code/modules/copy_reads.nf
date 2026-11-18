@@ -1,3 +1,5 @@
+include { assaySuffix } from './utils.nf'
+
 /**
  * COPY_READS
  * 
@@ -30,21 +32,21 @@ process COPY_READS {
     script:
         if ( paired == 'true' ) {
         """
-        cp -P read1.gz ${sample_id}${params.assay_suffix}_R1_raw.fastq.gz
-        cp -P read2.gz ${sample_id}${params.assay_suffix}_R2_raw.fastq.gz
+        cp -P read1.gz ${sample_id}${assaySuffix()}_R1_raw.fastq.gz
+        cp -P read2.gz ${sample_id}${assaySuffix()}_R2_raw.fastq.gz
         """
         } else if ( paired == 'false') {
             if ( params.force_single_end == "R1" ) {
             """
-            cp -P read1.gz ${sample_id}${params.assay_suffix}_R1_raw.fastq.gz
+            cp -P read1.gz ${sample_id}${assaySuffix()}_R1_raw.fastq.gz
             """
             } else if ( params.force_single_end == "R2" ) {
             """
-            cp -P read1.gz ${sample_id}${params.assay_suffix}_R2_raw.fastq.gz
+            cp -P read1.gz ${sample_id}${assaySuffix()}_R2_raw.fastq.gz
             """
             } else { 
             """
-            cp -P read1.gz ${sample_id}${params.assay_suffix}_raw.fastq.gz
+            cp -P read1.gz ${sample_id}${assaySuffix()}_raw.fastq.gz
             """ 
             }
         }
@@ -63,21 +65,21 @@ process COPY_REMOTE_READS {
     script:
         if ( paired == 'true' ) {
         """
-        wget -O ${sample_id}${params.assay_suffix}_R1_raw.fastq.gz '${paths[0]}'
-        wget -O ${sample_id}${params.assay_suffix}_R2_raw.fastq.gz '${paths[1]}'
+        wget -O ${sample_id}${assaySuffix()}_R1_raw.fastq.gz '${paths[0]}'
+        wget -O ${sample_id}${assaySuffix()}_R2_raw.fastq.gz '${paths[1]}'
         """
         } else if ( paired == 'false') {
             if ( params.force_single_end == "R1" ) {
             """
-            wget -O ${sample_id}${params.assay_suffix}_R1_raw.fastq.gz '${paths[0]}'
+            wget -O ${sample_id}${assaySuffix()}_R1_raw.fastq.gz '${paths[0]}'
             """
             } else if ( params.force_single_end == "R2" ) {
             """
-            wget -O ${sample_id}${params.assay_suffix}_R2_raw.fastq.gz '${paths[0]}'
+            wget -O ${sample_id}${assaySuffix()}_R2_raw.fastq.gz '${paths[0]}'
             """
             } else { 
             """
-            wget -O ${sample_id}${params.assay_suffix}_raw.fastq.gz '${paths[0]}'
+            wget -O ${sample_id}${assaySuffix()}_raw.fastq.gz '${paths[0]}'
             """ 
             }
         }

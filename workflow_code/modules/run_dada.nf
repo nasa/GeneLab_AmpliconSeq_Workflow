@@ -2,7 +2,7 @@
 *********************  ASV generation using Dada2 ***************************************
 ****************************************************************************************/
 
-include { cleanedPrefix } from './utils.nf'
+include { cleanedPrefix; assaySuffix } from './utils.nf'
 
 process RUN_DADA2 {
 
@@ -15,13 +15,13 @@ process RUN_DADA2 {
         path(database)
     output:
         path("*_filtered.fastq.gz"),                                               emit: reads
-        path("${cleanedPrefix()}filtered-read-counts${params.assay_suffix}.tsv"), emit: filtered_count
-        path("${cleanedPrefix()}taxonomy${params.assay_suffix}.tsv"),             emit: taxonomy
-        path("${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.biom"), emit: biom
-        path("${cleanedPrefix()}ASVs${params.assay_suffix}.fasta"),               emit: fasta
-        path("${cleanedPrefix()}read-count-tracking${params.assay_suffix}.tsv"),  emit: read_count
-        path("${cleanedPrefix()}counts${params.assay_suffix}.tsv"),               emit: counts
-        path("${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv"),  emit: taxonomy_count
+        path({ "${cleanedPrefix()}filtered-read-counts${assaySuffix()}.tsv" }), emit: filtered_count
+        path("${cleanedPrefix()}taxonomy${assaySuffix()}.tsv"),             emit: taxonomy
+        path({ "${cleanedPrefix()}taxonomy-and-counts${assaySuffix()}.biom" }), emit: biom
+        path("${cleanedPrefix()}ASVs${assaySuffix()}.fasta"),               emit: fasta
+        path("${cleanedPrefix()}read-count-tracking${assaySuffix()}.tsv"),  emit: read_count
+        path("${cleanedPrefix()}counts${assaySuffix()}.tsv"),               emit: counts
+        path("${cleanedPrefix()}taxonomy-and-counts${assaySuffix()}.tsv"),  emit: taxonomy_count
         path("versions.txt"),                                                      emit: version
     script:
         def trim_primers = params.trim_primers
@@ -32,20 +32,20 @@ process RUN_DADA2 {
         def single_end_maxEE = trimming_reverse ? params.right_maxEE : params.left_maxEE
         
         def starting_reads_suffix = trim_primers ? "trimmed" : "raw"
-        def R1_suffix     = "${params.assay_suffix}_R1_${starting_reads_suffix}.fastq.gz"   
-        def R2_suffix     = "${params.assay_suffix}_R2_${starting_reads_suffix}.fastq.gz"
+        def R1_suffix     = "${assaySuffix()}_R1_${starting_reads_suffix}.fastq.gz"
+        def R2_suffix     = "${assaySuffix()}_R2_${starting_reads_suffix}.fastq.gz"
         def single_end_suffix = isPaired == "false" ? (
             params.force_single_end == "R1" ? R1_suffix :
             params.force_single_end == "R2" ? R2_suffix :
-            "${params.assay_suffix}_${starting_reads_suffix}.fastq.gz"
+            "${assaySuffix()}_${starting_reads_suffix}.fastq.gz"
         ) : ""
         
-        def filtered_R1_suffix   = "${params.assay_suffix}_R1_filtered.fastq.gz"
-        def filtered_R2_suffix   = "${params.assay_suffix}_R2_filtered.fastq.gz"
+        def filtered_R1_suffix   = "${assaySuffix()}_R1_filtered.fastq.gz"
+        def filtered_R2_suffix   = "${assaySuffix()}_R2_filtered.fastq.gz"
         def filtered_single_end_suffix = isPaired == "false" ? (
             params.force_single_end == "R1" ? filtered_R1_suffix :
             params.force_single_end == "R2" ? filtered_R2_suffix :
-            "${params.assay_suffix}_filtered.fastq.gz"
+            "${assaySuffix()}_filtered.fastq.gz"
         ) : ""
         """
         mkdir -p ${input_dir}
@@ -71,7 +71,7 @@ process RUN_DADA2 {
                 "${cleanedPrefix()}" \\
                 "${params.target_region}" \\
                 "${params.concatenate_reads_only ? 'TRUE' : 'FALSE'}" \\
-                "${params.assay_suffix}" \\
+                "${assaySuffix()}" \\
                 "${database.name}"
         else
             Illumina-SE-R-processing.R \\
@@ -84,13 +84,13 @@ process RUN_DADA2 {
                 "${filtered_single_end_suffix}" \\
                 "${cleanedPrefix()}" \\
                 "${params.target_region}" \\
-                "${params.assay_suffix}" \\
+                "${assaySuffix()}" \\
                 "${database.name}"
         fi
 
-        (head -n 1 ${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv; \\
-            awk 'NR>1{print}' ${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv | sort -V -k1) \\
-            > temp_tax_cont.tsv && mv temp_tax_cont.tsv ${cleanedPrefix()}taxonomy-and-counts${params.assay_suffix}.tsv
+        (head -n 1 ${cleanedPrefix()}taxonomy-and-counts${assaySuffix()}.tsv; \\
+            awk 'NR>1{print}' ${cleanedPrefix()}taxonomy-and-counts${assaySuffix()}.tsv | sort -V -k1) \\
+            > temp_tax_cont.tsv && mv temp_tax_cont.tsv ${cleanedPrefix()}taxonomy-and-counts${assaySuffix()}.tsv
 
         R --vanilla --version | grep "R version" > versions.txt
         get_R_package_version.R

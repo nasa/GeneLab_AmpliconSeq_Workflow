@@ -7,11 +7,12 @@ params {
     single_end: Boolean
     include_raw_data: Boolean
     include_raw_multiqc: Boolean
+    prepend_target_region: Boolean
 }
 
 include { PACKAGE_PROCESSING_INFO; GENERATE_README; VALIDATE_PROCESSING;
            GENERATE_CURATION_TABLE; GENERATE_MD5SUMS; GENERATE_PROTOCOL} from './modules/genelab.nf'
-include { cleanedPrefix } from './modules/utils.nf'
+include { cleanedPrefix; assaySuffix } from './modules/utils.nf'
 
 
 workflow {
@@ -39,7 +40,7 @@ workflow {
          OSD Accession : ${params.OSD_accession}
          Input Runsheet: ${params.runsheet}
          Output Directory: ${params.outdir}
-         Assay Suffix: ${params.assay_suffix}
+         Assay Suffix: ${assaySuffix()}
          Output Prefix: ${params.output_prefix}
          Target Files: ${params.target_files}
 
@@ -92,8 +93,8 @@ workflow {
            : channel.value([])
        final_outputs_dir = channel.fromPath("${processed_dir}/Final_Outputs", type: 'dir')
 
-       software_versions_ch = channel.fromPath("${processed_dir}/GeneLab/software_versions${params.assay_suffix}.txt")
-       def rarefaction_depth_file = file("${processed_dir}/Final_Outputs/alpha_diversity/${cleanedPrefix()}rarefaction_depth${params.assay_suffix}.txt")
+       software_versions_ch = channel.fromPath("${processed_dir}/GeneLab/software_versions${assaySuffix()}.txt")
+       def rarefaction_depth_file = file("${processed_dir}/Final_Outputs/alpha_diversity/${cleanedPrefix()}rarefaction_depth${assaySuffix()}.txt")
        rarefaction_depth_ch = channel.value(rarefaction_depth_file.exists() ? rarefaction_depth_file : [])
 
 

@@ -5,6 +5,7 @@ include { validateParameters; paramsHelp } from 'plugin/nf-schema'
 params {
     trim_primers: Boolean
     limit_samples_to: Integer?
+    prepend_target_region: Boolean
 }
 
 // Stage analysis setup (inputs, and raw reads)
@@ -31,7 +32,7 @@ include { ANCOMBC as ANCOMBC1 } from './modules/ancombc.nf'
 include { ANCOMBC as ANCOMBC2 } from './modules/ancombc.nf'
 include { DESEQ } from './modules/deseq.nf'
 include { ZIP as ZIP_DA; ZIP as ZIP_ANCOMBC1; ZIP as ZIP_ANCOMBC2; ZIP as ZIP_DESEQ2 } from './modules/zip.nf'
-include { SOFTWARE_VERSIONS; cleanedPrefix } from './modules/utils.nf'
+include { SOFTWARE_VERSIONS; cleanedPrefix; assaySuffix } from './modules/utils.nf'
 
 // A function to delete white spaces from an input string and covert it to lower case
 def deleteWS(string){
@@ -66,7 +67,7 @@ workflow {
          Input csv file : ${params.input_file}
          Output directory: ${params.outdir}
          Database Store Directory: ${params.database_store_path}
-         Genelab Assay Suffix: ${params.assay_suffix}
+         Genelab Assay Suffix: ${assaySuffix()}
          Output Prefix: ${params.output_prefix}
          Trim Primers: ${params.trim_primers}
 
@@ -246,7 +247,7 @@ workflow {
             .flatten()
             .map { file ->
                     def suffixes = ["_R1", "_R2", ""].collect { read ->
-                        "${params.assay_suffix}${read}_filtered.fastq.gz"
+                        "${assaySuffix()}${read}_filtered.fastq.gz"
                     }
                     def suffix = suffixes.find { file.name.endsWith(it) }
                     if (!suffix) {
@@ -286,7 +287,7 @@ workflow {
         values = ["samples": "Sample Name",
                 "group" : "groups",
                 "depth" : params.rarefaction_depth,
-                "assay_suffix" : params.assay_suffix,
+                "assay_suffix" : assaySuffix(),
                 "output_prefix" : cleanedPrefix(),
                 "target_region" : params.target_region,
                 "library_cutoff" : params.library_cutoff,
@@ -302,7 +303,7 @@ workflow {
         values = ["samples": params.samples_column,
                 "group" : params.group,
                 "depth" : params.rarefaction_depth,
-                "assay_suffix" : params.assay_suffix,
+                "assay_suffix" : assaySuffix(),
                 "output_prefix" : cleanedPrefix(),
                 "target_region" : params.target_region,
                 "library_cutoff" : params.library_cutoff,

@@ -34,7 +34,12 @@
         "assay_suffix": {
           "type": "string",
           "default": "_GLAmpSeq",
-          "description": "Assay suffix used during the main processing workflow."
+          "description": "Base assay suffix used during the main processing workflow."
+        },
+        "prepend_target_region": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use target_region as the <tech_type> filename label. Match the main workflow's setting and target region."
         },
         "output_prefix": {
           "type": "string",
