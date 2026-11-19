@@ -385,6 +385,7 @@ def report_success(validation_log):
 
     with open(validation_log, "a") as log:
 
+        log.write("\n")
         log.write("   -----------------------------------------------------------------------------\n")
         log.write("                         Validation completed successfully." + "\n")
         log.write("   -----------------------------------------------------------------------------\n")

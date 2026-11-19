@@ -80,7 +80,7 @@ workflow {
        // ---------------------- Input channels -------------------------------- //
        // Input files
        // Runsheet used to execute the processing workflow
-       runsheet_ch = Channel.fromPath(params.runsheet, checkIfExists: true)
+       runsheet_ch = channel.fromPath(params.runsheet, checkIfExists: true)
 
        def processed_dir = file(params.outdir)
        if( !processed_dir.exists() ) {

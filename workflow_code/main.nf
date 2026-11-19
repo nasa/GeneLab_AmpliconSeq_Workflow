@@ -93,7 +93,7 @@ workflow {
          Remove Rare Taxa and Samples: ${params.remove_rare}
          Taxa Prevalence Cut Off: ${params.prevalence_cutoff}
          Sample Library Cut Off: ${params.library_cutoff}
-         Groups to Comapre Column: ${params.group}
+         Groups to Compare Column: ${params.group}
          Samples Column: ${params.samples_column}
 
          Debugging Options:
@@ -139,7 +139,7 @@ workflow {
             error("""PRIMER ERROR! 
                   When using a csv file as input (--input_file) to this workflow you must provide 
                   forward and reverse primer sequences. Please provide your forward 
-                  and reverse primer sequences as arguements to the --F_primer 
+                  and reverse primer sequences as arguments to the --F_primer 
                   and --R_primer parameters, respectively.
                   """)
          }
@@ -189,7 +189,7 @@ workflow {
             "ITS": ["UNITE_v2024_April2024.RData", "https://api.figshare.com/v2/file/download/52846346"],
             "18S": ["PR2_v4_13_March2021.RData", "https://api.figshare.com/v2/file/download/46241917"]
         ]
-    target_region_ch = Channel.value(params.target_region)
+    target_region_ch = channel.value(params.target_region)
         .map { region -> tuple(region, db_config[region][0], db_config[region][1]) }
     
     DOWNLOAD_DATABASE(target_region_ch)

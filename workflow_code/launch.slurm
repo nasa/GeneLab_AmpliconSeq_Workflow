@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#SBATCH --job-name="nf_master" ## Replace job_name with the name of the job you are running ##
-#SBATCH --output=nf_master.o.%j ## Replace job_name with the name of the job you are running ##
-#SBATCH --error=nf_master.e.%j ## Replace job_name with the name of the job you are running ##
-#SBATCH --partition=<patition_name> ## Specifies the job queue to use, for urgent jobs change normal to priority ##
+#SBATCH --job-name="nf_ampseq" ## Replace job_name with the name of the job you are running ##
+#SBATCH --output=%x.o.%j ## Replace job_name with the name of the job you are running ##
+#SBATCH --error=%x.e.%j ## Replace job_name with the name of the job you are running ##
+#SBATCH --partition=<partition_name> ## Specifies the job queue to use, for urgent jobs change normal to priority ##
 #SBATCH --mem=20G ## Memory required to run the job in MB, this example is showing 10,000 MB or 10GB, change this number based on how much RAM you need ##
 #SBATCH --cpus-per-task=1 ## Number of CPUs to run the job, this example is showing 5 CPUs, change this number based on how many CPUs you need ##
 #SBATCH --mail-user=user@domain.com ## Specifies the e-mail address to e-mail when the job is complete, replace this e-mail address with your NASA e-mail address ##
@@ -13,7 +13,7 @@
 . ~/.profile
 
 
-echo "nf_master" ## Replace job_name with the name of the job you are running ##
+echo $SLURM_JOB_NAME
 echo ""
 
 
@@ -40,7 +40,7 @@ bash ./launch.sh processing ${WORKFLOW_DIR}/main.nf ${WORKFLOW_DIR}/nextflow.con
 
 # Post Processing
 #bash ./launch.sh post_processing  ${WORKFLOW_DIR}/post_processing.nf  ${WORKFLOW_DIR}/post_processing.config \
-#          '--name First M. Last --email name@domain.com --GLDS_accession GLDS-487 --OSD_accession ODS-487 --isa_zip  ../GeneLab/OSD-487_metadata_GLDS-487-ISA.zip --runsheet ../GeneLab/GLfile.csv'
+#          '--name First M. Last --email name@domain.com --GLDS_accession GLDS-487 --OSD_accession OSD-487 --runsheet ../GeneLab/GLfile.csv'
 
 
 

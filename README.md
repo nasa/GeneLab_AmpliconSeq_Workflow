@@ -21,8 +21,8 @@ The current GeneLab Illumina amplicon sequencing data processing pipeline (AmpIl
 The table below details the default maximum resource allocations for individual Nextflow processes.
 
 | CPU Cores | Memory |
-|-------------------|----------------|
-| 10                | 20 GB          |
+|-----------|--------|
+| 10        | 20 GB  |
 
 > **Note:** These per-process resource allocations are defaults. They can be adjusted by modifying `cpus` and `memory` directives in the configuration file: [`nextflow.config`](workflow_code/nextflow.config).
 
@@ -59,6 +59,8 @@ The table below details the default maximum resource allocations for individual 
 #### 1a. Install Nextflow and Conda
 
 Nextflow can be installed either through the [Anaconda bioconda channel](https://anaconda.org/bioconda/nextflow) or as documented on the [Nextflow documentation page](https://www.nextflow.io/docs/latest/getstarted.html).
+
+This version of the workflow (v1.0.10) requires Nextflow version >= 26.10.0
 
 > Note: If you wish to install conda, we recommend installing a Miniforge version appropriate for your system, as documented on the [conda-forge website](https://conda-forge.org/download/), where you can find basic binaries for most systems. More detailed miniforge documentation is available in the [miniforge github repository](https://github.com/conda-forge/miniforge).
 > 
