@@ -1,6 +1,6 @@
 FROM mambaorg/micromamba:2.0-ubuntu22.04
 
-MAINTAINER Olabiyi Obayomi <obadbotanist@yahoo.com>
+LABEL maintainer Olabiyi Obayomi <obadbotanist@yahoo.com>
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER R.yaml /tmp/R.yaml
 RUN micromamba create -y -f /tmp/R.yaml && \

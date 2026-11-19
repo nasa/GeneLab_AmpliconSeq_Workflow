@@ -16,7 +16,7 @@ CURDIR=$(pwd)
 
 mkdir -p $OUTDIR
 
-cat ${CONFILE}|grep 'container'|perl -lane 'if ( $_=~/container\s*\=\s*\"(\S+)\"/ ) { $_=~/container\s*\=\s*\"(\S+)\"/; print $1 unless ( $1=~/^\s*$/ or $1=~/\.sif/ or $1=~/\.img/ ) ; }' > $TMPFILE
+cat ${CONFILE}|grep -v '^[[:space:]]*//'|grep 'container'|perl -lane 'if ( $_=~/container\s*\=\s*\"(\S+)\"/ ) { $_=~/container\s*\=\s*\"(\S+)\"/; print $1 unless ( $1=~/^\s*$/ or $1=~/\.sif/ or $1=~/\.img/ ) ; }' > $TMPFILE
 
 cd ${OUTDIR}
 

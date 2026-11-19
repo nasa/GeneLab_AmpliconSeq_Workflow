@@ -1,10 +1,12 @@
+include { assaySuffix } from './utils.nf'
+
 /**
  * COPY_READS
  * 
  * This process stages raw read files and renames them to standardized naming convention.
  * 
  * For URLs: Nextflow automatically downloads them during staging, then this process
- * renames the downloaded files (1.gz, 2.gz) to the expected format using configured suffixes.
+ * renames the staged files (read1.gz, read2.gz) to the expected format using configured suffixes.
  * 
  * For local files: Nextflow stages them as symlinks, then this process renames
  * them to the standardized format.
@@ -15,15 +17,14 @@
  * 
  * Output format: 
  * - Paired-end: [sample_id, [sample_R1_raw.fastq.gz, sample_R2_raw.fastq.gz], "true"]
+ * - Paired-end with force_single_end: [sample_id, [sample_{R1/R2}_raw.fastq.gz], "false"]
  * - Single-end: [sample_id, [sample_R1_raw.fastq.gz], "false"]
  */
 process COPY_READS {
-    publishDir "${params.raw_reads_dir}",
-        mode: params.publishDir_mode
     tag "${ sample_id }"
 
     input:
-        tuple val(sample_id), path("*.gz"), val(paired)
+        tuple val(sample_id), path("read?.gz"), val(paired)
 
     output:
         tuple val(sample_id), path("${sample_id}*.gz"), val(paired), emit: raw_reads
@@ -31,20 +32,28 @@ process COPY_READS {
     script:
         if ( paired == 'true' ) {
         """
-        cp -P 1.gz ${sample_id}${params.raw_R1_suffix}
-        cp -P 2.gz ${sample_id}${params.raw_R2_suffix}
+        cp -P read1.gz ${sample_id}${assaySuffix()}_R1_raw.fastq.gz
+        cp -P read2.gz ${sample_id}${assaySuffix()}_R2_raw.fastq.gz
         """
-        } else {
-        """
-        cp -P 1.gz ${sample_id}${params.raw_R1_suffix}
-        """
+        } else if ( paired == 'false') {
+            if ( params.force_single_end == "R1" ) {
+            """
+            cp -P read1.gz ${sample_id}${assaySuffix()}_R1_raw.fastq.gz
+            """
+            } else if ( params.force_single_end == "R2" ) {
+            """
+            cp -P read1.gz ${sample_id}${assaySuffix()}_R2_raw.fastq.gz
+            """
+            } else { 
+            """
+            cp -P read1.gz ${sample_id}${assaySuffix()}_raw.fastq.gz
+            """ 
+            }
         }
 }
 
 
 process COPY_REMOTE_READS {
-    publishDir "${params.raw_reads_dir}",
-        mode: params.publishDir_mode
     tag "${ sample_id }"
 
     input:
@@ -56,13 +65,23 @@ process COPY_REMOTE_READS {
     script:
         if ( paired == 'true' ) {
         """
-        wget -O ${sample_id}${params.raw_R1_suffix} '${paths[0]}'
-        wget -O ${sample_id}${params.raw_R2_suffix} '${paths[1]}'
+        wget -O ${sample_id}${assaySuffix()}_R1_raw.fastq.gz '${paths[0]}'
+        wget -O ${sample_id}${assaySuffix()}_R2_raw.fastq.gz '${paths[1]}'
         """
-        } else {
-        """
-        wget -O ${sample_id}${params.raw_R1_suffix} '${paths[0]}'
-        """
+        } else if ( paired == 'false') {
+            if ( params.force_single_end == "R1" ) {
+            """
+            wget -O ${sample_id}${assaySuffix()}_R1_raw.fastq.gz '${paths[0]}'
+            """
+            } else if ( params.force_single_end == "R2" ) {
+            """
+            wget -O ${sample_id}${assaySuffix()}_R2_raw.fastq.gz '${paths[0]}'
+            """
+            } else { 
+            """
+            wget -O ${sample_id}${assaySuffix()}_raw.fastq.gz '${paths[0]}'
+            """ 
+            }
         }
 
 }

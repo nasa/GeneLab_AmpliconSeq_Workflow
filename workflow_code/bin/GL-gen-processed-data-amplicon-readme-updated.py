@@ -32,9 +32,10 @@ parser.add_argument("--primers_already_trimmed", help = "Add this flag if primer
 parser.add_argument("--single-end", action="store_true", help="Is the data single-end?")
 parser.add_argument("--date", action="store", default=datetime.date.today(), type=datetime.date.fromisoformat,
                     help="Date the processed data was generated in ISO format (YYYY-MM-DD). (default: today's date)")
-
-parser.add_argument("--include-raw-reads", action="store_true", #???
-                    help="Include the raw read data (Merged sequence data)?")
+parser.add_argument("--include-raw-reads", action="store_true",
+                    help="Passed only when raw read data (Merged sequence data) should be included")
+parser.add_argument("--force-single-end", default=None,
+                    help="If the data is paired-end but was processed as single-end, specify which read was used as single-end (R1 or R2)")
 
 if len(sys.argv) == 1:
     parser.print_help(sys.stderr)
@@ -196,6 +197,25 @@ def write_amplicon_body(output):
 
     add_spacer(output)
 
+    # raw data
+    if args.include_raw_reads:
+        add_level(raw_reads_dir, "raw fastq files", pad, output, continues=[True])
+        # Raw Sequence Data
+        if args.single_end and args.force_single_end is None: 
+            add_level("*_raw.fastq.gz", "raw fastq files", pad, output, continues=[True, True])
+        else:
+            #If only forward or only reverse reads were used, still want to include both foward and reverse read names 
+            # under "Raw Sequence Data" column because it is tied to the hosted raw data, not just what was used to process the dataset
+            add_level("*_R1_raw.fastq.gz", "read1 raw fastq files", pad, output, continues=[True, True])
+            add_level("*_R2_raw.fastq.gz", "read2 raw fastq files", pad, output, continues=[True, True])
+        
+        # Raw Sequence Data/MultiQC Reports
+        add_level(multiqc_dir, "multiQC summary reports of raw FastQC runs", pad, output, continues=[True, False], is_last=True)
+        add_level(f"raw_multiqc{args.assay_suffix}.html", "multiQC FastQC summary report", pad, output, continues=[True, False, True])
+        add_level(f"raw_multiqc{args.assay_suffix}_data.zip", "multiQC FastQC summary report data", pad, output, continues=[True, False, True], is_last=True)
+
+        add_spacer(output)
+
     # trimmed reads
     if not args.primers_already_trimmed:
         
@@ -204,27 +224,37 @@ def write_amplicon_body(output):
         add_level(f"trimmed-read-counts{assay_suffix}.tsv", "per sample read counts before and after trimming", pad, output, continues=[True, True])
         # Trimmed Sequence Data
         if args.single_end:
-            add_level("*_trimmed.fastq.gz", "trimmed fastq files", pad, output, continues=[True, False], is_last=True)
+            if args.force_single_end == "R1":
+                add_level("*_R1_trimmed.fastq.gz", "read1 trimmed fastq files (used as single-end)", pad, output, continues=[True, False], is_last=True)
+            elif args.force_single_end == "R2":
+                add_level("*_R2_trimmed.fastq.gz", "read2 trimmed fastq files (used as single-end)", pad, output, continues=[True, False], is_last=True)
+            else:
+                add_level("*_trimmed.fastq.gz", "trimmed fastq files", pad, output, continues=[True, False], is_last=True)
         else:
             add_level("*_R1_trimmed.fastq.gz", "read1 trimmed fastq files", pad, output, continues=[True, True])
             add_level("*_R2_trimmed.fastq.gz", "read2 trimmed fastq files", pad, output, continues=[True, False], is_last=True)
 
-    add_spacer(output)
+        add_spacer(output)
 
     # quality-filtered reads
     add_level(filtered_reads_dir, "quality-filtered fastq files", pad, output, continues=[True])
     add_level(f"filtered-read-counts{assay_suffix}.tsv", "per sample read counts before and after quality-filtering", pad, output, continues=[True, True])
     # Filtered Sequence Data
     if args.single_end:
-        add_level("*_filtered.fastq.gz", "filtered fastq files", pad, output, continues=[True, False], is_last=True)
+        if args.force_single_end == "R1":
+            add_level("*_R1_filtered.fastq.gz", "read1 filtered fastq files (used as single-end)", pad, output, continues=[True, True])
+        elif args.force_single_end == "R2":
+            add_level("*_R2_filtered.fastq.gz", "read2 filtered fastq files (used as single-end)", pad, output, continues=[True, True])
+        else:
+            add_level("*_filtered.fastq.gz", "filtered fastq files", pad, output, continues=[True, True])
     else:
         add_level("*_R1_filtered.fastq.gz", "read1 filtered fastq files", pad, output, continues=[True, True])
-        add_level("*_R2_filtered.fastq.gz", "read2 filtered fastq files", pad, output, continues=[True, False], is_last=True)
+        add_level("*_R2_filtered.fastq.gz", "read2 filtered fastq files", pad, output, continues=[True, True])
 
-    add_spacer(output)
-
-    #fastqc outputs
-    add_level(fastqc_outputs_dir, "multiQC summary reports of FastQC runs", pad, output, continues=[True])
+    # Raw Sequence Data/MultiQC Reports
+    add_level(multiqc_dir, "multiQC summary reports of filtered FastQC runs", pad, output, continues=[True, False], is_last=True)
+    add_level(f"filtered_multiqc{args.assay_suffix}.html", "multiQC FastQC summary report", pad, output, continues=[True, False, True])
+    add_level(f"filtered_multiqc{args.assay_suffix}_data.zip", "multiQC FastQC summary report data", pad, output, continues=[True, False, True], is_last=True)    
 
     add_spacer(output)
 
@@ -236,12 +266,18 @@ def write_amplicon_body(output):
     add_level(f"taxonomy-and-counts{assay_suffix}.tsv", "combined table of counts and taxonomy", pad, output, continues=[True, True])
     add_level(f"taxonomy-and-counts{assay_suffix}.biom.zip", "biom-formatted output of counts and taxonomy", pad, output, continues=[True, True])
     add_level(f"read-count-tracking{assay_suffix}.tsv", "read counts at each processing step", pad, output, continues=[True, False], is_last=True)
+
+    add_spacer(output)
+
     # Alpha diversity Reports
     add_level(a_diversity_dir, "alpha diversity measurements and plots using observed features estimates and Shannon diversity indices", pad, output, continues=[True])
     add_level(f"alpha_diversity_plots{assay_suffix}.zip", "", pad, output, continues=[True, True])
                             ### How to represent failure files? ###
     add_level(f"statistics_table{assay_suffix}.csv", "", pad, output, continues=[True, True])
     add_level(f"summary_table{assay_suffix}.csv", "", pad, output, continues=[True, True], is_last=True)
+
+    add_spacer(output)
+
     # Beta diversity Reports
     add_level(b_diversity_dir, "", pad, output, continues=[True])
     add_level(f"vsd_validation_plot{assay_suffix}.png", "VST transformation validation diagnostic plot", pad, output, continues=[True, True])
@@ -254,11 +290,17 @@ def write_amplicon_body(output):
     add_level("Euclidean_distance/", "beta diversity measurements and plots using Euclidean distance", pad, output, continues=[True, False], is_last=True)
     add_level(f"euclidean_distance_plots{assay_suffix}.zip", "", pad, output, continues=[True, False, True]) 
     add_level(f"euclidean_adonis_table{assay_suffix}.csv", "", pad, output, continues=[True, False, True])
-    add_level(f"euclidean_variance_table{assay_suffix}.csv", "", pad, output, continues=[True, False, True], is_last=True)    
+    add_level(f"euclidean_variance_table{assay_suffix}.csv", "", pad, output, continues=[True, False, True], is_last=True)
+
+    add_spacer(output)
+
     # Taxonomy plots
     add_level(taxonomy_plots_dir, "", pad, output, continues=[True])
     add_level(f"sample_taxonomy_plots{assay_suffix}.zip", "relative abundance plots of taxa for each sample", pad, output, continues=[True, True])
     add_level(f"group_taxonomy_plots{assay_suffix}.zip", "relative abundance plots of taxa for each group", pad, output, continues=[True, True], is_last=True)
+
+    add_spacer(output)
+    
     #Differential abundance
     add_level(diff_abundance_dir, "", pad, output, continues=[True])
     add_level(f"SampleTable{assay_suffix}.csv", "table containing samples and their respective groups", pad, output, continues=[True, True])
@@ -290,13 +332,18 @@ def write_amplicon_body(output):
 # universal settings
 assay_suffix = args.assay_suffix
 
+if args.force_single_end:
+    args.single_end = True
+    if args.include_raw_reads:
+        print("WARNING: --force-single-end is set — --include-raw-reads will be ignored.")
+        args.include_raw_reads = False
+
 processing_zip_file = f"processing_info{assay_suffix}.zip"
 
-merged_reads_dir = "Merged Sequence Data/"
-#multiqc_dir = "MultiQC Reports/" ###Change FastQC Outputs to MultiQC Outputs?###
-fastqc_outputs_dir = "FastQC Outputs/"
+raw_reads_dir = "Raw Sequence Data/"
 trimmed_reads_dir = "Trimmed Sequence Data/"
 filtered_reads_dir = "Filtered Sequence Data/"
+multiqc_dir = "MultiQC Reports/"
 tax_asv_outputs_dir = "Taxonomy and ASV Counts Data/"
 a_diversity_dir = "Alpha Diversity Data/"
 b_diversity_dir = "Beta Diversity Data/"
@@ -306,7 +353,7 @@ ancombc1_dir = "ANCOMBC1/"
 ancombc2_dir = "ANCOMBC2/"
 deseq2_dir = "DESeq2/"
 
-output_file = f"{str(args.output)}" 
+output_file = f"{str(args.output)}"
 
 if __name__ == "__main__":
     main()
