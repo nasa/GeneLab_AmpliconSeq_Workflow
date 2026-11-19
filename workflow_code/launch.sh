@@ -72,7 +72,7 @@ elif [ ${MODE} == "post_processing" ];then
 
     RUN_NAME=POST_$(date +%Y%m%d%H%M%S)
 
-    RUN_COMMAND="nextflow -c ${CONFIG}
+    RUN_COMMAND="nextflow -C ${CONFIG}
                     run \
                     -name ${RUN_NAME} \
                     ${MAIN} \

@@ -15,7 +15,6 @@
 ###############################################################################
 
 library(optparse)
-library(glue)
 
 
 ######## -------- Get input variables from the command line ----##############
@@ -159,12 +158,14 @@ library(DescTools)
 library(taxize)
 library(glue)
 library(phyloseq)
-library(utils)
-library(tools)
-library(patchwork)
 library(ggrepel)
-library(tidyverse)
-library(scales)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(tibble)
+library(tidyr)
 
 # ---------------------------- Functions ------------------------------------- #
 
@@ -379,6 +380,24 @@ common_ids <- intersect(rownames(feature_table), rownames(taxonomy_table))
 feature_table <- feature_table[common_ids,]
 taxonomy_table <- taxonomy_table[common_ids,]
 
+# ANCOMBC refuses a group with fewer than 2 samples and the pairwise loop quits.
+# Drop those groups and write them to samples_dropped<assay_suffix>.txt.
+group_n <- table(metadata[[group]])
+drop_groups <- names(group_n)[group_n < 2]
+if (length(drop_groups) > 0) {
+  dropped_samples <- sort(rownames(metadata)[metadata[[group]] %in% drop_groups])
+  dropped_sample_groups <- metadata[dropped_samples, group]
+  metadata <- metadata[!metadata[[group]] %in% drop_groups, , drop = FALSE]
+  feature_table <- feature_table[, colnames(feature_table) %in% rownames(metadata), drop = FALSE]
+  message(glue("Dropped {length(drop_groups)} groups with fewer than 2 samples ({length(dropped_samples)} samples): {paste(sort(drop_groups), collapse = ', ')}"))
+  writeLines(
+    c(glue("{length(dropped_samples)} samples excluded because their group contains fewer than two samples:"),
+      "",
+      "Sample ID\tGroup",
+      paste(dropped_samples, dropped_sample_groups, sep = "\t")),
+    glue("{diff_abund_out_dir}{output_prefix}samples_dropped{assay_suffix}.txt")
+  )
+}
 
 # Create phyloseq object
 ps <- phyloseq(otu_table(feature_table, taxa_are_rows = TRUE),
@@ -388,9 +407,23 @@ ps <- phyloseq(otu_table(feature_table, taxa_are_rows = TRUE),
 # Convert phyloseq to tree summarized experiment object
 tse <-  mia::makeTreeSummarizedExperimentFromPhyloseq(ps)
 
+group_levels <- metadata[,group] %>% unique() %>% sort()
+if (length(group_levels) < 2) {
+  warning_file <- glue("{diff_abund_out_dir}{output_prefix}ancombc1_failure{assay_suffix}.txt")
+  writeLines(
+    text = glue("Group count information:
+Original number of groups: {length(group_levels)}
+Number of groups after filtering: {length(group_levels)}
+
+There are less than two groups to compare, hence, pairwise comparisons cannot be performed.
+Please ensure that your metadata contains two or more groups to compare..."),
+    con = warning_file
+  )
+  quit(status = 0)
+}
 
 # Get unique group comparison as a matrix
-pairwise_comp.m <- utils::combn((metadata[,group] %>% unique %>% sort), 2)
+pairwise_comp.m <- utils::combn(group_levels, 2)
 pairwise_comp_df <- pairwise_comp.m %>% as.data.frame 
 
 colnames(pairwise_comp_df) <- map_chr(pairwise_comp_df,

@@ -156,7 +156,13 @@ library(multcompView)
 library(rstatix)
 library(patchwork)
 library(RColorBrewer)
-library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(tibble)
+library(tidyr)
 
 # ----------------------------- Functions ----------------------------------- #
 
@@ -387,6 +393,7 @@ Alpha diversity results may be unreliable."))
 }
 
 #----- Rarefy sample counts to even depth per sample
+set.seed(NULL) # Initialize RNG so rarefy_even_depth() can save/restore '.Random.seed' internally
 ps.rarefied <- rarefy_even_depth(physeq = ASV_physeq,
                                  sample.size = depth,
                                  rngseed = 1,

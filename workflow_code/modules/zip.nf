@@ -1,17 +1,24 @@
+include { cleanedPrefix; assaySuffix } from './utils.nf'
+
 process ZIP {
     tag "Zipping $label"
     label "zip"
-    publishDir "${target_dir}", mode: params.publishDir_mode
 
     input:
-    tuple val(label), path(files), val(target_dir)
+    tuple val(label), path(files)
 
     output:
-    path("${params.cleaned_prefix}${label}${params.assay_suffix}.zip")
+    path({ "${cleanedPrefix()}${label}${assaySuffix()}*.zip" }), emit: zip
+    path("versions.txt"), emit: version
 
     script:
+    def is_biom = files.toString().endsWith(".biom")
+    def out_name = is_biom
+            ? "${cleanedPrefix()}${label}${assaySuffix()}.biom.zip"
+            : "${cleanedPrefix()}${label}${assaySuffix()}.zip"
+    def junk_flag = is_biom ? "-j" : ""
     """
-    zip -q ${params.cleaned_prefix}${label}${params.assay_suffix}.zip ${files}
+    zip -q ${junk_flag} ${out_name} ${files}
 
     zip -h | grep "Zip" | sed -E 's/(Zip.+\\)).+/\\1/' >> versions.txt
     """
